@@ -1,4 +1,5 @@
 const scheduleModel = require('../models/schedule')
+const sessionModel = require('../models/session')
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']; 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 
@@ -58,7 +59,32 @@ const upsertSchedule = async (req, res) => {
     }
 }
 
+const getPendingSessions = async (req, res) => {
+    const id_Tutor = req.user.id;
+
+    try {
+        const sesionesPendientes = await sessionModel.getSesionesPendientesByTutorId(id_Tutor);
+        const response = sesionesPendientes.map((s) => ({
+            id: s.id,
+            fecha: s.fecha,
+            hora: s.hora,
+            estudiante: s.estudiante,  
+            materia: s.materia,
+            motivo: s.motivo
+        }));
+
+        return res.status(200).json({
+            message: 'Sesiones pendientes obtenidas exitosamente',
+            data: response
+        });
+    } catch (error) {
+        console.error('Error al obtener las sesiones pendientes:', error);
+        res.status(500).json({ message: 'Error al obtener las sesiones pendientes' });
+    }
+}
+
 module.exports = {
     getSchedule,
-    upsertSchedule
+    upsertSchedule,
+    getPendingSessions
 }
