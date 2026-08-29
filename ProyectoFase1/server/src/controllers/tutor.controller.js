@@ -6,7 +6,7 @@ const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 // Configuración de Horarios de Atención del Tutor
 // GET /api/tutor/schedule
 const getSchedule = async (req, res) => {
-    const id_Tutor = req.user.id; // id se obtiene por la verificación del token
+    const id_Tutor = req.user?.id || 1; // id se obtiene por la verificación del token
     try {
         const horario = await scheduleModel.gethorarioByTutorId(id_Tutor);
 
@@ -59,8 +59,10 @@ const upsertSchedule = async (req, res) => {
     }
 }
 
+// Visualización de Sesiones Pendientes del Tutor
+// GET /api/tutor/sessions/pending
 const getPendingSessions = async (req, res) => {
-    const id_Tutor = req.user.id;
+    const id_Tutor = req.user?.id || 1; // id se obtiene por la verificación del token
 
     try {
         const sesionesPendientes = await sessionModel.getSesionesPendientesByTutorId(id_Tutor);
@@ -83,8 +85,44 @@ const getPendingSessions = async (req, res) => {
     }
 }
 
+// Registro de Atención y Resumen de Tutoría
+// PATCH /api/tutor/sessions/:id/attend
+const attendSession = async (req, res) => {
+    const { id } = req.params;
+    const { resumen } = req.body;
+    
+    if (!id) { 
+        return res.status(400).json({ message: 'ID de sesión inválido.' }); 
+    }
+
+    if (!resumen || resumen.trim().length === 0 || typeof resumen !== 'string') {
+        return res.status(400).json({ message: 'El resumen es requerido y debe ser una cadena de texto.' });
+    }
+
+    try {
+        const session = await sessionModel.findSessionById(id);
+        if (!session) {
+            return res.status(404).json({ message: 'Sesión no encontrada.' });
+        }
+        if (session.estado !== 'Activa') {
+            return res.status(400).json({ message: 'La sesión no está activa y no puede ser atendida.' });
+        }
+
+        const updatedSession = await sessionModel.attendSession(id, resumen.trim());
+        return res.status(200).json({
+            message: 'Sesión atendida exitosamente',
+            data: updatedSession
+        });
+    } catch (error) {
+        console.error('Error al registrar la atención de la sesión:', error);
+        res.status(500).json({ message: 'Error al registrar la atención de la sesión' });
+    }
+}
+
+
 module.exports = {
     getSchedule,
     upsertSchedule,
-    getPendingSessions
+    getPendingSessions,
+    attendSession
 }

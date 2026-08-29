@@ -52,6 +52,46 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
     }
 }
 
+const findSessionById = async (sessionId) => {
+    try {
+        const result = await pool.query(
+            `${QUERY_BASE}
+            WHERE s.id_sesion = $1;
+            `, 
+            [sessionId]
+        );
+        if (result.rowCount === 0) return null;
+        return mapSessionRow(result.rows[0]);
+    } catch (error) {
+        console.error('Error al buscar la sesión por ID:', error);
+        throw error;
+    }
+}
+
+const attendSession = async (sessionId, resumen) => {
+    try {
+        const result = await pool.query(
+            `UPDATE sesion
+            SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
+            WHERE id_sesion = $2
+            RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
+            [resumen, sessionId]
+        );
+        const row = result.rows[0];
+        return {
+            id: row.id_sesion,
+            estado: row.estado,
+            resumen: row.resumen,
+            fechaActualizacion: row.fechaActualizacion,
+        }
+    } catch (error) {
+        console.error('Error al registrar la atención de la sesión:', error);
+        throw error;
+    }
+}
+
 module.exports = {
-    getSesionesPendientesByTutorId
+    getSesionesPendientesByTutorId,
+    findSessionById,
+    attendSession
 }
