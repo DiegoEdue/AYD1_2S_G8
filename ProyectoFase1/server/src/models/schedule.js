@@ -1,6 +1,6 @@
 const pool = require('../config/db')
 
-const gethorarioByTutorId = async (id_Tutor) => {
+const findhorarioByTutorId = async (id_Tutor) => {
     const query = `
         SELECT id_tutor, hora_inicio_atencion, hora_fin_atencion
         FROM tutor
@@ -64,10 +64,10 @@ const upsert = async (id_Tutor, { dias, startTime, endTime }) => {
         client.release();
     }
 
-    return gethorarioByTutorId(id_Tutor);
+    return findhorarioByTutorId(id_Tutor);
 }
 
 module.exports = {
-    gethorarioByTutorId,
+    findhorarioByTutorId,
     upsert
 };
