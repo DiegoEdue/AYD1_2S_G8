@@ -1,5 +1,6 @@
 const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
+const { sendCancellationEmail } = require('../services/email')
 const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']; 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 
@@ -137,6 +138,15 @@ const cancelSession = async (req, res) => {
         
         let emailSent = false;
         try {
+            await sendCancellationEmail({
+                to: sesioninfo.correoEstudiante,
+                nombreTutor: sesioninfo.tutor,
+                nombreEstudiante: sesioninfo.estudiante,
+                fecha: sesioninfo.fecha,
+                hora: sesioninfo.hora,
+                materia: sesioninfo.materia,
+                motivo: sesioninfo.motivo,
+            });
             emailSent = true; 
         } catch (emailError) {
             console.error('Error al enviar el correo de notificación:', emailError);
@@ -159,5 +169,6 @@ module.exports = {
     getSchedule,
     upsertSchedule,
     getPendingSessions,
-    attendSession
+    attendSession,
+    cancelSession
 }
