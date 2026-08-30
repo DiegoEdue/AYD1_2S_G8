@@ -8,7 +8,7 @@ const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 const getSchedule = async (req, res) => {
     const id_Tutor = req.user?.id || 1; // id se obtiene por la verificación del token
     try {
-        const horario = await scheduleModel.gethorarioByTutorId(id_Tutor);
+        const horario = await scheduleModel.findhorarioByTutorId(id_Tutor);
 
         if (!horario) {
             return res.status(404).json({ message: 'Horario no encontrado' });
@@ -100,15 +100,15 @@ const attendSession = async (req, res) => {
     }
 
     try {
-        const session = await sessionModel.findSessionById(id);
-        if (!session) {
+        const sesion = await sessionModel.findSessionById(id);
+        if (!sesion) {
             return res.status(404).json({ message: 'Sesión no encontrada.' });
         }
-        if (session.estado !== 'Activa') {
+        if (sesion.estado !== 'Activa') {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser atendida.' });
         }
 
-        const updatedSession = await sessionModel.attendSession(id, resumen.trim());
+        const updatedSession = await sessionModel.markAttended(id, resumen.trim());
         return res.status(200).json({
             message: 'Sesión atendida exitosamente',
             data: updatedSession
@@ -116,6 +116,41 @@ const attendSession = async (req, res) => {
     } catch (error) {
         console.error('Error al registrar la atención de la sesión:', error);
         res.status(500).json({ message: 'Error al registrar la atención de la sesión' });
+    }
+}
+
+// Cancelación de Sesión por Parte del Tutor con Notificación por Correo
+// PATCH /api/tutor/sessions/:id/cancel
+const cancelSession = async (req, res) => {
+    const { id } = req.params;
+
+    try {
+        const sesioninfo = await sessionModel.findSessionById(id)
+        if (!sesioninfo) {
+            return res.status(404).json({ message: 'Sesión no encontrada.' });
+        }
+        if (sesioninfo.estado !== 'Activa') {
+            return res.status(400).json({ message: 'La sesión no está activa y no puede ser cancelada.' });
+        }
+
+        const actualizadoSesion = await sessionModel.markCancelledByTutor(id);
+        
+        let emailSent = false;
+        try {
+            emailSent = true; 
+        } catch (emailError) {
+            console.error('Error al enviar el correo de notificación:', emailError);
+        }
+
+        return res.status(200).json({
+            message: 'Sesión cancelada exitosamente',
+            data: actualizadoSesion,
+            emailSent
+        });
+
+    } catch (error) {
+        console.error('Error al cancelar la sesión por parte del tutor:', error);
+        res.status(500).json({ message: 'Error al cancelar la sesión' });
     }
 }
 

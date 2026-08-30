@@ -1,6 +1,5 @@
 const pool = require('../config/db')
 
-// este query se coloca porque hay 2 funciones que hacen lo mismo, y para evitar duplicar el query, se coloca aqui
 const QUERY_BASE = `
     SELECT 
         s.id_sesion,
@@ -35,6 +34,7 @@ function mapSessionRow(row) {
     }
 }
 
+// Obtiene todas las sesiones pendientes de un tutor por su ID
 const getSesionesPendientesByTutorId = async (id_Tutor) => {
 
     try {
@@ -52,14 +52,10 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
     }
 }
 
+// Busca una sesión por su ID
 const findSessionById = async (sessionId) => {
     try {
-        const result = await pool.query(
-            `${QUERY_BASE}
-            WHERE s.id_sesion = $1;
-            `, 
-            [sessionId]
-        );
+        const result = await pool.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
         if (result.rowCount === 0) return null;
         return mapSessionRow(result.rows[0]);
     } catch (error) {
@@ -68,7 +64,8 @@ const findSessionById = async (sessionId) => {
     }
 }
 
-const attendSession = async (sessionId, resumen) => {
+// Marca la sesión como atendida y actualiza el resumen
+const markAttended = async (sessionId, resumen) => {
     try {
         const result = await pool.query(
             `UPDATE sesion
@@ -90,8 +87,31 @@ const attendSession = async (sessionId, resumen) => {
     }
 }
 
+// Marca la sesión como cancelada por el tutor 
+const markCancelledByTutor = async (sessionId) => {
+    try {
+        const result = await pool.query(
+            `UPDATE sesion
+            SET estado = 'Cancelada_Tutor', fecha_actualizacion = NOW()
+            WHERE id_sesion = $1
+            RETURNING id_sesion, estado, fecha_actualizacion`,
+            [sessionId]
+        );
+        const row = result.rows[0];
+        return {
+            id: row.id_sesion,
+            estado: row.estado,
+            fechaCancelacion: row.fecha_actualizacion,
+        };
+    } catch (error) {
+        console.error('Error al cancelar la sesión por parte del tutor:', error);
+        throw error;
+    }
+}
+
 module.exports = {
     getSesionesPendientesByTutorId,
     findSessionById,
-    attendSession
+    markAttended,
+    markCancelledByTutor
 }
