@@ -1,8 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const { loginTutor, getProfile } = require('../controllers/tutor');
+const { verifyToken, isTutor } = require('../middlewares/auth');
 const tutorController = require('../controllers/tutor.controller');
 
-// se espera que el token del tutor
+// Ruta pública (HU-003)
+router.post('/login', loginTutor);
+
+// Ruta protegida de perfil de tutor
+router.get('/profile', verifyToken, isTutor, getProfile);
 
 // Configuración de Horarios de Atención del Tutor
 router.get('/schedule', tutorController.getSchedule);
