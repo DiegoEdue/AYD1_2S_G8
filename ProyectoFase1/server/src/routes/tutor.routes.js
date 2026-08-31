@@ -4,6 +4,9 @@ const { loginTutor, getProfile } = require('../controllers/tutor');
 const { verifyToken, isTutor } = require('../middlewares/auth');
 const tutorController = require('../controllers/tutor.controller');
 
+// Algunas rutas utilizan la autenticación de tutor
+router.use(verifyToken, isTutor);
+
 // Ruta pública (HU-003)
 router.post('/login', loginTutor);
 
