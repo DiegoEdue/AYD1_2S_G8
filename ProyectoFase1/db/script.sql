@@ -64,7 +64,30 @@ CREATE TABLE tutor (
                OR hora_fin_atencion > hora_inicio_atencion)
 );
 
--- 3) Tablas que dependen de tutor / materia
+-- 3) Tabla que depende de estudiante, tutor y administrador
+--    (registra las solicitudes de registro pendientes de aprobación)
+CREATE TABLE solicitud (
+    id                  INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_estudiante       INTEGER REFERENCES estudiante(id_estudiante)
+                        ON DELETE CASCADE ON UPDATE CASCADE,
+    id_tutor            INTEGER REFERENCES tutor(id_tutor)
+                        ON DELETE CASCADE ON UPDATE CASCADE,
+    admin_id            INTEGER REFERENCES administrador(id_administrador)
+                        ON DELETE SET NULL ON UPDATE CASCADE,
+    estado              VARCHAR(20) NOT NULL DEFAULT 'pendiente'
+                        CHECK (estado IN ('pendiente', 'aceptada', 'rechazada')),
+    tipo_usuario        VARCHAR(20) NOT NULL
+                        CHECK (tipo_usuario IN ('estudiante', 'tutor')),
+    fecha_solicitud     TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    fecha_procesado     TIMESTAMP,
+    motivo_rechazo      VARCHAR(255),
+    CONSTRAINT chk_solicitud_relacion CHECK (
+        (tipo_usuario = 'estudiante' AND id_estudiante IS NOT NULL AND id_tutor IS NULL) OR
+        (tipo_usuario = 'tutor' AND id_tutor IS NOT NULL AND id_estudiante IS NULL)
+    )
+);
+
+-- 4) Tablas que dependen de tutor / materia
 CREATE TABLE tutor_materia (
     id_tutor   INTEGER NOT NULL REFERENCES tutor(id_tutor)
                ON DELETE CASCADE ON UPDATE CASCADE,
@@ -82,7 +105,7 @@ CREATE TABLE tutor_dia_atencion (
         CHECK (dia_semana IN ('Lunes','Martes','Miercoles','Jueves','Viernes','Sabado','Domingo'))
 );
 
--- 4) Tabla que depende de estudiante, tutor y materia
+-- 5) Tabla que depende de estudiante, tutor y materia
 CREATE TABLE sesion (
     id_sesion           INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_estudiante       INTEGER      NOT NULL REFERENCES estudiante(id_estudiante)
@@ -104,7 +127,7 @@ CREATE TABLE sesion (
         CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
 );
 
--- 5) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
+-- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
 -- Un estudiante no puede tener dos sesiones activas con el mismo tutor
 CREATE UNIQUE INDEX uq_sesion_activa_est_tutor

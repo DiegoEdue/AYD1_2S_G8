@@ -1,9 +1,16 @@
 const express = require('express');
 const cors = require('cors');
 
+// Rutas de registro (develop)
+const registerStudent = require('./routes/registro.estudiante.routes');
+const registerTutor = require('./routes/registro.tutor.routes');
+
+// Rutas de autenticación y perfil (HU-003)
 const tutorRoutes = require('./routes/tutor.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const authRoutes = require('./routes/auth.routes');
+
+const db = require('./config/db');
 
 const app = express();
 
@@ -11,8 +18,6 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
-const db = require('./config/db');
 
 // Ruta base de prueba y diagnóstico de base de datos
 app.get('/api/health', async (req, res) => {
@@ -36,10 +41,11 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
-
-// Rutas de módulos
+// Rutas del sistema
+app.use('/api/student', registerStudent);
+app.use('/api/tutor', registerTutor);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/auth', authRoutes);
 
-module.exports = app;
+module.exports = app;
