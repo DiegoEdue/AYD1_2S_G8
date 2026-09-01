@@ -1,5 +1,6 @@
 const db = require('../config/db');
-const { sendApprovalNotification } = require('../utils/mailer');
+const { sendApprovalEmail } = require('../services/email');
+
 
 const getPendingStudents = async (req, res) => {
   try {
@@ -69,7 +70,8 @@ const approveStudent = async (req, res) => {
 
     const fullName = `${student.nombre} ${student.apellido}`;
 
-    sendApprovalNotification(student.correo, fullName, true);
+    sendApprovalEmail({ to: student.correo, name: fullName, approved: true }).catch(err => console.error('Error al enviar correo de aprobación:', err));
+
 
     return res.status(200).json({
       status: 'success',
@@ -136,7 +138,8 @@ const rejectStudent = async (req, res) => {
     const fullName = `${student.nombre} ${student.apellido}`;
 
     // Enviar correo de notificación
-    sendApprovalNotification(student.correo, fullName, false, motivo);
+    sendApprovalEmail({ to: student.correo, name: fullName, approved: false, reason: motivo }).catch(err => console.error('Error al enviar correo de rechazo:', err));
+
 
     return res.status(200).json({
       status: 'success',
