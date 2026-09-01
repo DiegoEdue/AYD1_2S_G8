@@ -13,11 +13,14 @@ const authRoutes = require('./routes/auth.routes');
 const db = require('./config/db');
 
 const app = express();
+const pool = require('./config/db')
 
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); 
+
+
 
 // Ruta base de prueba y diagnóstico de base de datos
 app.get('/api/health', async (req, res) => {
