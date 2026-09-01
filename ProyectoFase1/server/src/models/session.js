@@ -1,4 +1,4 @@
-const pool = require('../config/db')
+const db = require('../config/db')
 
 const QUERY_BASE = `
     SELECT 
@@ -15,7 +15,7 @@ const QUERY_BASE = `
         m.nombre AS materia
     FROM sesion s
     JOIN estudiante e ON s.id_estudiante = e.id_estudiante
-    JOIN tutor t ON s.id_sesion = t.id_tutor
+    JOIN tutor t ON s.id_tutor = t.id_tutor
     JOIN materia m ON s.id_materia = m.id_materia
 `;
 
@@ -36,9 +36,8 @@ function mapSessionRow(row) {
 
 // Obtiene todas las sesiones pendientes de un tutor por su ID
 const getSesionesPendientesByTutorId = async (id_Tutor) => {
-
     try {
-        const result = await pool.query(
+        const result = await db.query(
             `${QUERY_BASE}
             WHERE s.id_tutor = $1 AND s.estado = 'Activa'
             ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC;
@@ -55,7 +54,7 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
 // Busca una sesión por su ID
 const findSessionById = async (sessionId) => {
     try {
-        const result = await pool.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
+        const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
         if (result.rowCount === 0) return null;
         return mapSessionRow(result.rows[0]);
     } catch (error) {
@@ -67,7 +66,7 @@ const findSessionById = async (sessionId) => {
 // Marca la sesión como atendida y actualiza el resumen
 const markAttended = async (sessionId, resumen) => {
     try {
-        const result = await pool.query(
+        const result = await db.query(
             `UPDATE sesion
             SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
             WHERE id_sesion = $2
@@ -90,7 +89,7 @@ const markAttended = async (sessionId, resumen) => {
 // Marca la sesión como cancelada por el tutor 
 const markCancelledByTutor = async (sessionId) => {
     try {
-        const result = await pool.query(
+        const result = await db.query(
             `UPDATE sesion
             SET estado = 'Cancelada_Tutor', fecha_actualizacion = NOW()
             WHERE id_sesion = $1

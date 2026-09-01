@@ -1,24 +1,24 @@
-const pool = require('../config/db')
+const db = require('../config/db')
 
 const findhorarioByTutorId = async (id_Tutor) => {
-    const query = `
-        SELECT id_tutor, hora_inicio_atencion, hora_fin_atencion
+    const result = await db.query(
+        `SELECT id_tutor, hora_inicio_atencion, hora_fin_atencion
         FROM tutor
-        WHERE id_tutor = $1
-    `;
-
-    const result = await pool.query(query, [id_Tutor]);
+        WHERE id_tutor = $1`, 
+        [id_Tutor]
+    );
 
     if (result.rows.length === 0) return null;
 
     const { hora_inicio_atencion, hora_fin_atencion } = result.rows[0];
     if (!hora_inicio_atencion || !hora_fin_atencion) return null;
 
-    const diasResult = await pool.query(`
+    const diasResult = await db.query(`
         SELECT dia_semana
         FROM tutor_dia_atencion
-        WHERE id_tutor = $1
-    `, [id_Tutor]);
+        WHERE id_tutor = $1`, 
+        [id_Tutor]
+    );
     
     const dias = diasResult.rows.map(row => row.dia_semana);
 
@@ -31,7 +31,7 @@ const findhorarioByTutorId = async (id_Tutor) => {
 }
 
 const upsert = async (id_Tutor, { dias, startTime, endTime }) => {
-    const client = await pool.connect(); 
+    const client = await db.pool.connect(); // debemos de especificar que es de pool, ya que sql no tiene el
 
     try {
         await client.query('BEGIN');
