@@ -2,9 +2,9 @@ const jwt = require('jsonwebtoken');
 
 const JWT_SECRET = process.env.JWT_SECRET || 'educonnect_secret_key';
 
-
-// Middleware para verificar si la petición incluye un Token JWT válido.
-
+/**
+ * Middleware para verificar si la petición incluye un Token JWT válido.
+ */
 const verifyToken = (req, res, next) => {
   const authHeader = req.headers['authorization'] || req.headers['Authorization'];
 
@@ -31,7 +31,9 @@ const verifyToken = (req, res, next) => {
   }
 };
 
-
+/**
+ * Middleware para verificar que el usuario tenga rol de Tutor.
+ */
 const isTutor = (req, res, next) => {
   if (!req.user || req.user.rol !== 'tutor') {
     return res.status(403).json({
@@ -42,7 +44,9 @@ const isTutor = (req, res, next) => {
   next();
 };
 
-
+/**
+ * Middleware para verificar que el usuario tenga rol de Estudiante.
+ */
 const isEstudiante = (req, res, next) => {
   if (!req.user || req.user.rol !== 'estudiante') {
     return res.status(403).json({
@@ -53,6 +57,9 @@ const isEstudiante = (req, res, next) => {
   next();
 };
 
+/**
+ * Middleware para verificar que el usuario tenga rol de Administrador.
+ */
 const isAdmin = (req, res, next) => {
   if (!req.user || req.user.rol !== 'admin') {
     return res.status(403).json({
