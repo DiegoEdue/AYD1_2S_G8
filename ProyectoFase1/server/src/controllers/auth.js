@@ -2,10 +2,6 @@ const { loginEstudiante } = require('./estudiante');
 const { loginTutor } = require('./tutor');
 const db = require('../config/db');
 
-/**
- * Endpoint de Login Unificado (HU-003)
- * Busca el correo tanto en Estudiante como en Tutor.
- */
 const loginUnified = async (req, res) => {
   try {
     const { correo, password } = req.body || {};

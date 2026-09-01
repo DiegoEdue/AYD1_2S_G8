@@ -3,9 +3,7 @@ const { comparePassword } = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/auth');
 
-/**
- * Autenticación de Estudiante (HU-003)
- */
+
 const loginEstudiante = async (req, res) => {
   try {
     const { correo, password } = req.body || {};
@@ -102,9 +100,6 @@ const loginEstudiante = async (req, res) => {
   }
 };
 
-/**
- * Obtener perfil del estudiante autenticado (HU-024 / Auxiliar)
- */
 const getProfileEstudiante = async (req, res) => {
   try {
     const estudianteId = req.user.id;

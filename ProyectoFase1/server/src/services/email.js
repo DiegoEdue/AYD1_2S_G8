@@ -10,17 +10,6 @@ const transporter = nodemailer.createTransport({
     },
 });
 
-/**
- * 
- * @param {Object} params
- * @param {string} params.to - Correo del estudiante
- * @param {string} params.nombreTutor 
- * @param {string} params.nombreEstudiante 
- * @param {string} params.fecha - formato "YYYY-MM-DD"
- * @param {string} params.hora - formato "HH:MM"
- * @param {string} params.materia - Materia de la sesión
- * @param {string} params.motivo - Motivo de la cancelación
- */
 
 const sendCancellationEmail = async ({ to, nombreTutor, nombreEstudiante, fecha, hora, materia, motivo }) => {
     const html = `
@@ -45,9 +34,10 @@ const sendCancellationEmail = async ({ to, nombreTutor, nombreEstudiante, fecha,
     });
 };
 
+
 const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
     const subject = approved
-        ? '¡Tu cuenta en EduConnect ha sido Aprobada!'
+        ? 'Tu cuenta en EduConnect ha sido Aprobada'
         : 'Actualización sobre tu registro en EduConnect';
 
     const html = approved
@@ -79,4 +69,4 @@ const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
     });
 };
 
-module.exports = { sendCancellationEmail, sendApprovalEmail };
+module.exports = { sendCancellationEmail, sendApprovalEmail };
