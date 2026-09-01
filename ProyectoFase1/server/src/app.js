@@ -9,6 +9,7 @@ const registerTutor = require('./routes/registro.tutor.routes');
 const tutorRoutes = require('./routes/tutor.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const authRoutes = require('./routes/auth.routes');
+const adminRoutes = require('./routes/admin.routes');
 
 const db = require('./config/db');
 
@@ -47,5 +48,6 @@ app.use('/api/tutor', registerTutor);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
 
 module.exports = app;
