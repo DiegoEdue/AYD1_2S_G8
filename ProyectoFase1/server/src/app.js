@@ -1,11 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 
-// Rutas de registro (develop)
+
 const registerStudent = require('./routes/registro.estudiante.routes');
 const registerTutor = require('./routes/registro.tutor.routes');
 
-// Rutas de autenticación y perfil (HU-003)
+
 const tutorRoutes = require('./routes/tutor.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const authRoutes = require('./routes/auth.routes');
@@ -41,11 +41,16 @@ app.get('/api/health', async (req, res) => {
   }
 });
 
+
+const adminRoutes = require('./routes/admin.routes');
+
 // Rutas del sistema
 app.use('/api/student', registerStudent);
 app.use('/api/tutor', registerTutor);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+
 
 module.exports = app;
