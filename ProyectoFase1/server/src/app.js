@@ -56,4 +56,5 @@ app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
 app.use('/api/students', studentRoutes);
 
+
 module.exports = app;
