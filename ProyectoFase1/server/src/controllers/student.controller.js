@@ -20,7 +20,21 @@ const getTutorCatalog = async (req, res) => {
       ORDER BY t.nombre, t.apellido
     `;
 
-    return res.status(200).json({ success: true, data: result });
+    const excluded = await sql`
+      SELECT t.id_tutor, t.nombre, t.apellido, s.id_sesion, s.fecha_sesion, s.hora_sesion
+      FROM sesion s
+      JOIN tutor t ON s.id_tutor = t.id_tutor
+      WHERE s.id_estudiante = ${studentId} AND s.estado = 'Activa'
+    `;
+
+    return res.status(200).json({
+      success: true,
+      data: result,
+      tutores_con_sesion_pendiente: excluded,
+      message: excluded.length > 0
+        ? `Tienes ${excluded.length} tutor(es) con sesion pendiente que no aparecen en el catalogo`
+        : undefined,
+    });
   } catch (error) {
     console.error('Error al obtener catálogo de tutores:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -237,11 +251,32 @@ const searchTutors = async (req, res) => {
 
     const result = await sql.query(query, params);
 
+    const excluded = await sql`
+      SELECT t.id_tutor, t.nombre, t.apellido, s.id_sesion, s.fecha_sesion, s.hora_sesion
+      FROM sesion s
+      JOIN tutor t ON s.id_tutor = t.id_tutor
+      WHERE s.id_estudiante = ${studentId} AND s.estado = 'Activa'
+    `;
+
     if (result.rows.length === 0) {
-      return res.status(200).json({ success: true, data: [], message: 'No se encontraron tutores con los filtros aplicados' });
+      return res.status(200).json({
+        success: true,
+        data: [],
+        tutores_con_sesion_pendiente: excluded,
+        message: excluded.length > 0
+          ? `Tienes ${excluded.length} tutor(es) con sesion pendiente que no aparecen en el catalogo`
+          : 'No se encontraron tutores con los filtros aplicados',
+      });
     }
 
-    return res.status(200).json({ success: true, data: result.rows });
+    return res.status(200).json({
+      success: true,
+      data: result.rows,
+      tutores_con_sesion_pendiente: excluded,
+      message: excluded.length > 0
+        ? `Tienes ${excluded.length} tutor(es) con sesion pendiente que no aparecen en el catalogo`
+        : undefined,
+    });
   } catch (error) {
     console.error('Error al buscar tutores:', error.message);
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
@@ -275,5 +310,7 @@ const getActiveSessions = async (req, res) => {
     return res.status(500).json({ success: false, message: 'Error interno del servidor' });
   }
 };
+
+
 
 module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions };
