@@ -49,7 +49,6 @@ const getTutorAvailability = async (req, res) => {
     const diasAtencion = await sql`
       SELECT dia_semana FROM tutor_dia_atencion WHERE id_tutor = ${idTutor}
     `;
-
     const dias = diasAtencion.map(d => d.dia_semana);
 
     const diasMap = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miercoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sabado' };
@@ -190,4 +189,63 @@ const createSession = async (req, res) => {
   }
 };
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession };
+const searchTutors = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { materia, experienciaMin, sexo, edadMin, edadMax, universidad } = req.query;
+
+    let query = 'SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url, t.direccion_tutoria, t.hora_inicio_atencion, t.hora_fin_atencion, ARRAY_AGG(m.nombre) AS materias FROM tutor t JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor JOIN materia m ON tm.id_materia = m.id_materia WHERE t.estado_aprobacion = \'aprobado\' AND t.id_tutor NOT IN (SELECT s.id_tutor FROM sesion s WHERE s.id_estudiante = $1 AND s.estado = \'Activa\')';
+    let params = [studentId];
+    let paramIndex = 2;
+
+    if (materia) {
+      query += ` AND m.nombre ILIKE $${paramIndex}`;
+      params.push(`%${materia}%`);
+      paramIndex++;
+    }
+    if (sexo) {
+      query += ` AND t.genero = $${paramIndex}`;
+      params.push(sexo);
+      paramIndex++;
+    }
+    if (edadMin || edadMax) {
+      query += ` AND EXTRACT(YEAR FROM AGE(t.fecha_nacimiento))`;
+      if (edadMin) {
+        query += ` >= $${paramIndex}`;
+        params.push(parseInt(edadMin, 10));
+        paramIndex++;
+      }
+      if (edadMax) {
+        if (edadMin) query += ` AND `;
+        query += ` <= $${paramIndex}`;
+        params.push(parseInt(edadMax, 10));
+        paramIndex++;
+      }
+    }
+    if (universidad) {
+      query += ` AND t.universidad_graduacion ILIKE $${paramIndex}`;
+      params.push(`%${universidad}%`);
+      paramIndex++;
+    }
+    if (experienciaMin) {
+      query += ` AND (EXTRACT(YEAR FROM AGE(t.fecha_nacimiento)) + t.anio_inicio_tutorias) >= $${paramIndex}`;
+      params.push(parseInt(experienciaMin, 10));
+      paramIndex++;
+    }
+
+    query += ' GROUP BY t.id_tutor ORDER BY t.nombre, t.apellido';
+
+    const result = await sql.query(query, params);
+
+    if (result.rows.length === 0) {
+      return res.status(200).json({ success: true, data: [], message: 'No se encontraron tutores con los filtros aplicados' });
+    }
+
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Error al buscar tutores:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors };
