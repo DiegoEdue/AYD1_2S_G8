@@ -2,8 +2,8 @@
 INSERT INTO materia (nombre) VALUES ('Matemática Básica'), ('Programación I'), ('Física I');
 
 -- 2. Administrador (usuario predeterminado/semilla)
-INSERT INTO administrador (nombre_usuario, password_hash, password2_hash)
-VALUES ('admin', '<hash1>', '<hash2>');
+INSERT INTO administrador (nombre_usuario, password_hash)
+VALUES ('admin', '<hash>');
 
 -- 3. Estudiantes (pueden nacer con estado 'pendiente' y aprobado_por en NULL)
 INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono,

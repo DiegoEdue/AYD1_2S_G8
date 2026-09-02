@@ -6,10 +6,11 @@ CREATE TABLE materia (
 );
 
 CREATE TABLE administrador (
-    id_administrador INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    nombre_usuario   VARCHAR(50)  NOT NULL UNIQUE,
-    password_hash    VARCHAR(255) NOT NULL,
-    password2_hash   VARCHAR(255) NOT NULL
+    id_administrador  INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre_usuario    VARCHAR(50)  NOT NULL UNIQUE,
+    password_hash     VARCHAR(255) NOT NULL,
+    two_factor_secret VARCHAR(255) UNIQUE,
+    two_factor_enable BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
 -- 2) Tablas que dependen de administrador
