@@ -248,4 +248,32 @@ const searchTutors = async (req, res) => {
   }
 };
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors };
+const getActiveSessions = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    const result = await sql.query(
+      `SELECT s.id_sesion, s.fecha_sesion, s.hora_sesion, s.motivo,
+              t.id_tutor, t.nombre AS nombre_tutor, t.apellido AS apellido_tutor,
+              t.direccion_tutoria, t.foto_url,
+              m.id_materia, m.nombre AS nombre_materia
+       FROM sesion s
+       JOIN tutor t ON s.id_tutor = t.id_tutor
+       JOIN materia m ON s.id_materia = m.id_materia
+       WHERE s.id_estudiante = $1 AND s.estado = $2
+       ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC`,
+      [studentId, 'Activa']
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(200).json({ success: true, data: [], message: 'No tienes sesiones activas' });
+    }
+
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Error al listar sesiones activas:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions };
