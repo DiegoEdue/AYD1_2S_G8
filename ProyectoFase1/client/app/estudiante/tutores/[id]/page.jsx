@@ -14,6 +14,22 @@ import { tutoresMock } from "@/lib/mocks/data";
 
 const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
+const normalizarDia = (dia = "") => {
+    const map = {
+        Miercoles: "Miércoles",
+        Sabado: "Sábado",
+        "Miércoles": "Miércoles",
+        "Sábado": "Sábado",
+    };
+
+    return map[dia] || dia;
+};
+
+const obtenerDiaSemana = (fecha) => {
+    const valor = new Date(`${fecha}T12:00:00`);
+    return DIAS_SEMANA[(valor.getDay() + 6) % 7];
+};
+
 export default function DetalleTutorPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -34,10 +50,10 @@ export default function DetalleTutorPage() {
         return <p className="text-sm text-charcoal-light">Cargando información del tutor…</p>;
     }
 
-    const diaSeleccionado = fechaConsulta
-        ? DIAS_SEMANA[(new Date(fechaConsulta).getDay() + 6) % 7]
+    const diaSeleccionado = fechaConsulta ? obtenerDiaSemana(fechaConsulta) : null;
+    const tutorAtiendeEseDia = diaSeleccionado
+        ? tutor.dias.some((dia) => normalizarDia(dia) === normalizarDia(diaSeleccionado))
         : null;
-    const tutorAtiendeEseDia = diaSeleccionado ? tutor.dias.includes(diaSeleccionado) : null;
 
     function abrirModal() {
         setForm({ fecha: fechaConsulta || "", hora: "", materia: tutor.especialidad[0], motivo: "" });
@@ -51,8 +67,8 @@ export default function DetalleTutorPage() {
         setError("Completa fecha, hora y materia para continuar.");
         return;
         }
-        const dia = DIAS_SEMANA[(new Date(form.fecha).getDay() + 6) % 7];
-        if (!tutor.dias.includes(dia)) {
+        const dia = obtenerDiaSemana(form.fecha);
+        if (!tutor.dias.some((item) => normalizarDia(item) === normalizarDia(dia))) {
         setError(`${tutor.nombre} no atiende los días ${dia}. Elige otra fecha.`);
         return;
         }
