@@ -311,6 +311,54 @@ const getActiveSessions = async (req, res) => {
   }
 };
 
+const cancelSession = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { id } = req.params;
+
+    if (!id || isNaN(parseInt(id, 10))) {
+      return res.status(400).json({ success: false, message: 'ID de sesión inválido' });
+    }
+
+    const sesionId = parseInt(id, 10);
+
+    const check = await sql.query(
+      'SELECT id_sesion, id_estudiante, estado FROM sesion WHERE id_sesion = $1',
+      [sesionId]
+    );
+
+    if (check.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Sesión no encontrada' });
+    }
+
+    const sesion = check.rows[0];
+
+    if (sesion.id_estudiante !== studentId) {
+      return res.status(403).json({ success: false, message: 'No tienes permiso para cancelar esta sesión' });
+    }
+
+    if (sesion.estado !== 'Activa') {
+      return res.status(409).json({ success: false, message: `La sesión no se puede cancelar (estado actual: ${sesion.estado})` });
+    }
+
+    const update = await sql.query(
+      `UPDATE sesion
+       SET estado = 'Cancelada_Estudiante', fecha_actualizacion = NOW()
+       WHERE id_sesion = $1
+       RETURNING id_sesion, id_estudiante, id_tutor, id_materia, fecha_sesion, hora_sesion, motivo, estado, fecha_actualizacion`,
+      [sesionId]
+    );
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sesión cancelada correctamente',
+      data: update.rows[0],
+    });
+  } catch (error) {
+    console.error('Error al cancelar sesión:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
 
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions };
+module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions, cancelSession };
