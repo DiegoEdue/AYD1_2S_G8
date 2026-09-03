@@ -1,13 +1,72 @@
 const sql = require('../config/db');
 
+const getStudentSessionsByState = async (studentId, estados) => {
+  const result = await sql`
+    SELECT s.id_sesion, s.fecha_sesion AS fecha, s.hora_sesion AS hora, s.motivo, s.resumen, s.estado,
+           m.nombre AS materia, CONCAT(t.nombre, ' ', t.apellido) AS tutor,
+           t.correo AS correo_tutor
+    FROM sesion s
+    JOIN tutor t ON s.id_tutor = t.id_tutor
+    JOIN materia m ON s.id_materia = m.id_materia
+    WHERE s.id_estudiante = ${studentId}
+      AND s.estado = ANY(${estados})
+    ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC
+  `;
+
+  return result.map((row) => ({
+    id: row.id_sesion,
+    fecha: row.fecha ? new Date(`${row.fecha}T12:00:00`).toISOString().slice(0, 10) : null,
+    hora: row.hora ? row.hora.slice(0, 5) : null,
+    motivo: row.motivo,
+    resumen: row.resumen,
+    estado: row.estado,
+    materia: row.materia,
+    tutor: row.tutor,
+    correoTutor: row.correo_tutor,
+  }));
+};
+
+const normalizeDayName = (value = '') => {
+  const normalized = String(value).trim();
+  const map = {
+    Miercoles: 'Miércoles',
+    Sabado: 'Sábado',
+    Jueves: 'Jueves',
+    Lunes: 'Lunes',
+    Martes: 'Martes',
+    Viernes: 'Viernes',
+    Domingo: 'Domingo',
+    'Miércoles': 'Miércoles',
+    'Sábado': 'Sábado',
+  };
+
+  return map[normalized] || normalized;
+};
+
+const getWeekdayName = (dateString) => {
+  const fecha = new Date(`${dateString}T12:00:00`);
+  const diasMap = {
+    0: 'Domingo',
+    1: 'Lunes',
+    2: 'Martes',
+    3: 'Miércoles',
+    4: 'Jueves',
+    5: 'Viernes',
+    6: 'Sábado',
+  };
+
+  return diasMap[fecha.getDay()] || '';
+};
+
 const getTutorCatalog = async (req, res) => {
   try {
     const studentId = req.user.id;
 
     const result = await sql`
-      SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
-             t.direccion_tutoria, t.hora_inicio_atencion, t.hora_fin_atencion,
-             ARRAY_AGG(m.nombre) AS materias
+            SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
+              t.direccion_tutoria, t.hora_inicio_atencion, t.hora_fin_atencion,
+              ARRAY_AGG(m.nombre) AS materias,
+              ARRAY_AGG(json_build_object('id', m.id_materia, 'nombre', m.nombre)) AS materias_detalle
       FROM tutor t
       JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor
       JOIN materia m ON tm.id_materia = m.id_materia
@@ -50,13 +109,10 @@ const getTutorAvailability = async (req, res) => {
       SELECT dia_semana FROM tutor_dia_atencion WHERE id_tutor = ${idTutor}
     `;
 
-    const dias = diasAtencion.map(d => d.dia_semana);
+    const dias = diasAtencion.map(d => normalizeDayName(d.dia_semana));
+    const diaSemana = getWeekdayName(date);
 
-    const diasMap = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miercoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sabado' };
-    const fecha = new Date(date + 'T12:00:00');
-    const diaSemana = diasMap[fecha.getDay()];
-
-    if (!dias.includes(diaSemana)) {
+    if (!dias.some((dia) => dia === diaSemana)) {
       return res.status(200).json({
         success: true,
         data: {
@@ -108,6 +164,69 @@ const getTutorAvailability = async (req, res) => {
   }
 };
 
+const getActiveSessions = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const data = await getStudentSessionsByState(studentId, ['Activa']);
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error('Error al obtener sesiones activas del estudiante:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+const getSessionHistory = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const data = await getStudentSessionsByState(studentId, ['Atendida', 'Cancelada_Estudiante', 'Cancelada_Tutor']);
+
+    return res.status(200).json({ success: true, data });
+  } catch (error) {
+    console.error('Error al obtener historial de sesiones del estudiante:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+const cancelSession = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { id } = req.params;
+
+    const session = await sql`
+      SELECT s.*, CONCAT(t.nombre, ' ', t.apellido) AS tutor, e.correo AS correo_estudiante
+      FROM sesion s
+      JOIN tutor t ON s.id_tutor = t.id_tutor
+      JOIN estudiante e ON s.id_estudiante = e.id_estudiante
+      WHERE s.id_sesion = ${id} AND s.id_estudiante = ${studentId} AND s.estado = 'Activa'
+    `;
+
+    if (session.length === 0) {
+      return res.status(404).json({ success: false, message: 'Sesión no encontrada o no se puede cancelar.' });
+    }
+
+    const updated = await sql`
+      UPDATE sesion
+      SET estado = 'Cancelada_Estudiante', fecha_actualizacion = NOW()
+      WHERE id_sesion = ${id}
+      RETURNING id_sesion, estado, fecha_actualizacion
+    `;
+
+    return res.status(200).json({
+      success: true,
+      message: 'Sesión cancelada correctamente.',
+      data: {
+        id: updated[0].id_sesion,
+        estado: updated[0].estado,
+        fechaActualizacion: updated[0].fecha_actualizacion,
+      },
+    });
+  } catch (error) {
+    console.error('Error al cancelar la sesión del estudiante:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
 const createSession = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -133,12 +252,10 @@ const createSession = async (req, res) => {
     }
 
     const diasAtencion = await sql`SELECT dia_semana FROM tutor_dia_atencion WHERE id_tutor = ${idTutor}`;
-    const dias = diasAtencion.map(d => d.dia_semana);
-    const diasMap = { 0: 'Domingo', 1: 'Lunes', 2: 'Martes', 3: 'Miercoles', 4: 'Jueves', 5: 'Viernes', 6: 'Sabado' };
-    const fechaObj = new Date(fecha + 'T12:00:00');
-    const diaSemana = diasMap[fechaObj.getDay()];
+    const dias = diasAtencion.map(d => normalizeDayName(d.dia_semana));
+    const diaSemana = getWeekdayName(fecha);
 
-    if (!dias.includes(diaSemana)) {
+    if (!dias.some((dia) => dia === diaSemana)) {
       return res.status(400).json({ success: false, message: `El tutor no atiende los ${diaSemana}` });
     }
 
@@ -190,4 +307,11 @@ const createSession = async (req, res) => {
   }
 };
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession };
+module.exports = {
+  getTutorCatalog,
+  getTutorAvailability,
+  createSession,
+  getActiveSessions,
+  getSessionHistory,
+  cancelSession,
+};
