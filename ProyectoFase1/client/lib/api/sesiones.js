@@ -41,8 +41,8 @@ export async function cancelarSesionComoTutor(id) {
 }
 
 // --- Perfil (compartido estudiante/tutor) ---
-export async function obtenerPerfil() {
-  return apiFetch("/perfil");
+export async function obtenerPerfil(rol) {
+  return apiFetch(rol === "tutor" ? "/tutor/profile" : "/estudiante/profile");
 }
 
 export async function actualizarPerfil(datos) {
