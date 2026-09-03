@@ -9,10 +9,11 @@ import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
 
 export default function LoginPage() {
-    const { login } = useAuth();
+    const { login, loginComoAdmin } = useAuth();
     const { mostrarToast } = useToast();
     const router = useRouter();
 
+    const [rol, setRol] = useState("estudiante");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [errores, setErrores] = useState({});
@@ -21,8 +22,12 @@ export default function LoginPage() {
 
     function validar() {
         const e = {};
-        if (!email) e.email = "Ingresa tu correo electrónico.";
-        else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "El correo no tiene un formato válido.";
+        if (rol === "admin") {
+            if (!email.trim()) e.email = "Ingresa tu nombre de usuario.";
+        } else {
+            if (!email) e.email = "Ingresa tu correo electrónico.";
+            else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "El correo no tiene un formato válido.";
+        }
         if (!password) e.password = "Ingresa tu contraseña.";
         setErrores(e);
         return Object.keys(e).length === 0;
@@ -35,18 +40,32 @@ export default function LoginPage() {
 
         setCargando(true);
         try {
-        const resultado = await login({ email, password });
+            let resultado;
+            if (rol === "admin") {
+                resultado = await loginComoAdmin({ nombre_usuario: email.trim(), password });
+            } else {
+                resultado = await login({ email: email.trim(), password });
+            }
 
-        if (resultado.requiereSegundoFactor) {
-            router.push("/login/segundo-factor");
-            return;
-        }
+            if (resultado?.requiereSegundoFactor) {
+                sessionStorage.setItem(
+                    "educonnect_2fa",
+                    JSON.stringify({
+                        adminId: resultado.adminId,
+                        secret: resultado.secret,
+                        qr_code: resultado.qr_code,
+                        status: resultado.status,
+                    })
+                );
+                router.push("/login/segundo-factor");
+                return;
+            }
 
-        mostrarToast("Bienvenido a EduConnect.", "exito");
+            mostrarToast("Bienvenido a EduConnect.", "exito");
         } catch (err) {
-        setErrorGeneral(err.message);
+            setErrorGeneral(err.message);
         } finally {
-        setCargando(false);
+            setCargando(false);
         }
     }
 
@@ -59,6 +78,26 @@ export default function LoginPage() {
                 Inicia sesión para gestionar tus tutorías académicas.
             </p>
 
+            <div className="mt-5 flex rounded-full bg-paper p-1">
+                {[
+                    { valor: "estudiante", etiqueta: "Estudiante/Tutor" },
+                    { valor: "admin", etiqueta: "Administrador" },
+                ].map((item) => (
+                    <button
+                        key={item.valor}
+                        type="button"
+                        onClick={() => setRol(item.valor)}
+                        className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
+                            rol === item.valor
+                                ? "bg-charcoal text-white"
+                                : "text-charcoal-light hover:text-charcoal"
+                        }`}
+                    >
+                        {item.etiqueta}
+                    </button>
+                ))}
+            </div>
+
             {errorGeneral && (
                 <div
                 role="alert"
@@ -69,15 +108,20 @@ export default function LoginPage() {
             )}
 
             <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
-                <FormField label="Correo electrónico" name="email" required error={errores.email}>
+                <FormField
+                    label={rol === "admin" ? "Nombre de usuario" : "Correo electrónico"}
+                    name="email"
+                    required
+                    error={errores.email}
+                >
                 <input
                     id="email"
-                    type="email"
-                    autoComplete="email"
+                    type={rol === "admin" ? "text" : "email"}
+                    autoComplete={rol === "admin" ? "username" : "email"}
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     className={inputClass(!!errores.email)}
-                    placeholder="tucorreo@usac.edu.gt"
+                    placeholder={rol === "admin" ? "admin" : "tucorreo@usac.edu.gt"}
                 />
                 </FormField>
 
