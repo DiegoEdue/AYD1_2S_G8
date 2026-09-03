@@ -1,5 +1,4 @@
 const sql = require('../config/db');
-
 const getTutorCatalog = async (req, res) => {
   try {
     const studentId = req.user.id;
@@ -390,4 +389,175 @@ const getSessionHistory = async (req, res) => {
   }
 };
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions, cancelSession, getSessionHistory };
+const { comparePassword, hashPassword } = require('../utils/bcrypt');
+
+const getStudentProfile = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+
+    const result = await sql.query(
+      'SELECT id_estudiante, nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, estado_aprobacion, fecha_registro FROM estudiante WHERE id_estudiante = $1',
+      [studentId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      data: {
+        ...result.rows[0],
+        rol: 'estudiante',
+      },
+    });
+  } catch (error) {
+    console.error('Error en getStudentProfile:', error);
+    return res.status(500).json({ success: false, message: 'Error interno al obtener perfil del estudiante.' });
+  }
+};
+
+const validatePasswordComplexity = (password) => {
+  if (!password || password.length < 8) {
+    return { valid: false, message: 'La contraseña debe tener al menos 8 caracteres' };
+  }
+  if (!/[A-Z]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos una mayúscula' };
+  }
+  if (!/[a-z]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos una minúscula' };
+  }
+  if (!/[0-9]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos un número' };
+  }
+  if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
+    return { valid: false, message: 'La contraseña debe tener al menos un símbolo especial' };
+  }
+  return { valid: true };
+};
+
+const updateStudentProfile = async (req, res) => {
+  try {
+    const studentId = req.user.id;
+    const { nombre, apellido, genero, direccion, telefono, fecha_nacimiento, foto_url, password_actual, password_nueva } = req.body || {};
+
+    // Check if any data is provided for update
+    if (!nombre && !apellido && !genero && !direccion && !telefono && !fecha_nacimiento && !foto_url && !password_nueva) {
+      return res.status(400).json({
+        success: false,
+        message: 'No se proporcionaron datos para actualizar',
+      });
+    }
+
+    // Validate individual fields if provided
+    if (nombre !== undefined && (!nombre || typeof nombre !== 'string' || nombre.trim().length === 0)) {
+      return res.status(400).json({ success: false, message: 'El nombre no puede estar vacío' });
+    }
+    if (apellido !== undefined && (!apellido || typeof apellido !== 'string' || apellido.trim().length === 0)) {
+      return res.status(400).json({ success: false, message: 'El apellido no puede estar vacío' });
+    }
+    if (genero !== undefined && !['M', 'F'].includes(genero)) {
+      return res.status(400).json({ success: false, message: 'El género debe ser M o F' });
+    }
+    if (direccion !== undefined && (!direccion || typeof direccion !== 'string' || direccion.trim().length === 0)) {
+      return res.status(400).json({ success: false, message: 'La dirección no puede estar vacía' });
+    }
+    if (telefono !== undefined && (!telefono || typeof telefono !== 'string' || telefono.trim().length === 0)) {
+      return res.status(400).json({ success: false, message: 'El teléfono no puede estar vacío' });
+    }
+
+    // Handle password change if requested
+    if (password_nueva !== undefined) {
+      if (!password_actual) {
+        return res.status(400).json({ success: false, message: 'Debes proporcionar la contraseña actual para cambiar la contraseña' });
+      }
+
+      // Verify current password
+      const currentResult = await sql.query(
+        'SELECT password_hash FROM estudiante WHERE id_estudiante = $1',
+        [studentId]
+      );
+      
+      if (currentResult.rows.length === 0) {
+        return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+      }
+
+      const isValid = await comparePassword(password_actual, currentResult.rows[0].password_hash);
+      if (!isValid) {
+        return res.status(400).json({ success: false, message: 'La contraseña actual es incorrecta' });
+      }
+
+      // Validate new password complexity
+      const passwordCheck = validatePasswordComplexity(password_nueva);
+      if (!passwordCheck.valid) {
+        return res.status(400).json({ success: false, message: passwordCheck.message });
+      }
+    }
+
+    // Build dynamic update query
+    const updates = [];
+    const params = [];
+    let paramIndex = 1;
+
+    if (nombre !== undefined) { 
+      updates.push(`nombre = $${paramIndex++}`); 
+      params.push(nombre.trim()); 
+    }
+    if (apellido !== undefined) { 
+      updates.push(`apellido = $${paramIndex++}`); 
+      params.push(apellido.trim()); 
+    }
+    if (genero !== undefined) { 
+      updates.push(`genero = $${paramIndex++}`); 
+      params.push(genero); 
+    }
+    if (direccion !== undefined) { 
+      updates.push(`direccion = $${paramIndex++}`); 
+      params.push(direccion.trim()); 
+    }
+    if (telefono !== undefined) { 
+      updates.push(`telefono = $${paramIndex++}`); 
+      params.push(telefono.trim()); 
+    }
+    if (fecha_nacimiento !== undefined) { 
+      updates.push(`fecha_nacimiento = $${paramIndex++}`); 
+      params.push(fecha_nacimiento); 
+    }
+    if (foto_url !== undefined) { 
+      updates.push(`foto_url = $${paramIndex++}`); 
+      params.push(foto_url); 
+    }
+
+    // Handle password update
+    if (password_nueva !== undefined) {
+      updates.push(`password_hash = $${paramIndex++}`);
+      const hash = await hashPassword(password_nueva);
+      params.push(hash);
+    }
+
+    if (updates.length === 0) {
+      return res.status(400).json({ success: false, message: 'No se proporcionaron datos para actualizar' });
+    }
+
+    // Add studentId for WHERE clause
+    params.push(studentId);
+    const query = `UPDATE estudiante SET ${updates.join(', ')} WHERE id_estudiante = $${paramIndex} RETURNING id_estudiante, nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, estado_aprobacion, fecha_registro`;
+
+    const result = await sql.query(query, params);
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ success: false, message: 'Estudiante no encontrado' });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: 'Perfil actualizado correctamente',
+      data: { ...result.rows[0], rol: 'estudiante' },
+    });
+  } catch (error) {
+    console.error('Error al actualizar perfil de estudiante:', error);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions, cancelSession, getSessionHistory, getStudentProfile, updateStudentProfile };
