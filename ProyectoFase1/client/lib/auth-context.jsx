@@ -1,48 +1,89 @@
 "use client";
 
-import { createContext, useContext, useMemo, useState } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
-import { PREVIEW_ROL, RUTA_POR_ROL, USUARIOS_DEMO } from "@/lib/preview-config";
+import { login as loginApi, loginAdmin, verificarSegundoFactorAdmin, cerrarSesion } from "@/lib/api/auth";
+import { setToken } from "@/lib/api/client";
 
 const AuthContext = createContext(null);
 
+const rutasPorRol = {
+  estudiante: "/estudiante/tutores",
+  tutor: "/tutor/horarios",
+  admin: "/admin/solicitudes",
+};
+
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(USUARIOS_DEMO[PREVIEW_ROL]);
+  const [usuario, setUsuario] = useState(null);
   const router = useRouter();
+
+  useEffect(() => {
+    const stored = window.localStorage.getItem("educonnect_user");
+    if (stored) {
+      try {
+        setUsuario(JSON.parse(stored));
+      } catch {
+        window.localStorage.removeItem("educonnect_user");
+      }
+    }
+  }, []);
 
   function guardarUsuario(data) {
     setUsuario(data);
+    if (data) window.localStorage.setItem("educonnect_user", JSON.stringify(data));
+    else window.localStorage.removeItem("educonnect_user");
   }
 
-  async function login({ email }) {
-    await new Promise((r) => setTimeout(r, 350)); // simula latencia de red
+  async function login({ email, password }) {
+    const response = await loginApi({ email, password });
 
-    if (email.trim().toLowerCase() === USUARIOS_DEMO.administrador.correo) {
-      return { requiereSegundoFactor: true, sesionId: "demo-sesion-admin" };
+    if (response?.requiereSegundoFactor) {
+      return response;
     }
 
-    const usuarioDemo = USUARIOS_DEMO[PREVIEW_ROL];
-    guardarUsuario(usuarioDemo);
-    router.push(RUTA_POR_ROL[usuarioDemo.rol]);
-    return { usuario: usuarioDemo };
+    if (response?.usuario) {
+      guardarUsuario(response.usuario);
+      router.push(rutasPorRol[response.usuario.rol] || "/");
+    }
+
+    return response;
   }
 
-  async function completarSegundoFactorAdmin({ archivo }) {
-    await new Promise((r) => setTimeout(r, 350));
-    if (!archivo || archivo.name !== "auth2-ayd1.txt") {
-      throw new Error('El archivo debe llamarse exactamente "auth2-ayd1.txt".');
+  async function completarSegundoFactorAdmin({ adminId, token }) {
+    const response = await verificarSegundoFactorAdmin({ adminId, token });
+
+    if (response?.usuario) {
+      guardarUsuario(response.usuario);
+      router.push(rutasPorRol[response.usuario.rol] || "/");
     }
-    guardarUsuario(USUARIOS_DEMO.administrador);
-    router.push(RUTA_POR_ROL.administrador);
-    return USUARIOS_DEMO.administrador;
+
+    return response;
+  }
+
+  async function loginComoAdmin({ nombre_usuario, password }) {
+    const response = await loginAdmin({ nombre_usuario, password });
+
+    if (response?.requiereSegundoFactor) {
+      return response;
+    }
+
+    if (response?.usuario) {
+      guardarUsuario(response.usuario);
+      router.push(rutasPorRol[response.usuario.rol] || "/");
+    }
+
+    return response;
   }
 
   function logout() {
+    setToken(null);
+    guardarUsuario(null);
     router.push("/login");
+    cerrarSesion();
   }
 
   const value = useMemo(
-    () => ({ usuario, cargando: false, login, completarSegundoFactorAdmin, logout, guardarUsuario }),
+    () => ({ usuario, cargando: false, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario }),
     [usuario]
   );
 

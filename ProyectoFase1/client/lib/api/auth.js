@@ -3,46 +3,101 @@ import { apiFetch, setToken } from "./client";
 export async function login({ email, password }) {
   const data = await apiFetch("/auth/login", {
     method: "POST",
-    body: { email, password },
+    body: { correo: email, password },
   });
 
-  if (data.requiereSegundoFactor) {
-    return { requiereSegundoFactor: true, sesionId: data.sesionId };
+  if (data.status === "pending_2fa_setup" || data.status === "pending_2fa_verify") {
+    return {
+      requiereSegundoFactor: true,
+      adminId: data.adminId,
+      secret: data.secret,
+      qr_code: data.qr_code,
+      status: data.status,
+    };
   }
 
-  setToken(data.token);
-  return { usuario: data.usuario };
+  if (data.token) {
+    setToken(data.token);
+    return { usuario: data.user, token: data.token };
+  }
+
+  return data;
 }
 
-export async function verificarSegundoFactorAdmin({ sesionId, archivo }) {
-  const formData = new FormData();
-  formData.append("sesionId", sesionId);
-  formData.append("archivo", archivo);
+export async function loginAdmin({ nombre_usuario, password }) {
+  const data = await apiFetch("/admin/login", {
+    method: "POST",
+    body: { nombre_usuario, password },
+  });
 
-  const response = await fetch(
-    `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api"}/auth/admin/segundo-factor`,
-    { method: "POST", body: formData }
-  );
-
-  const data = await response.json().catch(() => null);
-
-  if (!response.ok) {
-    throw new Error(
-      data?.message ||
-        "No pudimos validar tu archivo de segunda autenticación. Verifica el archivo e inténtalo de nuevo."
-    );
+  if (data.status === "pending_2fa_setup" || data.status === "pending_2fa_verify") {
+    return {
+      requiereSegundoFactor: true,
+      adminId: data.adminId,
+      secret: data.secret,
+      qr_code: data.qr_code,
+      status: data.status,
+    };
   }
 
-  setToken(data.token);
-  return { usuario: data.usuario };
+  if (data.token) {
+    setToken(data.token);
+    return { usuario: data.user, token: data.token };
+  }
+
+  return data;
+}
+
+export async function verificarSegundoFactorAdmin({ adminId, token }) {
+  const data = await apiFetch("/admin/verify-2fa", {
+    method: "POST",
+    body: { adminId, token },
+  });
+
+  if (data.token) {
+    setToken(data.token);
+    return { usuario: data.user, token: data.token };
+  }
+
+  return data;
 }
 
 export async function registrarEstudiante(datos) {
-  return apiFetch("/auth/registro/estudiante", { method: "POST", body: datos });
+  const payload = {
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    carnet: datos.carnet,
+    genero: datos.genero,
+    direccion: datos.direccion,
+    telefono: datos.telefono,
+    fecha_nacimiento: datos.fechaNacimiento || datos.fecha_nacimiento,
+    foto_url: datos.foto || null,
+    correo: datos.correo,
+    password: datos.password,
+  };
+
+  return apiFetch("/student/register", { method: "POST", body: payload });
 }
 
 export async function registrarTutor(datos) {
-  return apiFetch("/auth/registro/tutor", { method: "POST", body: datos });
+  const payload = {
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    carnet_id: datos.carnet,
+    fecha_nacimiento: datos.fechaNacimiento || datos.fecha_nacimiento,
+    genero: datos.genero,
+    direccion: datos.direccion,
+    telefono: datos.telefono,
+    foto_url: datos.foto || null,
+    numero_identificacion_tutor: datos.numeroIdentificacion || datos.numero_identificacion_tutor,
+    direccion_tutoria: datos.direccionTutoria || datos.direccion_tutoria,
+    correo: datos.correo,
+    password: datos.password,
+    anio_inicio_tutorias: Number(datos.anioInicio || datos.anio_inicio_tutorias),
+    universidad_graduacion: datos.universidad || datos.universidad_graduacion,
+  };
+
+  return apiFetch("/tutor/registro", { method: "POST", body: payload });
 }
 
 export function cerrarSesion() {
