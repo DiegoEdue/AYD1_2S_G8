@@ -94,6 +94,39 @@ const loginEstudiante = async (req, res) => {
   }
 };
 
+const getProfileEstudiante = async (req, res) => {
+  try {
+    const estudianteId = req.user.id;
+
+    const result = await db.query(
+      'SELECT id_estudiante, nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, estado_aprobacion, fecha_registro FROM estudiante WHERE id_estudiante = $1',
+      [estudianteId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Estudiante no encontrado',
+      });
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        ...result.rows[0],
+        rol: 'estudiante',
+      },
+    });
+  } catch (error) {
+    console.error('Error en getProfileEstudiante:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al obtener perfil del estudiante.',
+    });
+  }
+};
+
 module.exports = {
   loginEstudiante,
+  getProfileEstudiante,
 };
