@@ -1,5 +1,6 @@
 # Product Backlog: Historias de Usuario - G8
 
+> [!IMPORTANT]
 > En este documento se presentan principalmente las historias de usuario del proyecto EduConnect. Las tareas derivadas de cada historia se gestionan en el tablero Kanban, mientras que la estimación, las dependencias y los criterios de aceptación se consultan en este Product Backlog.
 
 Este documento contiene el Product Backlog inicial para el proyecto **EduConnect**, correspondiente a la Fase 1. Las historias de usuario están priorizadas de mayor a menor valor para el usuario, contemplando dependencias entre módulos y listas para ser estimadas durante el primer y segundo Sprint Planning del equipo. Las prioridades están explicadas con cuadros de colores.
@@ -10,6 +11,7 @@ Este documento contiene el Product Backlog inicial para el proyecto **EduConnect
 
 ## Estimación del tamaño (T-Shirt Size)
 
+> [!INFO]
 > La estimación representa el tamaño relativo de una historia de usuario, no una cantidad exacta de horas. Las tallas permiten comparar la complejidad y comunicar el nivel de esfuerzo esperado.
 
 Para estimar el tamaño de las historias de usuario, se utilizó el método T-Shirt Size.
@@ -17,6 +19,7 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - Durante la Fase 1, cada miembro del equipo etiquetó las actividades del backlog de cada historia con las categorías XS, S, M, L y XL basándose en la complijidad, siendo la etiqueta "XS" la de menor complejidad y "XL" la de mayor complejidad. El tamaño final de cada historia se asignó basado en la opinión conjunta del equipo, consolidando las estimaciones individuales en una única etiqueta.
 - **Estimación de historias de usuario:** [Product Backlog](https://docs.google.com/spreadsheets/d/1hEPqb9qS5CAT-BEgUdgjGx3mxSTdZn1RbNl8HapYifc/edit?usp=sharing)
 
+> [!NOTE]
 > **XS:** Historia de baja complejidad y rápida implementación.  
 > **S:** Historia sencilla, con pocos criterios de aceptación.  
 > **M:** Historia de complejidad media, que puede requerir integración con otras funcionalidades.  
@@ -130,6 +133,12 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-005
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista "Ver Estudiantes Aprobados" con tabla de datos y botón de acción "Dar de baja".
+  - **Frontend:** Implementar modal de confirmación antes de ejecutar la baja del estudiante.
+  - **Backend:** Crear endpoint para listar los estudiantes en estado aprobado.
+  - **Backend:** Crear endpoint para actualizar el estado del estudiante a "Dado de baja".
+  - **Backend:** Configurar el envío automático de correo electrónico notificando al estudiante sobre la baja de su cuenta.
 
 ---
 
@@ -144,6 +153,12 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-006
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista "Ver Tutores Aprobados" con listado detallado y botón de acción "Dar de baja".
+  - **Frontend:** Diseñar el modal interactivo de confirmación previa a la baja.
+  - **Backend:** Crear endpoint para obtener todos los tutores aceptados en el sistema.
+  - **Backend:** Crear endpoint para inhabilitar al tutor.
+  - **Backend:** Integrar servicio de mensajería por correo electrónico para notificar la baja al tutor.
 
 ---
 
@@ -159,6 +174,12 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** S
 - **DEPENDENCIAS:** HU-004, HU-013, HU-014
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Diseñar el Dashboard de Reportes.
+  - **Frontend:** Implementar la vista del Reporte 1 (Tabla de tutores con más estudiantes atendidos).
+  - **Frontend:** Implementar la vista del Reporte 2 (Barras de materias con mayor demanda).
+  - **Backend:** Crear endpoint con consultas agregadas en tiempo real.
+  - **Backend:** Crear endpoint para obtener las estadísticas por materia.
 
 ---
 
@@ -189,6 +210,11 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** S
 - **DEPENDENCIAS:** HU-010, HU-018
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista de edición de horarios de atención para el tutor.
+  - **Frontend:** Diseñar componentes de alerta para informar conflictos con sesiones activas fuera del nuevo rango.
+  - **Backend:** Crear endpoint para procesar la actualización del horario.
+  - **Backend:** Implementar lógica de validación que consulte la BD en busca de sesiones activas que queden fuera del nuevo rango horario.
 
 ---
 
@@ -245,6 +271,10 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-013, HU-014, HU-020
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista "Historial de Sesiones" para el módulo Tutor.
+  - **Frontend:** Aplicar Etiquetas con colores diferenciados para indicar los distintos estados (Atendido, Cancelado por estudiante, Cancelado por tutor).
+  - **Backend:** Crear endpoint para obtener las sesiones no activas del tutor ordenadas cronológicamente.
 
 ---
 
@@ -259,6 +289,11 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** BAJA 🟦
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-003
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Diseñar el formulario de visualización y edición del perfil del tutor, bloqueando el campo del correo electrónico.
+  - **Frontend:** Implementar validaciones del lado del cliente para la edición de campos y cambio opcional de contraseña.
+  - **Backend:** Crear endpoint para cargar los datos del tutor.
+  - **Backend:** Crear endpoint para procesar las actualizaciones, encriptando la nueva contraseña si aplica.
 
 ---
 
@@ -289,6 +324,10 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** S
 - **DEPENDENCIAS:** HU-017
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Diseñar la barra y formulario de filtros avanzados en la página principal del estudiante.
+  - **Frontend:** Implementar el manejo del estado de los filtros y el despliegue del mensaje en caso de cero coincidencias.
+  - **Backend:** Crear endpoint aceptando parámetros query (`materia`, `experiencia`, `sexo`, `edad`, `universidad`).
 
 ---
 
@@ -332,6 +371,10 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-020
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista "Mis Sesiones Activas" mostrando las tarjetas de las tutorías agendadas sin atender.
+  - **Frontend:** Agregar el botón individual "Cancelar Sesión" en cada tarjeta del listado.
+  - **Backend:** Crear endpoint para obtener las tutorías pendientes del estudiante autenticado.
 
 ---
 
@@ -346,6 +389,10 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-021
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Diseñar el modal de confirmación emergente con la pregunta "¿Está seguro de cancelar la sesión?".
+  - **Frontend:** Actualización dinámica del estado del cliente para remover la sesión cancelada de la interfaz.
+  - **Backend:** Crear endpoint para actualizar el estado de la tutoría.
 
 ---
 
@@ -359,6 +406,10 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-013, HU-020, HU-022
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear la vista "Historial de Tutorías" en el portal del estudiante.
+  - **Frontend:** Renderizar el campo del resumen elaborado por el tutor únicamente cuando el estado de la sesión sea "Atendida".
+  - **Backend:** Crear endpoint para devolver las tutorías inactivas y finalizadas del estudiante.
 
 ---
 
@@ -373,6 +424,11 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** BAJA 🟦
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** HU-003
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Frontend:** Crear el formulario de consulta y actualización de datos personales del estudiante, deshabilitando el input de correo.
+  - **Frontend:** Agregar lógica para validación de formato de teléfono, dirección y requisitos de la nueva contraseña.
+  - **Backend:** Crear endpoint para cargar la información del usuario.
+  - **Backend:** Crear endpoint para persistir los cambios, encriptando la contraseña si se actualizó.
 
 ---
 
@@ -417,3 +473,11 @@ Para estimar el tamaño de las historias de usuario, se utilizó el método T-Sh
 - **PRIORIDAD:** MEDIA 🟨
 - **TAMAÑO:** M
 - **DEPENDENCIAS:** Avances progresivos en los Sprints 1 y 2
+- **TAREAS TÉCNICAS DERIVADAS:**
+  - **Documentación:** Redactar los Requerimientos Funcionales y No Funcionales en formato Markdown.
+  - **Documentación:** Elaborar los Diagramas de Casos de Uso (CUN Core, primera descomposición y expandidos) en herramienta UML.
+  - **Documentación:** Diseñar y exportar el Diagrama Entidad-Relación normalizado.
+  - **Documentación:** Elaborar el documento con los 6 principios de Jakob Nielsen seleccionados y sus evidencias visuales de aplicación.
+  - **Documentación:** Redactar el Manual Técnico y Manual de Usuario por rol con capturas de pantalla.
+  - **Documentación:** Estructurar el archivo `README.md` principal en la raíz con enlaces hacia todos los documentos.
+  - **Documentación:** Elaborar los documentas de scrumban que contengan las historias de usuario, product backlog y los links a las scrum meetings.

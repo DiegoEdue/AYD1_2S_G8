@@ -1,11 +1,13 @@
 # Sprint Backlog: Historias de Usuario - G8
 
+> [!INFO]
 > El Sprint Backlog contiene las historias de usuario seleccionadas para cada sprint. Las tareas derivadas de cada historia y el responsable de cada tarea se encuentran en las tarjetas del tablero Kanban. La estimación, las dependencias y los criterios de aceptación se encuentran en el Product Backlog.
 
 ## 1. Sprint 1
 
 ### 1.1 Sprint Goal
 
+> [!IMPORTANT]
 > Construir la base funcional del sistema mediante el registro y autenticación de estudiantes, tutores y administradores, junto con la gestión inicial de tutorías, horarios, navegación y base de datos.
 
 ### 1.2 Descripción del Sprint Backlog
@@ -36,6 +38,7 @@ En este sprint se seleccionaron todas las historias de usuario con **prioridad a
 
 ### 2.1 Sprint Goal
 
+> [!IMPORTANT]
 > Completar funcionalidades complementarias del sistema y avanzar en la calidad, documentación y disponibilidad de la solución mediante nuevas historias de usuario, pruebas y despliegue.
 
 ### 2.2 Descripción del Sprint Backlog
