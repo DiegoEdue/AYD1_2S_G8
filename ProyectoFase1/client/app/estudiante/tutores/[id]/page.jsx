@@ -8,9 +8,8 @@ import FormField, { inputClass } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/Toast";
 import Icon from "@/components/ui/Icon";
 import Avatar from "@/components/ui/Avatar";
-import { tutoresMock } from "@/lib/mocks/data";
-// import { obtenerTutor, obtenerHorarioTutor } from "@/lib/api/tutores";
-// import { programarSesion } from "@/lib/api/sesiones";
+import { listarTutores, obtenerHorarioTutor } from "@/lib/api/tutores";
+import { programarSesion } from "@/lib/api/sesiones";
 
 const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
@@ -41,22 +40,75 @@ export default function DetalleTutorPage() {
     const [form, setForm] = useState({ fecha: "", hora: "", materia: "", motivo: "" });
     const [error, setError] = useState("");
     const [enviando, setEnviando] = useState(false);
+    const [cargandoDisponibilidad, setCargandoDisponibilidad] = useState(false);
 
     useEffect(() => {
-        setTutor(tutoresMock.find((t) => t.id === id) || null);
+        async function cargarTutor() {
+            try {
+                const response = await listarTutores();
+                const encontrado = (response?.data || []).find(
+                    (item) => String(item.id_tutor ?? item.id) === String(id)
+                );
+                if (!encontrado) return;
+
+                const materias = Array.isArray(encontrado.materias_detalle)
+                    ? encontrado.materias_detalle
+                    : (encontrado.materias || []).map((nombre) => ({ id: null, nombre }));
+                setTutor({
+                    id: String(encontrado.id_tutor ?? encontrado.id),
+                    nombre: `${encontrado.nombre || ""} ${encontrado.apellido || ""}`.trim(),
+                    especialidad: materias.map((materia) => materia.nombre),
+                    materias,
+                    universidad: encontrado.universidad_graduacion || "USAC",
+                    direccion: encontrado.direccion_tutoria || "Online",
+                    foto: encontrado.foto_url || "",
+                    dias: [],
+                    horaInicio: encontrado.hora_inicio_atencion?.slice(0, 5) || "08:00",
+                    horaFin: encontrado.hora_fin_atencion?.slice(0, 5) || "18:00",
+                });
+            } catch {
+                setTutor(null);
+            }
+        }
+
+        cargarTutor();
     }, [id]);
+
+    useEffect(() => {
+        if (!id || !fechaConsulta) return;
+
+        async function cargarDisponibilidad() {
+            setCargandoDisponibilidad(true);
+            try {
+                const response = await obtenerHorarioTutor(id, fechaConsulta);
+                const disponibilidad = response?.data;
+                setTutor((actual) => actual && {
+                    ...actual,
+                    dias: disponibilidad?.dias_atencion || actual.dias,
+                    horaInicio: disponibilidad?.horario_general?.inicio?.slice(0, 5) || actual.horaInicio,
+                    horaFin: disponibilidad?.horario_general?.fin?.slice(0, 5) || actual.horaFin,
+                    disponible: disponibilidad?.disponible,
+                    franjas: disponibilidad?.franjas || [],
+                });
+            } catch {
+                setTutor((actual) => actual && { ...actual, disponible: false, franjas: [] });
+            } finally {
+                setCargandoDisponibilidad(false);
+            }
+        }
+
+        cargarDisponibilidad();
+    }, [id, fechaConsulta]);
 
     if (!tutor) {
         return <p className="text-sm text-charcoal-light">Cargando información del tutor…</p>;
     }
 
     const diaSeleccionado = fechaConsulta ? obtenerDiaSemana(fechaConsulta) : null;
-    const tutorAtiendeEseDia = diaSeleccionado
-        ? tutor.dias.some((dia) => normalizarDia(dia) === normalizarDia(diaSeleccionado))
-        : null;
+    const tutorAtiendeEseDia = diaSeleccionado ? tutor.disponible : null;
 
     function abrirModal() {
-        setForm({ fecha: fechaConsulta || "", hora: "", materia: tutor.especialidad[0], motivo: "" });
+        setForm({ fecha: fechaConsulta || "", hora: "", materia: tutor.materias[0]?.id || "", motivo: "" });
         setError("");
         setModalAbierto(true);
     }
@@ -79,7 +131,17 @@ export default function DetalleTutorPage() {
 
         setEnviando(true);
         try {
-        // await programarSesion({ tutorId: tutor.id, ...form });
+        if (!form.materia) {
+            setError("No se pudo identificar la materia seleccionada.");
+            return;
+        }
+        await programarSesion({
+            idTutor: Number(tutor.id),
+            idMateria: Number(form.materia),
+            fecha: form.fecha,
+            hora: form.hora,
+            motivo: form.motivo || "Tutoría académica",
+        });
         mostrarToast("Sesión programada correctamente.", "exito");
         setModalAbierto(false);
         router.push("/estudiante/sesiones/activas");
@@ -118,7 +180,7 @@ export default function DetalleTutorPage() {
             <Icon name="Ubicacion" className="h-4 w-4 shrink-0" /> {tutor.direccion}
             </p>
             <p className="flex items-center gap-1 text-sm text-charcoal-light">
-            <Icon name="Horarios" className="h-4 w-4 shrink-0" /> Atiende: {tutor.dias.join(", ")} de{" "}
+            <Icon name="Horarios" className="h-4 w-4 shrink-0" /> Atiende: {tutor.dias.join(", ") || "consulta una fecha"} de{" "}
             {tutor.horaInicio} a {tutor.horaFin}
             </p>
         </div>
@@ -144,7 +206,9 @@ export default function DetalleTutorPage() {
                     : "bg-crimson-light/40 text-crimson-dark"
                 }`}
             >
-                {tutorAtiendeEseDia
+                {cargandoDisponibilidad
+                ? "Consultando disponibilidad…"
+                : tutorAtiendeEseDia
                 ? `Disponible el ${diaSeleccionado} de ${tutor.horaInicio} a ${tutor.horaFin}.`
                 : `El tutor no atiende los días ${diaSeleccionado}. Elige otra fecha.`}
             </div>
@@ -201,9 +265,9 @@ export default function DetalleTutorPage() {
                 onChange={(e) => setForm((f) => ({ ...f, materia: e.target.value }))}
                 className={inputClass(false)}
                 >
-                {tutor.especialidad.map((m) => (
-                    <option key={m} value={m}>
-                    {m}
+                {tutor.materias.map((materia) => (
+                    <option key={materia.id || materia.nombre} value={materia.id || ""}>
+                    {materia.nombre}
                     </option>
                 ))}
                 </select>
