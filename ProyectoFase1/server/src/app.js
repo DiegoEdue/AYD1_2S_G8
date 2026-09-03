@@ -54,7 +54,7 @@ app.use('/api/tutor', tutorRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/students', studentRoutes);
+app.use('/api/student', studentRoutes);
 
 
 module.exports = app;
