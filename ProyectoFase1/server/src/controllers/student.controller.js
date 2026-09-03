@@ -360,5 +360,34 @@ const cancelSession = async (req, res) => {
   }
 };
 
+const getSessionHistory = async (req, res) => {
+  try {
+    const studentId = req.user.id;
 
-module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions, cancelSession };
+    const result = await sql.query(
+      `SELECT s.id_sesion, s.fecha_sesion, s.hora_sesion, s.motivo, s.resumen, s.estado,
+              s.fecha_creacion, s.fecha_actualizacion,
+              t.id_tutor, t.nombre AS nombre_tutor, t.apellido AS apellido_tutor,
+              t.direccion_tutoria, t.foto_url,
+              m.id_materia, m.nombre AS nombre_materia
+       FROM sesion s
+       JOIN tutor t ON s.id_tutor = t.id_tutor
+       JOIN materia m ON s.id_materia = m.id_materia
+       WHERE s.id_estudiante = $1
+         AND s.estado IN ('Atendida', 'Cancelada_Estudiante', 'Cancelada_Tutor')
+       ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC`,
+      [studentId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(200).json({ success: true, data: [], message: 'No tienes tutorías en tu historial' });
+    }
+
+    return res.status(200).json({ success: true, data: result.rows });
+  } catch (error) {
+    console.error('Error al obtener historial de sesiones:', error.message);
+    return res.status(500).json({ success: false, message: 'Error interno del servidor' });
+  }
+};
+
+module.exports = { getTutorCatalog, getTutorAvailability, createSession, searchTutors, getActiveSessions, cancelSession, getSessionHistory };
