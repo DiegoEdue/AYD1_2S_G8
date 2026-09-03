@@ -9,7 +9,7 @@ export default function AdminLayout({ children }) {
 
   if (cargando) return null;
 
-  if (usuario && usuario.rol !== "administrador") {
+  if (usuario && usuario.rol !== "admin") {
     return (
       <div className="flex min-h-screen items-center justify-center bg-paper px-6 text-center">
         <p className="text-sm text-charcoal-light">
