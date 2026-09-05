@@ -3,7 +3,7 @@ const sessionModel = require('../models/session')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
-const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']; 
+const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']; 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
@@ -96,6 +96,7 @@ const getPendingSessions = async (req, res) => {
 const attendSession = async (req, res) => {
     const { id } = req.params;
     const { resumen } = req.body;
+    const id_Tutor = req.user.id;
     
     if (!id) { 
         return res.status(400).json({ message: 'ID de sesión inválido.' }); 
@@ -106,7 +107,7 @@ const attendSession = async (req, res) => {
     }
 
     try {
-        const sesion = await sessionModel.findSessionById(id);
+        const sesion = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
         if (!sesion) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -114,7 +115,7 @@ const attendSession = async (req, res) => {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser atendida.', status: 'error' });
         }
 
-        const updatedSession = await sessionModel.markAttended(id, resumen.trim());
+        const updatedSession = await sessionModel.markAttended(id, id_Tutor, resumen.trim());
         return res.status(200).json({
             message: 'Sesión atendida exitosamente',
             status: 'success',
@@ -130,9 +131,10 @@ const attendSession = async (req, res) => {
 // PATCH /api/tutor/sessions/:id/cancel
 const cancelSession = async (req, res) => {
     const { id } = req.params;
+    const id_Tutor = req.user.id;
 
     try {
-        const sesioninfo = await sessionModel.findSessionById(id)
+        const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
         if (!sesioninfo) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -140,7 +142,7 @@ const cancelSession = async (req, res) => {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser cancelada.', status: 'error' });
         }
 
-        const actualizadoSesion = await sessionModel.markCancelledByTutor(id);
+        const actualizadoSesion = await sessionModel.markCancelledByTutor(id, id_Tutor);
         
         let emailSent = false;
         try {
