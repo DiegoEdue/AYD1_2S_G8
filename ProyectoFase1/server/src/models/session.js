@@ -3,7 +3,7 @@ const db = require('../config/db')
 const QUERY_BASE = `
     SELECT 
         s.id_sesion,
-        id_tutor,
+        s.id_tutor AS id_tutor,
         s.fecha_sesion AS fecha,
         s.hora_sesion AS hora,
         s.motivo,
@@ -38,33 +38,25 @@ function mapSessionRow(row) {
 
 // Obtiene todas las sesiones pendientes de un tutor por su ID
 const getSesionesPendientesByTutorId = async (id_Tutor) => {
-    try {
-        const result = await db.query(
-            `${QUERY_BASE}
-            WHERE s.id_tutor = $1 AND s.estado = 'Activa'
-            ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC;
-            `, 
-            [id_Tutor]
-        );
-        return result.rows.map(mapSessionRow);
-    } catch (error) {
-        console.error('Error al obtener las sesiones pendientes:', error);
-        throw error;
-    }
+    const result = await db.query(
+        `${QUERY_BASE}
+        WHERE s.id_tutor = $1 AND s.estado = 'Activa'
+        ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC;
+        `, 
+        [id_Tutor]
+    );
+    return result.rows.map(mapSessionRow);
 }
 
 // Busca una sesión por su ID y el tutor
 const findSessionByIdAndTutorId = async (sessionId, id_Tutor) => {
-    try {
-        const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1 AND s.id_tutor = $2`, [sessionId, id_Tutor]);
-        if (result.rowCount === 0) return null;
-        return mapSessionRow(result.rows[0]);
-    } catch (error) {
-        console.error('Error al buscar la sesión por ID:', error);
-        throw error;
-    }
+    const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1 AND s.id_tutor = $2`, [sessionId, id_Tutor]);
+    if (result.rowCount === 0) return null;
+    return mapSessionRow(result.rows[0]);
+
 }
 
+// Obtiene el historial de sesiones de un tutor por su ID
 const getHistorialByTutorId = async (id_Tutor) => {
     const result = await db.query(
         `${QUERY_BASE}
@@ -77,59 +69,46 @@ const getHistorialByTutorId = async (id_Tutor) => {
 
 // Busca una sesión por su ID
 const findSessionById = async (sessionId) => {
-    try {
-        const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
-        if (result.rowCount === 0) return null;
-        return mapSessionRow(result.rows[0]);
-    } catch (error) {
-        console.error('Error al buscar la sesión por ID:', error);
-        throw error;
-    }
+    const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
+    if (result.rowCount === 0) return null;
+    return mapSessionRow(result.rows[0]);
 }
 
 // Marca la sesión como atendida y actualiza el resumen
 const markAttended = async (sessionId, id_Tutor, resumen) => {
-    try {
-        const result = await db.query(
-            `UPDATE sesion
-            SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
-            WHERE id_sesion = $2 AND id_tutor = $3
-            RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
-            [resumen, sessionId, id_Tutor]
-        );
-        const row = result.rows[0];
-        return {
-            id: row.id_sesion,
-            estado: row.estado,
-            resumen: row.resumen,
-            fechaActualizacion: row.fechaActualizacion,
-        }
-    } catch (error) {
-        console.error('Error al registrar la atención de la sesión:', error);
-        throw error;
-    }
+    const result = await db.query(
+        `UPDATE sesion
+        SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
+        WHERE id_sesion = $2 AND id_tutor = $3
+        RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
+        [resumen, sessionId, id_Tutor]
+    );
+    if (result.rowCount === 0) return null; 
+    const row = result.rows[0];
+    return {
+        id: row.id_sesion,
+        estado: row.estado,
+        resumen: row.resumen,
+        fechaActualizacion: row.fechaActualizacion,
+    };
 }
 
 // Marca la sesión como cancelada por el tutor 
 const markCancelledByTutor = async (sessionId, id_Tutor) => {
-    try {
-        const result = await db.query(
-            `UPDATE sesion
-            SET estado = 'Cancelada_Tutor', fecha_actualizacion = NOW()
-            WHERE id_sesion = $1 AND id_tutor = $2
-            RETURNING id_sesion, estado, fecha_actualizacion`,
-            [sessionId, id_Tutor]
-        );
-        const row = result.rows[0];
-        return {
-            id: row.id_sesion,
-            estado: row.estado,
-            fechaCancelacion: row.fecha_actualizacion,
-        };
-    } catch (error) {
-        console.error('Error al cancelar la sesión por parte del tutor:', error);
-        throw error;
-    }
+    const result = await db.query(
+        `UPDATE sesion
+        SET estado = 'Cancelada_Tutor', fecha_actualizacion = NOW()
+        WHERE id_sesion = $1 AND id_tutor = $2
+        RETURNING id_sesion, estado, fecha_actualizacion`,
+        [sessionId, id_Tutor]
+    );
+    if (result.rowCount === 0) return null;
+    const row = result.rows[0];
+    return {
+        id: row.id_sesion,
+        estado: row.estado,
+        fechaCancelacion: row.fecha_actualizacion,
+    };
 }
 
 module.exports = {
