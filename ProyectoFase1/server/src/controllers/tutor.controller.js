@@ -38,7 +38,9 @@ const upsertSchedule = async (req, res) => {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.includes(d))){
+    const normalizedDias = Array.isArray(dias) ? dias.map((d) => dbDay(normalizeDay(d))) : [];
+
+    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.some((day) => normalizeDay(day) === normalizeDay(d)))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -52,7 +54,7 @@ const upsertSchedule = async (req, res) => {
     }
     
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias: normalizedDias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
@@ -88,6 +90,22 @@ const getPendingSessions = async (req, res) => {
     } catch (error) {
         console.error('Error al obtener las sesiones pendientes:', error);
         res.status(500).json({ message: 'Error al obtener las sesiones pendientes', status: "error" });
+    }
+}
+// Historial de Sesiones del Tutor (HU-015)
+// GET /api/tutor/sessions/history
+const getHistorySessions = async (req, res) => {
+    const id_Tutor = req.user.id;
+    try {
+        const sesiones = await sessionModel.getHistorialByTutorId(id_Tutor);
+        return res.status(200).json({
+            message: 'Historial de sesiones obtenido exitosamente',
+            status: 'success',
+            data: sesiones,
+        });
+    } catch (error) {
+        console.error('Error al obtener el historial de sesiones:', error);
+        return res.status(500).json({ message: 'Error al obtener el historial de sesiones', status: 'error' });
     }
 }
 
@@ -173,11 +191,11 @@ const cancelSession = async (req, res) => {
     }
 }
 
-
 module.exports = {
     getSchedule,
     upsertSchedule,
     getPendingSessions,
+    getHistorySessions,
     attendSession,
     cancelSession
 }

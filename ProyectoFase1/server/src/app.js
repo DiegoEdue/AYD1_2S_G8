@@ -10,17 +10,20 @@ const tutorRoutes = require('./routes/tutor.routes');
 const estudianteRoutes = require('./routes/estudiante.routes');
 const authRoutes = require('./routes/auth.routes');
 
+// Rutas de administración
+const adminRoutes = require('./routes/admin.routes');
+
+// Rutas de estudiantes (HU-017, HU-019, HU-020)
+const studentRoutes = require('./routes/student.routes');
+
 const db = require('./config/db');
 
 const app = express();
-const pool = require('./config/db')
 
 // Middlewares globales
 app.use(cors());
 app.use(express.json());
-app.use(express.urlencoded({ extended: true })); 
-
-
+app.use(express.urlencoded({ extended: true }));
 
 // Ruta base de prueba y diagnóstico de base de datos
 app.get('/api/health', async (req, res) => {
@@ -50,5 +53,8 @@ app.use('/api/tutor', registerTutor);
 app.use('/api/tutor', tutorRoutes);
 app.use('/api/estudiante', estudianteRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/student', studentRoutes);
+
 
 module.exports = app;

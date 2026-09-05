@@ -3,9 +3,6 @@ const { comparePassword } = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/auth');
 
-/**
- * Autenticación de Tutor (HU-003)
- */
 const loginTutor = async (req, res) => {
   try {
     const { correo, password } = req.body || {};
