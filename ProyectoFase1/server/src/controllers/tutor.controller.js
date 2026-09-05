@@ -38,9 +38,7 @@ const upsertSchedule = async (req, res) => {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    const normalizedDias = Array.isArray(dias) ? dias.map((d) => dbDay(normalizeDay(d))) : [];
-
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.some((day) => normalizeDay(day) === normalizeDay(d)))) {
+    if (!Array.isArray(dias) || dias.length === 0 || !dias.every(d => days.includes(d))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -54,7 +52,7 @@ const upsertSchedule = async (req, res) => {
     }
     
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias: normalizedDias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
@@ -93,15 +91,20 @@ const getPendingSessions = async (req, res) => {
     }
 }
 // Historial de Sesiones del Tutor (HU-015)
-// GET /api/tutor/sessions/history
+// GET /api/tutor/sessions/history?page=1&pageSize=20
 const getHistorySessions = async (req, res) => {
-    const id_Tutor = req.user.id;
+    const tutorId = req.user.id;
+    let page = parseInt(req.query.page, 10);
+    let limit = parseInt(req.query.pageSize, 10);
+    if (!Number.isInteger(page) || page < 1) page = 1;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) limit = 20;
     try {
-        const sesiones = await sessionModel.getHistorialByTutorId(id_Tutor);
+        const {sesiones, total} = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
         return res.status(200).json({
             message: 'Historial de sesiones obtenido exitosamente',
             status: 'success',
             data: sesiones,
+            total: total
         });
     } catch (error) {
         console.error('Error al obtener el historial de sesiones:', error);

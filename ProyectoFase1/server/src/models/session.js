@@ -1,6 +1,6 @@
 const db = require('../config/db')
 
-const QUERY_BASE = `
+const SELECT_BASE = `
     SELECT 
         s.id_sesion,
         s.id_tutor AS id_tutor,
@@ -39,7 +39,7 @@ function mapSessionRow(row) {
 // Obtiene todas las sesiones pendientes de un tutor por su ID
 const getSesionesPendientesByTutorId = async (id_Tutor) => {
     const result = await db.query(
-        `${QUERY_BASE}
+        `${SELECT_BASE}
         WHERE s.id_tutor = $1 AND s.estado = 'Activa'
         ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC;
         `, 
@@ -50,26 +50,46 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
 
 // Busca una sesión por su ID y el tutor
 const findSessionByIdAndTutorId = async (sessionId, id_Tutor) => {
-    const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1 AND s.id_tutor = $2`, [sessionId, id_Tutor]);
+    const result = await db.query(`${SELECT_BASE} WHERE s.id_sesion = $1 AND s.id_tutor = $2`, [sessionId, id_Tutor]);
     if (result.rowCount === 0) return null;
     return mapSessionRow(result.rows[0]);
 
 }
 
+// activa esquivale a sesion pendiente
+const ESTADOS_SESION = {
+    Atendida: 'Atendido',
+    Cancelada_Estudiante: 'Cancelado por estudiante',
+    Cancelada_Tutor: 'Cancelado por tutor',
+};
+
 // Obtiene el historial de sesiones de un tutor por su ID
-const getHistorialByTutorId = async (id_Tutor) => {
+// Es offset sera de ayuda para ordenar las sesiones de manera descendente y paginarlas si es necesario
+const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
+    const offset = (page - 1) * limit;
     const result = await db.query(
-        `${QUERY_BASE}
-        WHERE s.id_tutor = $1 AND s.estado IN ('Atendida', 'Cancelada_Estudiante', 'Cancelada_Tutor')
-        ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC;`,
-        [id_Tutor]
+        `${SELECT_BASE}
+        WHERE s.id_tutor = $1 AND s.estado <> 'Activa'
+        ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC;
+        LIMIT $2 OFFSET $3;`,
+        [id_Tutor, limit, offset]
     );
-    return result.rows.map(mapSessionRow);
+    //return result.rows.map(mapSessionRow);
+    const data = result.rows.map((row) => ({
+        id: row.id_sesion,
+        fecha: row.fecha.toISOString().slice(0, 10), // Formatear a "YYYY-MM-DD"
+        hora: row.hora.slice(0, 5), // Formatear a "HH:MM"
+        estudiante: row.nombre_estudiante,
+        estado: row.estado, // 'Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor'
+        estadoDescripcion: ESTADOS_SESION[row.estado] || row.estado, 
+    }));
+
+    return { data, total: result.row[0].length }; // devuelve las sess
 }
 
 // Busca una sesión por su ID
 const findSessionById = async (sessionId) => {
-    const result = await db.query(`${QUERY_BASE} WHERE s.id_sesion = $1`, [sessionId]);
+    const result = await db.query(`${SELECT_BASE} WHERE s.id_sesion = $1`, [sessionId]);
     if (result.rowCount === 0) return null;
     return mapSessionRow(result.rows[0]);
 }
@@ -113,7 +133,7 @@ const markCancelledByTutor = async (sessionId, id_Tutor) => {
 
 module.exports = {
     getSesionesPendientesByTutorId,
-    getHistorialByTutorId,
+    findHistoryByTutor,
     findSessionById,
     findSessionByIdAndTutorId,
     markAttended,

@@ -19,12 +19,14 @@ router.put('/schedule', tutorController.upsertSchedule);
 
 // Visualización de Sesiones Pendientes del Tutor
 router.get('/sessions/pending', tutorController.getPendingSessions);
-router.get('/sessions/history', tutorController.getHistorySessions);
 
 // Registro de Atención y Resumen de Tutoría
 router.patch('/sessions/:id/attend', tutorController.attendSession);
 
 // Cancelación de Sesión por Parte del Tutor con Notificación por Correo
 router.patch('/sessions/:id/cancel', tutorController.cancelSession);
+
+// Historial de Sesiones del Tutor
+router.get('/sessions/history', tutorController.getHistorySessions);
 
 module.exports = router;
