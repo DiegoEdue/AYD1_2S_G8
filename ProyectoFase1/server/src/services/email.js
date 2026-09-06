@@ -1,35 +1,25 @@
-const nodemailer = require('nodemailer');
+const { Resend } = require('resend')
+const resend = new Resend(process.env.RESEND_API_KEY); // Inicializa el cliente de Resend con la clave de API la api las pasare
 
-const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: process.env.SMTP_PORT || 587,
-    secure: false,
-    auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
-    },
-});
-
-
-const sendCancellationEmail = async ({ to, nombreTutor, nombreEstudiante, fecha, hora, materia, motivo }) => {
+const sendCancellationEmail = async ({ to, tutorName, studentName, date, time, subject, reason }) => {
     const html = `
-        <h2>Estimado estudiante ${nombreEstudiante},</h2>
+        <h2>Estimado estudiante ${studentName},</h2>
         <p>Lamentamos informarle que su sesión de tutoría ha sido cancelada por el tutor.</p>
         <ul>
-            <li><b>Tutor:</b> ${nombreTutor}</li>
-            <li><b>Materia:</b> ${materia}</li>
-            <li><b>Fecha:</b> ${fecha}</li>
-            <li><b>Hora:</b> ${hora}</li>
-            <li><b>Motivo reportado:</b> ${motivo}</li>
+            <li><b>Tutor:</b> ${tutorName}</li>
+            <li><b>Materia:</b> ${subject}</li>
+            <li><b>Fecha:</b> ${date}</li>
+            <li><b>Hora:</b> ${time}</li>
+            <li><b>Motivo reportado:</b> ${reason}</li>
         </ul>
         <p>Le ofrecemos una sincera disculpa por los inconvenientes causados.</p>
         <p>— Equipo EduConnect</p>
     `;
 
-    return await transporter.sendMail({
-        from: `"EduConnect" <${process.env.SMTP_USER}>`,
-        to,
-        subject: 'Notificación de Cancelación de Tutoría - EduConnect',
+    return await resend.emails.send({
+        from: `"EduConnect" <onboarding@resend.dev>`,
+        to: to, 
+        subject: `Notificación de Cancelación de Tutoría - ${subject}`,
         html,
     });
 };
@@ -61,8 +51,8 @@ const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
         </div>
         `;
 
-    return await transporter.sendMail({
-        from: `"EduConnect" <${process.env.SMTP_USER}>`,
+    return await resend.emails.send({
+        from: `"EduConnect" <onboarding@resend.dev>`,
         to,
         subject,
         html,
