@@ -59,4 +59,27 @@ const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
     });
 };
 
-module.exports = { sendCancellationEmail, sendApprovalEmail };
+const sendDeactivationEmail = async ({ to, name, role = 'usuario', reason = '' }) => {
+    const subject = 'Notificación sobre el estado de tu cuenta en EduConnect';
+
+    const html = `
+        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+            <h2 style="color: #d9534f;">Estimado/a ${name},</h2>
+            <p>Te informamos que tu cuenta de <strong>${role}</strong> en la plataforma <strong>EduConnect</strong> ha sido <strong>DADA DE BAJA</strong> por el equipo administrativo.</p>
+            ${reason ? `<p><b>Motivo especificado:</b> ${reason}</p>` : ''}
+            <p>A partir de este momento, el acceso a tu cuenta se encuentra suspendido. Si consideras que ha sido un error o deseas solicitar aclaraciones, ponte en contacto con la administración.</p>
+            <hr />
+            <p style="font-size: 12px; color: #777;">— Equipo EduConnect</p>
+        </div>
+    `;
+
+    return await resend.emails.send({
+        from: `"EduConnect" <onboarding@resend.dev>`,
+        to,
+        subject,
+        html,
+    });
+};
+
+module.exports = { sendCancellationEmail, sendApprovalEmail, sendDeactivationEmail };
+

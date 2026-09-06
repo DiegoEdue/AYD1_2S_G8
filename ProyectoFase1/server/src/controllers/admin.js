@@ -3,7 +3,7 @@ const { comparePassword } = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/auth');
 const db = require('../config/db');
-const { sendApprovalEmail } = require('../services/email');
+const { sendApprovalEmail, sendDeactivationEmail } = require('../services/email');
 const {
   generateSecret,
   encryptSecret,
@@ -12,12 +12,12 @@ const {
   verifyTotp,
 } = require('../utils/twoFactor');
 
-//Controllador para aprobar, rechazar y listar estudiantes pendientes de aprobación por el administrador.
+// Controlador para aprobar, rechazar y listar estudiantes pendientes de aprobación por el administrador.
 
 const getPendingStudents = async (req, res) => {
   try {
-        const result = await db.query(
-          `SELECT e.id_estudiante, NULL AS id_tutor, e.nombre, e.apellido, e.carnet,
+    const result = await db.query(
+      `SELECT e.id_estudiante, NULL AS id_tutor, e.nombre, e.apellido, e.carnet,
         NULL AS carnet_id, e.genero, e.correo, e.estado_aprobacion,
         'estudiante' AS tipo_usuario, NULL AS especialidad, e.fecha_registro
       FROM estudiante e
@@ -31,7 +31,7 @@ const getPendingStudents = async (req, res) => {
       JOIN solicitud s ON s.id_tutor = t.id_tutor
       WHERE t.estado_aprobacion = 'pendiente' AND s.estado = 'pendiente'
       ORDER BY fecha_registro ASC`
-        );
+    );
 
     return res.status(200).json({
       status: 'success',
@@ -46,7 +46,6 @@ const getPendingStudents = async (req, res) => {
     });
   }
 };
-
 
 const approveStudent = async (req, res) => {
   try {
@@ -94,7 +93,6 @@ const approveStudent = async (req, res) => {
 
     const student = studentRes.rows[0];
 
-    // Actualizar estado en la tabla estudiante
     await db.query(
       `UPDATE estudiante 
        SET estado_aprobacion = 'aprobado' 
@@ -102,7 +100,6 @@ const approveStudent = async (req, res) => {
       [id]
     );
 
-    // Actualizar estado en la tabla solicitud (si existe)
     await db.query(
       `UPDATE solicitud 
        SET estado = 'aceptada', fecha_procesado = CURRENT_TIMESTAMP 
@@ -113,7 +110,6 @@ const approveStudent = async (req, res) => {
     const fullName = `${student.nombre} ${student.apellido}`;
 
     sendApprovalEmail({ to: student.correo, name: fullName, approved: true }).catch(err => console.error('Error al enviar correo de aprobación:', err));
-
 
     return res.status(200).json({
       status: 'success',
@@ -180,7 +176,6 @@ const rejectStudent = async (req, res) => {
 
     const student = studentRes.rows[0];
 
-    // Actualizar estado en la tabla estudiante
     await db.query(
       `UPDATE estudiante 
        SET estado_aprobacion = 'rechazado' 
@@ -188,7 +183,6 @@ const rejectStudent = async (req, res) => {
       [id]
     );
 
-    // Actualizar estado en la tabla solicitud (si existe)
     await db.query(
       `UPDATE solicitud 
        SET estado = 'rechazada', fecha_procesado = CURRENT_TIMESTAMP, motivo_rechazo = $2 
@@ -198,9 +192,7 @@ const rejectStudent = async (req, res) => {
 
     const fullName = `${student.nombre} ${student.apellido}`;
 
-    // Enviar correo de notificación
     sendApprovalEmail({ to: student.correo, name: fullName, approved: false, reason: motivo }).catch(err => console.error('Error al enviar correo de rechazo:', err));
-
 
     return res.status(200).json({
       status: 'success',
@@ -222,21 +214,10 @@ const rejectStudent = async (req, res) => {
   }
 };
 
-
-
-//Controllador para el login del administrador con soporte de doble autenticación (2FA) y verificación del código TOTP.
+// Controlador para el login del administrador con soporte de doble autenticación (2FA) y verificación del código TOTP.
 
 /**
  * Login del Administrador con soporte de Doble Autenticación (2FA).
- *
- * Flujo:
- *  - Si el admin NO tiene 2FA habilitado (primer login):
- *      valida credenciales, genera un secreto TOTP, lo encripta y lo guarda,
- *      y devuelve el QR + secreto para que configure su app autenticadora.
- *      NO emite token todavía.
- *  - Si el admin YA tiene 2FA habilitado:
- *      valida credenciales y devuelve pending_2fa_verify (sin token);
- *      el código TOTP se valida en /verify-2fa.
  */
 const loginAdmin = async (req, res) => {
   try {
@@ -310,11 +291,8 @@ const loginAdmin = async (req, res) => {
   }
 };
 
-
 /**
  * Verificación del código TOTP del Administrador.
- * Si era la primera configuración, habilita definitivamente el 2FA.
- * Al validar, emite el token JWT con rol 'admin'.
  */
 const verify2fa = async (req, res) => {
   try {
@@ -400,8 +378,6 @@ const verify2fa = async (req, res) => {
   }
 };
 
-
-
 /**
  * Obtener perfil del administrador autenticado.
  */
@@ -466,24 +442,190 @@ const getUsers = async (req, res) => {
 };
 
 const deactivateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rol } = req.body || {};
-    const tabla = rol === 'tutor' ? 'tutor' : rol === 'estudiante' ? 'estudiante' : null;
-    const columna = rol === 'tutor' ? 'id_tutor' : 'id_estudiante';
-    if (!tabla) return res.status(400).json({ status: 'error', message: 'Rol inválido.' });
+  const { rol } = req.body || {};
+  if (rol === 'tutor') {
+    return deactivateTutor(req, res);
+  }
+  if (rol === 'estudiante') {
+    return deactivateStudent(req, res);
+  }
+  return res.status(400).json({ status: 'error', message: 'Rol inválido.' });
+};
 
+const getApprovedStudents = async (req, res) => {
+  try {
     const result = await db.query(
-      `UPDATE ${tabla} SET estado_aprobacion = 'baja' WHERE ${columna} = $1 AND estado_aprobacion = 'aprobado' RETURNING ${columna} AS id`,
-      [id]
+      `SELECT id_estudiante, nombre, apellido, carnet, genero, direccion, telefono, 
+              fecha_nacimiento, foto_url, correo, estado_aprobacion, fecha_registro 
+       FROM estudiante 
+       WHERE estado_aprobacion = 'aprobado' 
+       ORDER BY nombre ASC, apellido ASC`
     );
-    if (result.rows.length === 0) return res.status(404).json({ status: 'error', message: 'Usuario no encontrado o ya está dado de baja.' });
-    return res.status(200).json({ status: 'success', message: 'Usuario dado de baja correctamente.', data: result.rows[0] });
+
+    return res.status(200).json({
+      status: 'success',
+      count: result.rows.length,
+      data: result.rows,
+    });
   } catch (error) {
-    console.error('Error en deactivateUser:', error);
-    return res.status(500).json({ status: 'error', message: 'Error interno al dar de baja al usuario.' });
+    console.error('Error en getApprovedStudents:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno del servidor al consultar estudiantes aprobados.',
+    });
   }
 };
+
+const deactivateStudent = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body || {};
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del estudiante.',
+      });
+    }
+
+    // 1. Obtener datos del estudiante antes de eliminar
+    const studentRes = await db.query(
+      'SELECT id_estudiante, nombre, apellido, correo FROM estudiante WHERE id_estudiante = $1',
+      [id]
+    );
+
+    if (studentRes.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Estudiante no encontrado.',
+      });
+    }
+
+    const student = studentRes.rows[0];
+    const fullName = `${student.nombre} ${student.apellido}`;
+
+    // 2. Eliminar referencias y registros asociados al estudiante
+    await db.query('DELETE FROM sesion WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM solicitud WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM estudiante WHERE id_estudiante = $1', [id]);
+
+    // 3. Enviar correo de notificación de baja/eliminación
+    sendDeactivationEmail({
+      to: student.correo,
+      name: fullName,
+      role: 'Estudiante',
+      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
+    }).catch(err => console.error('Error al enviar correo de baja de estudiante:', err));
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Estudiante dado de baja y eliminado exitosamente de la base de datos.',
+      data: {
+        id_estudiante: parseInt(id, 10),
+        nombre: fullName,
+        correo: student.correo,
+        estado_aprobacion: 'baja',
+        motivo: motivo || 'No especificado',
+      },
+    });
+  } catch (error) {
+    console.error('Error en deactivateStudent:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al dar de baja al estudiante.',
+    });
+  }
+};
+
+const getApprovedTutors = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT id_tutor, nombre, apellido, carnet_id, numero_identificacion_tutor, genero, 
+              direccion, telefono, fecha_nacimiento, foto_url, correo, direccion_tutoria, 
+              anio_inicio_tutorias, universidad_graduacion, estado_aprobacion, 
+              hora_inicio_atencion, hora_fin_atencion, fecha_registro 
+       FROM tutor 
+       WHERE estado_aprobacion = 'aprobado' 
+       ORDER BY nombre ASC, apellido ASC`
+    );
+
+    return res.status(200).json({
+      status: 'success',
+      count: result.rows.length,
+      data: result.rows,
+    });
+  } catch (error) {
+    console.error('Error en getApprovedTutors:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno del servidor al consultar tutores aprobados.',
+    });
+  }
+};
+
+const deactivateTutor = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { motivo } = req.body || {};
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del tutor.',
+      });
+    }
+
+    // 1. Obtener datos del tutor antes de eliminar
+    const tutorRes = await db.query(
+      'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1',
+      [id]
+    );
+
+    if (tutorRes.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Tutor no encontrado.',
+      });
+    }
+
+    const tutor = tutorRes.rows[0];
+    const fullName = `${tutor.nombre} ${tutor.apellido}`;
+
+    // 2. Eliminar referencias y registros asociados al tutor
+    await db.query('DELETE FROM sesion WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor_materia WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor_dia_atencion WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM solicitud WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor WHERE id_tutor = $1', [id]);
+
+    // 3. Enviar correo de notificación de baja/eliminación
+    sendDeactivationEmail({
+      to: tutor.correo,
+      name: fullName,
+      role: 'Tutor',
+      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
+    }).catch(err => console.error('Error al enviar correo de baja de tutor:', err));
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Tutor dado de baja y eliminado exitosamente de la base de datos.',
+      data: {
+        id_tutor: parseInt(id, 10),
+        nombre: fullName,
+        correo: tutor.correo,
+        estado_aprobacion: 'baja',
+        motivo: motivo || 'No especificado',
+      },
+    });
+  } catch (error) {
+    console.error('Error en deactivateTutor:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al dar de baja al tutor.',
+    });
+  }
+};
+
 
 const getReports = async (req, res) => {
   try {
@@ -513,5 +655,9 @@ module.exports = {
   getProfileAdmin,
   getUsers,
   deactivateUser,
+  getApprovedStudents,
+  deactivateStudent,
+  getApprovedTutors,
+  deactivateTutor,
   getReports,
 };
