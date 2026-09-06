@@ -5,8 +5,8 @@ const transporter = nodemailer.createTransport({
     port: process.env.SMTP_PORT || 587,
     secure: false,
     auth: {
-        user: process.env.SMTP_USER || 'educonnectcompany@gmail.com',
-        pass: process.env.SMTP_PASS || 'tiwxlhlioromehdg',
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS,
     },
 });
 
@@ -62,7 +62,7 @@ const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
         `;
 
     return await transporter.sendMail({
-        from: `"EduConnect" <${process.env.SMTP_USER || 'educonnectcompany@gmail.com'}>`,
+        from: `"EduConnect" <${process.env.SMTP_USER}>`,
         to,
         subject,
         html,

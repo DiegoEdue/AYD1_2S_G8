@@ -51,6 +51,25 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
     }
 }
 
+const getHistorialByTutorId = async (id_Tutor) => {
+    const result = await db.query(
+        `${QUERY_BASE}
+        WHERE s.id_tutor = $1 AND s.estado IN ('Atendida', 'Cancelada_Estudiante', 'Cancelada_Tutor')
+        ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC;`,
+        [id_Tutor]
+    );
+    return result.rows.map(mapSessionRow);
+}
+
+const findSessionByIdAndTutor = async (sessionId, tutorId) => {
+    const result = await db.query(
+        `${QUERY_BASE} WHERE s.id_sesion = $1 AND s.id_tutor = $2`,
+        [sessionId, tutorId]
+    );
+    if (result.rowCount === 0) return null;
+    return mapSessionRow(result.rows[0]);
+}
+
 // Busca una sesión por su ID
 const findSessionById = async (sessionId) => {
     try {
@@ -110,6 +129,8 @@ const markCancelledByTutor = async (sessionId) => {
 
 module.exports = {
     getSesionesPendientesByTutorId,
+    getHistorialByTutorId,
+    findSessionByIdAndTutor,
     findSessionById,
     markAttended,
     markCancelledByTutor

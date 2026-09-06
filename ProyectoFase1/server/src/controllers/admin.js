@@ -214,6 +214,11 @@ const rejectStudent = async (req, res) => {
   }
 };
 
+// Controlador para el login del administrador con soporte de doble autenticación (2FA) y verificación del código TOTP.
+
+/**
+ * Login del Administrador con soporte de Doble Autenticación (2FA).
+ */
 const loginAdmin = async (req, res) => {
   try {
     const { nombre_usuario, password } = req.body || {};
@@ -247,6 +252,7 @@ const loginAdmin = async (req, res) => {
       });
     }
 
+    // Caso A: 2FA NO habilitado aún -> setup del secreto TOTP
     if (!admin.two_factor_enable) {
       const secret = generateSecret();
       const encrypted = encryptSecret(secret);
@@ -270,6 +276,7 @@ const loginAdmin = async (req, res) => {
       });
     }
 
+    // Caso B: 2FA YA habilitado -> pedir el código TOTP
     return res.status(200).json({
       status: 'pending_2fa_verify',
       message: 'Ingrese el código de su aplicación autenticadora.',
@@ -284,6 +291,9 @@ const loginAdmin = async (req, res) => {
   }
 };
 
+/**
+ * Verificación del código TOTP del Administrador.
+ */
 const verify2fa = async (req, res) => {
   try {
     const { adminId, token } = req.body || {};
@@ -326,6 +336,7 @@ const verify2fa = async (req, res) => {
       });
     }
 
+    // Si estaba en setup inicial, habilitar el 2FA definitivamente
     if (!admin.two_factor_enable) {
       await sql`
         UPDATE administrador SET two_factor_enable = TRUE
@@ -367,6 +378,9 @@ const verify2fa = async (req, res) => {
   }
 };
 
+/**
+ * Obtener perfil del administrador autenticado.
+ */
 const getProfileAdmin = async (req, res) => {
   try {
     const adminId = req.user.id;

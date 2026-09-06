@@ -49,4 +49,3 @@ sql.query = (text, params) => pool.query(text, params);
 sql.pool = pool;
 
 module.exports = sql;
-

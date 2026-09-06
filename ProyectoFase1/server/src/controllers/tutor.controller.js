@@ -3,7 +3,25 @@ const sessionModel = require('../models/session')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
-const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']; 
+const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+const normalizeDay = (value = '') => {
+    const map = {
+        Miercoles: 'Miércoles',
+        Sabado: 'Sábado',
+        'Miércoles': 'Miércoles',
+        'Sábado': 'Sábado',
+    };
+
+    return map[String(value).trim()] || String(value).trim();
+};
+const dbDay = (value = '') => {
+    const map = {
+        'Miércoles': 'Miercoles',
+        'Sábado': 'Sabado',
+    };
+
+    return map[String(value).trim()] || String(value).trim();
+};
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
@@ -38,7 +56,9 @@ const upsertSchedule = async (req, res) => {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.includes(d))){
+    const normalizedDias = Array.isArray(dias) ? dias.map((d) => dbDay(normalizeDay(d))) : [];
+
+    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.some((day) => normalizeDay(day) === normalizeDay(d)))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -52,7 +72,7 @@ const upsertSchedule = async (req, res) => {
     }
     
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias: normalizedDias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
@@ -91,11 +111,27 @@ const getPendingSessions = async (req, res) => {
     }
 }
 
+const getHistorySessions = async (req, res) => {
+    const id_Tutor = req.user.id;
+    try {
+        const sesiones = await sessionModel.getHistorialByTutorId(id_Tutor);
+        return res.status(200).json({
+            message: 'Historial de sesiones obtenido exitosamente',
+            status: 'success',
+            data: sesiones,
+        });
+    } catch (error) {
+        console.error('Error al obtener el historial de sesiones:', error);
+        return res.status(500).json({ message: 'Error al obtener el historial de sesiones', status: 'error' });
+    }
+}
+
 // Registro de Atención y Resumen de Tutoría (HU-013)
 // PATCH /api/tutor/sessions/:id/attend
 const attendSession = async (req, res) => {
     const { id } = req.params;
     const { resumen } = req.body;
+    const tutorId = req.user.id;
     
     if (!id) { 
         return res.status(400).json({ message: 'ID de sesión inválido.' }); 
@@ -106,7 +142,7 @@ const attendSession = async (req, res) => {
     }
 
     try {
-        const sesion = await sessionModel.findSessionById(id);
+        const sesion = await sessionModel.findSessionByIdAndTutor(id, tutorId);
         if (!sesion) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -130,9 +166,10 @@ const attendSession = async (req, res) => {
 // PATCH /api/tutor/sessions/:id/cancel
 const cancelSession = async (req, res) => {
     const { id } = req.params;
+    const tutorId = req.user.id;
 
     try {
-        const sesioninfo = await sessionModel.findSessionById(id)
+        const sesioninfo = await sessionModel.findSessionByIdAndTutor(id, tutorId)
         if (!sesioninfo) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -176,6 +213,7 @@ module.exports = {
     getSchedule,
     upsertSchedule,
     getPendingSessions,
+    getHistorySessions,
     attendSession,
     cancelSession
 }
