@@ -29,4 +29,7 @@ router.patch('/sessions/:id/cancel', tutorController.cancelSession);
 // Historial de Sesiones del Tutor
 router.get('/sessions/history', tutorController.getHistorySessions);
 
+// Actualización de Perfil del Tutor
+router.patch('/profile', tutorController.updateProfile);
+
 module.exports = router;
