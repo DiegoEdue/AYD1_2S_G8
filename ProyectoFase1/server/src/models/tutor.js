@@ -1,5 +1,4 @@
 const db = require('../config/db');
-const { comparePassword } = require('../utils/bcrypt')
 
 // Campos editables del perfil del tutor
 const EDITABLE_FIELDS = { 
@@ -33,20 +32,25 @@ function mapProfileRow(row, subjects) {
         universidadGraduacion: row.universidad_graduacion,
         estadoAprobacion: row.estado_aprobacion,
         fechaRegistro: row.fecha_registro,
-        horaInicioAtencion: row.hora_inicio_atencion,
-        horaFinAtencion: row.hora_fin_atencion,
+        // Estos 2 datos solo se puede modificar en schedule, por lo que solo son lectura en el perfil del tutor (preguntar si lo dejo o no)
+        horaInicioAtencion: row.hora_inicio_atencion ? row.hora_inicio_atencion.slice(0, 5): null,
+        horaFinAtencion: row.hora_fin_atencion ? row.hora_fin_atencion.slice(0, 5): null,
         subjects: subjects.map((s) => ({ id: s.id_materia, nombre: s.nombre })),
     };
 }
 
-//para el get utilzar el que esta en controller (esta ya esta pero la movere)
-const findTutorById = async (tutorId) => {
+//obtiene el perfil (esta ya esta pero la movere)
+const findProfileById = async (tutorId) => {
     const result = await db.query(
-        `SELECT id_tutor, nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, anio_inicio_tutorias, universidad_graduacion, estado_aprobacion, hora_inicio_atencion, hora_fin_atencion, fecha_registro 
-        FROM tutor WHERE id_tutor = $1`,
+        `SELECT id_tutor, nombre, apellido, carnet_id, numero_identificacion_tutor, 
+            fecha_nacimiento, genero, direccion, telefono, foto_url, direccion_tutoria, 
+            correo, anio_inicio_tutorias, universidad_graduacion, estado_aprobacion, 
+            hora_inicio_atencion, hora_fin_atencion, fecha_registro 
+        FROM tutor 
+        WHERE id_tutor = $1`,
         [tutorId]
     );
-    if (result.rows.length === 0) return null;
+    if (result.rowCount === 0) return null;
     const subjects = await db.query(
         `SELECT m.id_materia, m.nombre 
         FROM tutor_materia tm 
@@ -64,7 +68,6 @@ const updateProfile = async (tutorId, updatedFields) => {
     const values = [];
     let paramIndex = 1;
 
-    // Este for recorre los campos editables y verifica si están presentes en updatedFields. Si lo están, se agregan a la consulta SQL.
     for (const [key, value] of Object.entries(EDITABLE_FIELDS)) {
         if (Object.prototype.hasOwnProperty.call(updatedFields, key)) {
             setClauses.push(`${value} = $${paramIndex}`);
@@ -74,28 +77,13 @@ const updateProfile = async (tutorId, updatedFields) => {
     }
 
     if (Object.prototype.hasOwnProperty.call(updatedFields, 'passwordHash')) {
-        const currentPasswordResult = await db.query(`
-            SELECT password_hash FROM tutor 
-            WHERE id_tutor = $1`, 
-            [tutorId]
-        );
-        if (currentPasswordResult.rowCount === 0) return null;
-        const isMatch = await comparePassword(updatedFields.passwordHash, currentPasswordResult[0].password_hash);
-        if (isMatch) {
-            console.log('ERROR La nueva contraseña del Tutor es la misma que la actual.');
-            return {
-                error: true,
-                message: 'La nueva contraseña no puede ser la misma que la actual',
-            };
-        }
-        // Si la contraseña es diferente, la hasheamos y la agregamos a la consulta SQL.
         setClauses.push(`password_hash = $${paramIndex}`);
         values.push(updatedFields.passwordHash);
-        paramIndex++;
+        paramIndex +=1;
     }
 
     if (setClauses.length === 0) {
-        return findTutorById(tutorId);
+        return findProfileById(tutorId);
     }
 
     values.push(tutorId);
@@ -104,11 +92,21 @@ const updateProfile = async (tutorId, updatedFields) => {
         values
     );
 
-    return findTutorById(tutorId);
+    return findProfileById(tutorId);
+}
+
+const findPasswordHashById = async (tutorId) => {
+    const result = await db.query(
+        `SELECT password_hash FROM tutor WHERE id_tutor = $1`, 
+        [tutorId]
+    );
+    if (result.rowCount === 0) return null;
+    return result.rows[0].password_hash;
 }
 
 module.exports = {
     EDITABLE_FIELDS,
-    findTutorById,
+    findProfileById,
     updateProfile,
+    findPasswordHashById,
 }

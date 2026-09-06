@@ -1,4 +1,4 @@
-const {comparePassword, hashPassword} = require('../utils/bcrypt')
+const { comparePassword, hashPassword } = require('../utils/bcrypt')
 const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
 const tutorModel = require('../models/tutor')
@@ -238,8 +238,19 @@ const updateProfile = async (req, res) => {
             if (!passwordRegex.test(body.password)) {
                 return res.status(400).json({
                     status: 'error',
-                    message: 'La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una letra minúscula, un número y un carácter especial.',
+                    message: 'La contraseña debe tener al menos 8 caracteres e incluir  mayúscula, minúscula, número y un carácter especial.',
                 });
+            }
+
+            const currentPasswordHash = await tutorModel.findPasswordHashById(tutorId);
+            if (currentPasswordHash) {
+                const isSamePassword = await comparePassword(body.password, currentPasswordHash);
+                if (isSamePassword) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'La nueva contraseña no puede ser la misma que la actual.',
+                    });
+                }
             }
             updatedData.passwordHash = await hashPassword(body.password);
         }
@@ -264,11 +275,11 @@ const updateProfile = async (req, res) => {
 
         // Actualizar el perfil del tutor en la base de datos
         const updatedTutor = await tutorModel.updateProfile(tutorId, updatedData);
-        if (!updatedTutor || updatedTutor.error) {
-            console.error('Error al actualizar el perfil del tutor:', updatedTutor?.error || 'Tutor no encontrado');
+        if (!updatedTutor) {
+            console.error('Error al actualizar el perfil del tutor');
             return res.status(404).json({
                 status: 'error',
-                message: `Error al actualizar el perfil del tutor: ${updatedTutor?.message || 'Tutor no encontrado'}`,
+                message: 'Error al actualizar el perfil del tutor. Tutor no encontrado.',
             });
         }
 
