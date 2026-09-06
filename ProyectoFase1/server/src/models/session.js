@@ -117,7 +117,7 @@ const markAttended = async (sessionId, id_Tutor, resumen) => {
 const markCancelledByTutor = async (sessionId, id_Tutor) => {
     const result = await db.query(
         `UPDATE sesion
-        SET estado = 'Cancelada_Tutor', fecha_actualizacion = NOW()
+        SET estado = 'Cancelada_Tutor', fecha_actualizacion = now()
         WHERE id_sesion = $1 AND id_tutor = $2
         RETURNING id_sesion, estado, fecha_actualizacion`,
         [sessionId, id_Tutor]
