@@ -87,13 +87,6 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
     return { data, total: result.row[0].length }; // devuelve las sess
 }
 
-// Busca una sesión por su ID
-const findSessionById = async (sessionId) => {
-    const result = await db.query(`${SELECT_BASE} WHERE s.id_sesion = $1`, [sessionId]);
-    if (result.rowCount === 0) return null;
-    return mapSessionRow(result.rows[0]);
-}
-
 // Marca la sesión como atendida y actualiza el resumen
 const markAttended = async (sessionId, id_Tutor, resumen) => {
     const result = await db.query(
@@ -134,7 +127,6 @@ const markCancelledByTutor = async (sessionId, id_Tutor) => {
 module.exports = {
     getSesionesPendientesByTutorId,
     findHistoryByTutor,
-    findSessionById,
     findSessionByIdAndTutorId,
     markAttended,
     markCancelledByTutor
