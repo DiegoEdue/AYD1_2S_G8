@@ -442,23 +442,14 @@ const getUsers = async (req, res) => {
 };
 
 const deactivateUser = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { rol } = req.body || {};
-    const tabla = rol === 'tutor' ? 'tutor' : rol === 'estudiante' ? 'estudiante' : null;
-    const columna = rol === 'tutor' ? 'id_tutor' : 'id_estudiante';
-    if (!tabla) return res.status(400).json({ status: 'error', message: 'Rol inválido.' });
-
-    const result = await db.query(
-      `UPDATE ${tabla} SET estado_aprobacion = 'baja' WHERE ${columna} = $1 AND estado_aprobacion = 'aprobado' RETURNING ${columna} AS id`,
-      [id]
-    );
-    if (result.rows.length === 0) return res.status(404).json({ status: 'error', message: 'Usuario no encontrado o ya está dado de baja.' });
-    return res.status(200).json({ status: 'success', message: 'Usuario dado de baja correctamente.', data: result.rows[0] });
-  } catch (error) {
-    console.error('Error en deactivateUser:', error);
-    return res.status(500).json({ status: 'error', message: 'Error interno al dar de baja al usuario.' });
+  const { rol } = req.body || {};
+  if (rol === 'tutor') {
+    return deactivateTutor(req, res);
   }
+  if (rol === 'estudiante') {
+    return deactivateStudent(req, res);
+  }
+  return res.status(400).json({ status: 'error', message: 'Rol inválido.' });
 };
 
 const getApprovedStudents = async (req, res) => {
@@ -497,36 +488,40 @@ const deactivateStudent = async (req, res) => {
       });
     }
 
+    // 1. Obtener datos del estudiante antes de eliminar
     const studentRes = await db.query(
-      `UPDATE estudiante 
-       SET estado_aprobacion = 'baja' 
-       WHERE id_estudiante = $1 AND estado_aprobacion = 'aprobado'
-       RETURNING id_estudiante, nombre, apellido, correo, estado_aprobacion`,
+      'SELECT id_estudiante, nombre, apellido, correo FROM estudiante WHERE id_estudiante = $1',
       [id]
     );
 
     if (studentRes.rows.length === 0) {
       return res.status(404).json({
         status: 'error',
-        message: 'Estudiante no encontrado o ya ha sido dado de baja.',
+        message: 'Estudiante no encontrado.',
       });
     }
 
     const student = studentRes.rows[0];
     const fullName = `${student.nombre} ${student.apellido}`;
 
+    // 2. Eliminar referencias y registros asociados al estudiante
+    await db.query('DELETE FROM sesion WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM solicitud WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM estudiante WHERE id_estudiante = $1', [id]);
+
+    // 3. Enviar correo de notificación de baja/eliminación
     sendDeactivationEmail({
       to: student.correo,
       name: fullName,
       role: 'Estudiante',
-      reason: motivo || 'Baja procesada por la administración',
+      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
     }).catch(err => console.error('Error al enviar correo de baja de estudiante:', err));
 
     return res.status(200).json({
       status: 'success',
-      message: 'Estudiante dado de baja exitosamente.',
+      message: 'Estudiante dado de baja y eliminado exitosamente de la base de datos.',
       data: {
-        id_estudiante: student.id_estudiante,
+        id_estudiante: parseInt(id, 10),
         nombre: fullName,
         correo: student.correo,
         estado_aprobacion: 'baja',
@@ -580,36 +575,42 @@ const deactivateTutor = async (req, res) => {
       });
     }
 
+    // 1. Obtener datos del tutor antes de eliminar
     const tutorRes = await db.query(
-      `UPDATE tutor 
-       SET estado_aprobacion = 'baja' 
-       WHERE id_tutor = $1 AND estado_aprobacion = 'aprobado'
-       RETURNING id_tutor, nombre, apellido, correo, estado_aprobacion`,
+      'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1',
       [id]
     );
 
     if (tutorRes.rows.length === 0) {
       return res.status(404).json({
         status: 'error',
-        message: 'Tutor no encontrado o ya ha sido dado de baja.',
+        message: 'Tutor no encontrado.',
       });
     }
 
     const tutor = tutorRes.rows[0];
     const fullName = `${tutor.nombre} ${tutor.apellido}`;
 
+    // 2. Eliminar referencias y registros asociados al tutor
+    await db.query('DELETE FROM sesion WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor_materia WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor_dia_atencion WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM solicitud WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor WHERE id_tutor = $1', [id]);
+
+    // 3. Enviar correo de notificación de baja/eliminación
     sendDeactivationEmail({
       to: tutor.correo,
       name: fullName,
       role: 'Tutor',
-      reason: motivo || 'Baja procesada por la administración',
+      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
     }).catch(err => console.error('Error al enviar correo de baja de tutor:', err));
 
     return res.status(200).json({
       status: 'success',
-      message: 'Tutor dado de baja exitosamente.',
+      message: 'Tutor dado de baja y eliminado exitosamente de la base de datos.',
       data: {
-        id_tutor: tutor.id_tutor,
+        id_tutor: parseInt(id, 10),
         nombre: fullName,
         correo: tutor.correo,
         estado_aprobacion: 'baja',
@@ -624,6 +625,7 @@ const deactivateTutor = async (req, res) => {
     });
   }
 };
+
 
 const getReports = async (req, res) => {
   try {
