@@ -1,10 +1,26 @@
+const {comparePassword, hashPassword} = require('../utils/bcrypt')
 const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
+const tutorModel = require('../models/tutor')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
 const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']; 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
+// Datos que no esta permitido actualizar
+const NON_EDITABLE_FIELDS = [
+    'id',
+    'correo',
+    'carnetId',
+    'numeroIdentificacionTutor',
+    'estadoAprobacion',
+    'fechaRegistro',
+    'aprobadoPor',
+    'horaInicioAtencion',
+    'horaFinAtencion'
+];
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
 // GET /api/tutor/schedule
@@ -32,7 +48,7 @@ const getSchedule = async (req, res) => {
 // podria ser post, pero cuando querramos actualizar el horario de atencion del tutor, es mas adecuado usar put, este actuara como un upsert, si no existe el horario lo crea, si existe lo actualiza
 const upsertSchedule = async (req, res) => {
     const id_Tutor = req.user.id;
-    const { dias, startTime, endTime } = req.query;
+    const { dias, startTime, endTime } = req.body;
 
     if (!dias || !startTime || !endTime) {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
@@ -194,11 +210,91 @@ const cancelSession = async (req, res) => {
     }
 }
 
+// Consulta y Actualización de Perfil del Tutor (HU-016)
+// GET /api/tutor/profile
+
+// PATCH /api/tutor/profile
+const updateProfile = async (req, res) => {
+    const tutorId = req.user.id;
+    const body = req.body || {};
+    try {
+        // Verificar si se están intentando actualizar campos no permitidos
+        const blocked = NON_EDITABLE_FIELDS.filter((f) => Object.prototype.hasOwnProperty.call(body, f));
+        if (blocked.length > 0) {
+            return res.status(400).json({ 
+                message: `No se pueden actualizar los siguientes campos: ${blocked.join(', ')}`, 
+                status: 'error' 
+            });
+        }
+
+        const updatedData = {};
+        for (const jskey of Object.keys(tutorModel.EDITABLE_FIELDS)) {
+            if (Object.prototype.hasOwnProperty.call(body, jskey)) {
+                updatedData[jskey] = body[jskey];
+            }
+        }
+
+        if (typeof body.password === 'string' && body.password.length > 0) {
+            if (!passwordRegex.test(body.password)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'La contraseña debe tener al menos 8 caracteres, incluyendo una letra mayúscula, una letra minúscula, un número y un carácter especial.',
+                });
+            }
+            updatedData.passwordHash = await hashPassword(body.password);
+        }
+
+        if (Object.keys(updatedData).length === 0) {
+            return res.status(400).json({ 
+                message: 'No se proporcionaron campos válidos para actualizar.', 
+                status: 'error' 
+            });
+        }
+
+        if (updatedData.anioInicioTutorias !== undefined ) {
+            const currentYear = new Date().getFullYear();
+            const anio = Number(updatedData.anioInicioTutorias);
+            if (!Number.isInteger(anio) || anio < 1950 || anio > currentYear) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `El año de inicio de tutorías debe ser un número entero entre 1950 y ${currentYear}.`,
+                });
+            }
+        }
+
+        // Actualizar el perfil del tutor en la base de datos
+        const updatedTutor = await tutorModel.updateProfile(tutorId, updatedData);
+        if (!updatedTutor || updatedTutor.error) {
+            console.error('Error al actualizar el perfil del tutor:', updatedTutor?.error || 'Tutor no encontrado');
+            return res.status(404).json({
+                status: 'error',
+                message: `Error al actualizar el perfil del tutor: ${updatedTutor?.message || 'Tutor no encontrado'}`,
+            });
+        }
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Perfil actualizado exitosamente.',
+            data: updatedTutor,
+            rol: 'tutor',
+        });
+    } catch (error) {
+        console.error('Error al validar la contraseña:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error interno del servidor al validar la contraseña.',
+        });
+    }
+}
+
+
+
 module.exports = {
     getSchedule,
     upsertSchedule,
     getPendingSessions,
     getHistorySessions,
     attendSession,
-    cancelSession
+    cancelSession,
+    updateProfile,
 }
