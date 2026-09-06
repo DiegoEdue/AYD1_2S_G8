@@ -1,28 +1,26 @@
+const { comparePassword, hashPassword } = require('../utils/bcrypt')
 const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
+const tutorModel = require('../models/tutor')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
-const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-const normalizeDay = (value = '') => {
-    const map = {
-        Miercoles: 'Miércoles',
-        Sabado: 'Sábado',
-        'Miércoles': 'Miércoles',
-        'Sábado': 'Sábado',
-    };
-
-    return map[String(value).trim()] || String(value).trim();
-};
-const dbDay = (value = '') => {
-    const map = {
-        'Miércoles': 'Miercoles',
-        'Sábado': 'Sabado',
-    };
-
-    return map[String(value).trim()] || String(value).trim();
-};
+const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']; 
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
+// Datos que no esta permitido actualizar
+const NON_EDITABLE_FIELDS = [
+    'id',
+    'correo',
+    'carnetId',
+    'numeroIdentificacionTutor',
+    'estadoAprobacion',
+    'fechaRegistro',
+    'aprobadoPor',
+    'horaInicioAtencion',
+    'horaFinAtencion'
+];
+
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
 // GET /api/tutor/schedule
@@ -50,15 +48,13 @@ const getSchedule = async (req, res) => {
 // podria ser post, pero cuando querramos actualizar el horario de atencion del tutor, es mas adecuado usar put, este actuara como un upsert, si no existe el horario lo crea, si existe lo actualiza
 const upsertSchedule = async (req, res) => {
     const id_Tutor = req.user.id;
-    const { dias, startTime, endTime } = req.query;
+    const { dias, startTime, endTime } = req.body;
 
     if (!dias || !startTime || !endTime) {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    const normalizedDias = Array.isArray(dias) ? dias.map((d) => dbDay(normalizeDay(d))) : [];
-
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.some((day) => normalizeDay(day) === normalizeDay(d)))) {
+    if (!Array.isArray(dias) || dias.length === 0 || !dias.every(d => days.includes(d))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -72,7 +68,7 @@ const upsertSchedule = async (req, res) => {
     }
     
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias: normalizedDias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
@@ -110,15 +106,21 @@ const getPendingSessions = async (req, res) => {
         res.status(500).json({ message: 'Error al obtener las sesiones pendientes', status: "error" });
     }
 }
-
+// Historial de Sesiones del Tutor (HU-015)
+// GET /api/tutor/sessions/history?page=1&pageSize=20
 const getHistorySessions = async (req, res) => {
-    const id_Tutor = req.user.id;
+    const tutorId = req.user.id;
+    let page = parseInt(req.query.page, 10);
+    let limit = parseInt(req.query.pageSize, 10);
+    if (!Number.isInteger(page) || page < 1) page = 1;
+    if (!Number.isInteger(limit) || limit < 1 || limit > 100) limit = 20;
     try {
-        const sesiones = await sessionModel.getHistorialByTutorId(id_Tutor);
+        const {sesiones, total} = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
         return res.status(200).json({
             message: 'Historial de sesiones obtenido exitosamente',
             status: 'success',
             data: sesiones,
+            total: total
         });
     } catch (error) {
         console.error('Error al obtener el historial de sesiones:', error);
@@ -131,7 +133,7 @@ const getHistorySessions = async (req, res) => {
 const attendSession = async (req, res) => {
     const { id } = req.params;
     const { resumen } = req.body;
-    const tutorId = req.user.id;
+    const id_Tutor = req.user.id;
     
     if (!id) { 
         return res.status(400).json({ message: 'ID de sesión inválido.' }); 
@@ -142,7 +144,7 @@ const attendSession = async (req, res) => {
     }
 
     try {
-        const sesion = await sessionModel.findSessionByIdAndTutor(id, tutorId);
+        const sesion = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
         if (!sesion) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -150,7 +152,7 @@ const attendSession = async (req, res) => {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser atendida.', status: 'error' });
         }
 
-        const updatedSession = await sessionModel.markAttended(id, resumen.trim());
+        const updatedSession = await sessionModel.markAttended(id, id_Tutor, resumen.trim());
         return res.status(200).json({
             message: 'Sesión atendida exitosamente',
             status: 'success',
@@ -166,10 +168,10 @@ const attendSession = async (req, res) => {
 // PATCH /api/tutor/sessions/:id/cancel
 const cancelSession = async (req, res) => {
     const { id } = req.params;
-    const tutorId = req.user.id;
+    const id_Tutor = req.user.id;
 
     try {
-        const sesioninfo = await sessionModel.findSessionByIdAndTutor(id, tutorId)
+        const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
         if (!sesioninfo) {
             return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
         }
@@ -177,7 +179,7 @@ const cancelSession = async (req, res) => {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser cancelada.', status: 'error' });
         }
 
-        const actualizadoSesion = await sessionModel.markCancelledByTutor(id);
+        const actualizadoSesion = await sessionModel.markCancelledByTutor(id, id_Tutor);
         
         let emailSent = false;
         try {
@@ -208,6 +210,95 @@ const cancelSession = async (req, res) => {
     }
 }
 
+// Consulta y Actualización de Perfil del Tutor (HU-016)
+// GET /api/tutor/profile
+
+// PATCH /api/tutor/profile
+const updateProfile = async (req, res) => {
+    const tutorId = req.user.id;
+    const body = req.body || {};
+    try {
+        // Verificar si se están intentando actualizar campos no permitidos
+        const blocked = NON_EDITABLE_FIELDS.filter((f) => Object.prototype.hasOwnProperty.call(body, f));
+        if (blocked.length > 0) {
+            return res.status(400).json({ 
+                message: `No se pueden actualizar los siguientes campos: ${blocked.join(', ')}`, 
+                status: 'error' 
+            });
+        }
+
+        const updatedData = {};
+        for (const jskey of Object.keys(tutorModel.EDITABLE_FIELDS)) {
+            if (Object.prototype.hasOwnProperty.call(body, jskey)) {
+                updatedData[jskey] = body[jskey];
+            }
+        }
+
+        if (typeof body.password === 'string' && body.password.length > 0) {
+            if (!passwordRegex.test(body.password)) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'La contraseña debe tener al menos 8 caracteres e incluir  mayúscula, minúscula, número y un carácter especial.',
+                });
+            }
+
+            const currentPasswordHash = await tutorModel.findPasswordHashById(tutorId);
+            if (currentPasswordHash) {
+                const isSamePassword = await comparePassword(body.password, currentPasswordHash);
+                if (isSamePassword) {
+                    return res.status(400).json({
+                        status: 'error',
+                        message: 'La nueva contraseña no puede ser la misma que la actual.',
+                    });
+                }
+            }
+            updatedData.passwordHash = await hashPassword(body.password);
+        }
+
+        if (Object.keys(updatedData).length === 0) {
+            return res.status(400).json({ 
+                message: 'No se proporcionaron campos válidos para actualizar.', 
+                status: 'error' 
+            });
+        }
+
+        if (updatedData.anioInicioTutorias !== undefined ) {
+            const currentYear = new Date().getFullYear();
+            const anio = Number(updatedData.anioInicioTutorias);
+            if (!Number.isInteger(anio) || anio < 1950 || anio > currentYear) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: `El año de inicio de tutorías debe ser un número entero entre 1950 y ${currentYear}.`,
+                });
+            }
+        }
+
+        // Actualizar el perfil del tutor en la base de datos
+        const updatedTutor = await tutorModel.updateProfile(tutorId, updatedData);
+        if (!updatedTutor) {
+            console.error('Error al actualizar el perfil del tutor');
+            return res.status(404).json({
+                status: 'error',
+                message: 'Error al actualizar el perfil del tutor. Tutor no encontrado.',
+            });
+        }
+
+        return res.status(200).json({
+            status: 'success',
+            message: 'Perfil actualizado exitosamente.',
+            data: updatedTutor,
+            rol: 'tutor',
+        });
+    } catch (error) {
+        console.error('Error al validar la contraseña:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error interno del servidor al validar la contraseña.',
+        });
+    }
+}
+
+
 
 module.exports = {
     getSchedule,
@@ -215,5 +306,6 @@ module.exports = {
     getPendingSessions,
     getHistorySessions,
     attendSession,
-    cancelSession
+    cancelSession,
+    updateProfile,
 }

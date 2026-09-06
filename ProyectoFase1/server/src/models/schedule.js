@@ -8,7 +8,7 @@ const findhorarioByTutorId = async (id_Tutor) => {
         [id_Tutor]
     );
 
-    if (result.rows.length === 0) return null;
+    if (result.rowCount === 0) return null;
 
     const { hora_inicio_atencion, hora_fin_atencion } = result.rows[0];
     if (!hora_inicio_atencion || !hora_fin_atencion) return null;
