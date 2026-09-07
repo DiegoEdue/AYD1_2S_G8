@@ -1,6 +1,8 @@
 const bcrypt = require('bcryptjs');
 const sql = require('../config/db');
 
+const { subirImagen } = require('../utils/cloudinaryUpload');
+
 const registroTutor = async (req, res) => {
   try {
     const {
@@ -18,6 +20,7 @@ const registroTutor = async (req, res) => {
       password,
       anio_inicio_tutorias,
       universidad_graduacion,
+      especialidad,
     } = req.body;
 
     // Validar que todos los campos requeridos estén presentes
@@ -35,7 +38,8 @@ const registroTutor = async (req, res) => {
       !correo ||
       !password ||
       !anio_inicio_tutorias ||
-      !universidad_graduacion
+      !universidad_graduacion ||
+      !especialidad
     ) {
       return res
         .status(400)
@@ -81,11 +85,14 @@ const registroTutor = async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está registrado' });
     }
 
+    // Subimos la foto a Cloudinary y guardamos solo la URL
+    const fotoFinal = await subirImagen(foto_url, 'educonnect/tutores');
+
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
       const [tutor] = await tx`
       INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion)
-      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${foto_url}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion})
+      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion})
       RETURNING id_tutor, nombre, apellido, carnet_id, correo;
       `;
 
@@ -94,6 +101,29 @@ const registroTutor = async (req, res) => {
       VALUES (${tutor.id_tutor}, 'pendiente', 'tutor')
       RETURNING *;
       `;
+
+      const materias = String(especialidad || '')
+        .split(',')
+        .map((m) => m.trim())
+        .filter(Boolean);
+
+      for (const materia of materias) {
+        await tx`
+          INSERT INTO materia (nombre) VALUES (${materia})
+          ON CONFLICT (nombre) DO NOTHING;
+        `;
+        const [materiaRow] = await tx`
+          SELECT id_materia FROM materia WHERE nombre = ${materia};
+        `;
+        if (materiaRow) {
+          await tx`
+            INSERT INTO tutor_materia (id_tutor, id_materia)
+            VALUES (${tutor.id_tutor}, ${materiaRow.id_materia})
+            ON CONFLICT DO NOTHING;
+          `;
+        }
+      }
+
       return { newTutor: tutor, newRequest: solicitud };
     });
 
