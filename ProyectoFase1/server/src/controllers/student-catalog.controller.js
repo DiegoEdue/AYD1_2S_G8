@@ -9,11 +9,13 @@ const getTutorCatalog = async (req, res) => {
         const result = await sql`
             SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
                    t.direccion_tutoria, t.hora_inicio_atencion, t.hora_fin_atencion,
-                   ARRAY_AGG(m.nombre) AS materias,
-                   ARRAY_AGG(json_build_object('id', m.id_materia, 'nombre', m.nombre)) AS materias_detalle
+                   ARRAY_AGG(DISTINCT tda.dia_semana) FILTER (WHERE tda.dia_semana IS NOT NULL) AS dias_atencion,
+                   ARRAY_AGG(DISTINCT m.nombre) AS materias,
+                   ARRAY_AGG(DISTINCT jsonb_build_object('id', m.id_materia, 'nombre', m.nombre)) AS materias_detalle
             FROM tutor t
             JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor
             JOIN materia m ON tm.id_materia = m.id_materia
+            LEFT JOIN tutor_dia_atencion tda ON t.id_tutor = tda.id_tutor
             WHERE t.estado_aprobacion = 'aprobado'
               AND t.id_tutor NOT IN (
                   SELECT s.id_tutor FROM sesion s
@@ -22,6 +24,13 @@ const getTutorCatalog = async (req, res) => {
             GROUP BY t.id_tutor
             ORDER BY t.nombre, t.apellido
         `;
+
+        const data = result.map((r) => ({
+            ...r,
+            dias_atencion: Array.isArray(r.dias_atencion)
+                ? r.dias_atencion.map(normalizeDayName)
+                : [],
+        }));
 
         const excluded = await sql`
             SELECT t.id_tutor, t.nombre, t.apellido, s.id_sesion, s.fecha_sesion, s.hora_sesion
@@ -32,7 +41,7 @@ const getTutorCatalog = async (req, res) => {
 
         return res.status(200).json({
             success: true,
-            data: result,
+            data: data,
             tutores_con_sesion_pendiente: excluded,
             message:
                 excluded.length > 0
@@ -262,11 +271,13 @@ const searchTutors = async (req, res) => {
         let query = sql`
             SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url, t.direccion_tutoria,
                    t.hora_inicio_atencion, t.hora_fin_atencion,
-                   ARRAY_AGG(m.nombre) AS materias,
-                   ARRAY_AGG(json_build_object('id', m.id_materia, 'nombre', m.nombre)) AS materias_detalle
+                   ARRAY_AGG(DISTINCT tda.dia_semana) FILTER (WHERE tda.dia_semana IS NOT NULL) AS dias_atencion,
+                   ARRAY_AGG(DISTINCT m.nombre) AS materias,
+                   ARRAY_AGG(DISTINCT jsonb_build_object('id', m.id_materia, 'nombre', m.nombre)) AS materias_detalle
             FROM tutor t
             JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor
             JOIN materia m ON tm.id_materia = m.id_materia
+            LEFT JOIN tutor_dia_atencion tda ON t.id_tutor = tda.id_tutor
             WHERE t.estado_aprobacion = 'aprobado'
               AND t.id_tutor NOT IN (
                   SELECT s.id_tutor FROM sesion s
@@ -321,9 +332,16 @@ const searchTutors = async (req, res) => {
             });
         }
 
+        const data = result.map((r) => ({
+            ...r,
+            dias_atencion: Array.isArray(r.dias_atencion)
+                ? r.dias_atencion.map(normalizeDayName)
+                : [],
+        }));
+
         return res.status(200).json({
             success: true,
-            data: result,
+            data: data,
             tutores_con_sesion_pendiente: excluded,
             message:
                 excluded.length > 0
