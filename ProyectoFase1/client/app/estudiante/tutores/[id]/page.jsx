@@ -62,7 +62,9 @@ export default function DetalleTutorPage() {
                     universidad: encontrado.universidad_graduacion || "USAC",
                     direccion: encontrado.direccion_tutoria || "Online",
                     foto: encontrado.foto_url || "",
-                    dias: [],
+                    dias: Array.isArray(encontrado.dias_atencion)
+                        ? encontrado.dias_atencion.map(normalizarDia)
+                        : [],
                     horaInicio: encontrado.hora_inicio_atencion?.slice(0, 5) || "08:00",
                     horaFin: encontrado.hora_fin_atencion?.slice(0, 5) || "18:00",
                 });
