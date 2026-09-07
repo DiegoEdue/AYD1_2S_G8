@@ -5,7 +5,8 @@ const tutorModel = require('../models/tutor')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
-const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo']; 
+
+const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 // Datos que no esta permitido actualizar
 const NON_EDITABLE_FIELDS = [
@@ -33,10 +34,10 @@ const getSchedule = async (req, res) => {
             return res.status(404).json({ message: 'Horario no encontrado', status: "error" });
         }
 
-        return res.status(200).json({ 
-            message: 'Horario obtenido exitosamente' , 
+        return res.status(200).json({
+            message: 'Horario obtenido exitosamente',
             status: 'success',
-            data: horario 
+            data: horario
         });
     } catch (error) {
         console.error('Error al obtener el horario:', error);
@@ -48,13 +49,22 @@ const getSchedule = async (req, res) => {
 // podria ser post, pero cuando querramos actualizar el horario de atencion del tutor, es mas adecuado usar put, este actuara como un upsert, si no existe el horario lo crea, si existe lo actualiza
 const upsertSchedule = async (req, res) => {
     const id_Tutor = req.user.id;
-    const { dias, startTime, endTime } = req.body;
+    const { dias, startTime, endTime } = { ...req.body, ...req.query };
 
     if (!dias || !startTime || !endTime) {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every(d => days.includes(d))) {
+    let parsedDias = dias;
+    if (typeof dias === 'string') {
+        try {
+            parsedDias = JSON.parse(dias);
+        } catch {
+            parsedDias = dias.split(',');
+        }
+    }
+
+    if (!Array.isArray(parsedDias) || parsedDias.length === 0 || !parsedDias.every((d) => days.includes(d))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -66,9 +76,9 @@ const upsertSchedule = async (req, res) => {
     if (startTime >= endTime) {
         return res.status(400).json({ message: 'La hora de inicio debe ser menor que la hora de fin.', status: "error" });
     }
-    
+
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias: parsedDias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
@@ -91,7 +101,7 @@ const getPendingSessions = async (req, res) => {
             id: s.id,
             fecha: s.fecha,
             hora: s.hora,
-            estudiante: s.estudiante,  
+            estudiante: s.estudiante,
             materia: s.materia,
             motivo: s.motivo
         }));
@@ -115,7 +125,7 @@ const getHistorySessions = async (req, res) => {
     if (!Number.isInteger(page) || page < 1) page = 1;
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) limit = 20;
     try {
-        const {sesiones, total} = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
+        const { sesiones, total } = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
         return res.status(200).json({
             message: 'Historial de sesiones obtenido exitosamente',
             status: 'success',
@@ -134,9 +144,9 @@ const attendSession = async (req, res) => {
     const { id } = req.params;
     const { resumen } = req.body;
     const id_Tutor = req.user.id;
-    
-    if (!id) { 
-        return res.status(400).json({ message: 'ID de sesión inválido.' }); 
+
+    if (!id) {
+        return res.status(400).json({ message: 'ID de sesión inválido.' });
     }
 
     if (!resumen || resumen.trim().length === 0 || typeof resumen !== 'string') {
@@ -180,7 +190,7 @@ const cancelSession = async (req, res) => {
         }
 
         const actualizadoSesion = await sessionModel.markCancelledByTutor(id, id_Tutor);
-        
+
         let emailSent = false;
         try {
             await sendCancellationEmail({
@@ -192,7 +202,7 @@ const cancelSession = async (req, res) => {
                 materia: sesioninfo.materia,
                 motivo: sesioninfo.motivo,
             });
-            emailSent = true; 
+            emailSent = true;
         } catch (emailError) {
             console.error('Error al enviar el correo de notificación:', emailError);
         }
@@ -221,9 +231,9 @@ const updateProfile = async (req, res) => {
         // Verificar si se están intentando actualizar campos no permitidos
         const blocked = NON_EDITABLE_FIELDS.filter((f) => Object.prototype.hasOwnProperty.call(body, f));
         if (blocked.length > 0) {
-            return res.status(400).json({ 
-                message: `No se pueden actualizar los siguientes campos: ${blocked.join(', ')}`, 
-                status: 'error' 
+            return res.status(400).json({
+                message: `No se pueden actualizar los siguientes campos: ${blocked.join(', ')}`,
+                status: 'error'
             });
         }
 
@@ -256,13 +266,13 @@ const updateProfile = async (req, res) => {
         }
 
         if (Object.keys(updatedData).length === 0) {
-            return res.status(400).json({ 
-                message: 'No se proporcionaron campos válidos para actualizar.', 
-                status: 'error' 
+            return res.status(400).json({
+                message: 'No se proporcionaron campos válidos para actualizar.',
+                status: 'error'
             });
         }
 
-        if (updatedData.anioInicioTutorias !== undefined ) {
+        if (updatedData.anioInicioTutorias !== undefined) {
             const currentYear = new Date().getFullYear();
             const anio = Number(updatedData.anioInicioTutorias);
             if (!Number.isInteger(anio) || anio < 1950 || anio > currentYear) {

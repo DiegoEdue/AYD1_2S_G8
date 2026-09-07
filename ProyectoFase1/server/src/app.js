@@ -22,8 +22,8 @@ const app = express();
 
 // Middlewares globales
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // Ruta base de prueba y diagnóstico de base de datos
 app.get('/api/health', async (req, res) => {

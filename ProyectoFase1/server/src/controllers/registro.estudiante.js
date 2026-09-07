@@ -2,6 +2,8 @@ const sql = require('../config/db');
 
 const bcrypt = require('bcryptjs');
 
+const { subirImagen } = require('../utils/cloudinaryUpload');
+
 const registerStudent = async (req, res) => {
   try {
     const {
@@ -25,6 +27,7 @@ const registerStudent = async (req, res) => {
       !direccion ||
       !telefono ||
       !fecha_nacimiento ||
+      !foto_url ||
       !correo ||
       !password
     ) {
@@ -68,12 +71,15 @@ const registerStudent = async (req, res) => {
       return res.status(400).json({ message: 'El carnet ya está registrado' });
     }
 
+    // Subimos la foto a Cloudinary y guardamos solo la URL
+    const fotoFinal = await subirImagen(foto_url, 'educonnect/estudiantes');
+
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.
     const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
       const [student] = await tx`
         INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, password_hash)
-        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${foto_url || null}, ${correo}, ${hashedPassword})
+        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${correo}, ${hashedPassword})
         RETURNING id_estudiante, nombre, apellido, carnet, correo;
       `;
 
