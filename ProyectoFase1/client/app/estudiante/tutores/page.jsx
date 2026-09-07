@@ -27,7 +27,7 @@ export default function TutoresPage() {
             direccion: t.direccion_tutoria || "Online",
             anios: Number(t.anios ?? 0),
             foto: t.foto_url || "",
-            dias: [],
+            dias: Array.isArray(t.dias_atencion) ? t.dias_atencion : [],
             horaInicio: t.hora_inicio_atencion ? t.hora_inicio_atencion.slice(0, 5) : "08:00",
             horaFin: t.hora_fin_atencion ? t.hora_fin_atencion.slice(0, 5) : "18:00",
           }))
