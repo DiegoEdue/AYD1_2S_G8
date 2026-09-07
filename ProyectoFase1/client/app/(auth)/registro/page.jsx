@@ -26,6 +26,7 @@ const VACIO_ESTUDIANTE = {
     const VACIO_TUTOR = {
     ...VACIO_ESTUDIANTE,
     especialidad: "",
+    numeroIdentificacion: "",
     direccionTutoria: "",
     anioInicio: "",
     universidad: "",
@@ -78,6 +79,7 @@ const VACIO_ESTUDIANTE = {
         if (!form.fechaNacimiento) e.fechaNacimiento = "Ingresa tu fecha de nacimiento.";
         if (rol === "tutor") {
         if (!form.especialidad) e.especialidad = "Indica las materias que impartes.";
+        if (!form.numeroIdentificacion) e.numeroIdentificacion = "Ingresa tu número de identificación.";
         if (!form.universidad) e.universidad = "Ingresa tu universidad de graduación.";
         }
         setErrores(e);
@@ -269,6 +271,19 @@ const VACIO_ESTUDIANTE = {
                         value={form.especialidad}
                         onChange={(e) => set("especialidad", e.target.value)}
                         className={inputClass(!!errores.especialidad)}
+                    />
+                    </FormField>
+                    <FormField
+                    label="Número de identificación (DPI/ID)"
+                    name="numeroIdentificacion"
+                    required
+                    error={errores.numeroIdentificacion}
+                    >
+                    <input
+                        id="numeroIdentificacion"
+                        value={form.numeroIdentificacion}
+                        onChange={(e) => set("numeroIdentificacion", e.target.value)}
+                        className={inputClass(!!errores.numeroIdentificacion)}
                     />
                     </FormField>
                     <FormField label="Dirección de tutoría" name="direccionTutoria" ayuda="Física u Online">
