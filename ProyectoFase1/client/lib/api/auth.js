@@ -95,6 +95,7 @@ export async function registrarTutor(datos) {
     password: datos.password,
     anio_inicio_tutorias: Number(datos.anioInicio || datos.anio_inicio_tutorias),
     universidad_graduacion: datos.universidad || datos.universidad_graduacion,
+    especialidad: datos.especialidad,
   };
 
   return apiFetch("/tutor/registro", { method: "POST", body: payload });

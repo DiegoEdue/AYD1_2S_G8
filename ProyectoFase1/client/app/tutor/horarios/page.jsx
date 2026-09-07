@@ -6,7 +6,15 @@ import { useToast } from "@/components/ui/Toast";
 import { inputClass } from "@/components/ui/FormField";
 import { apiFetch } from "@/lib/api/client";
 
-const DIAS = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+const DIAS = [
+  { valor: "Lunes", etiqueta: "Lunes" },
+  { valor: "Martes", etiqueta: "Martes" },
+  { valor: "Miercoles", etiqueta: "Miércoles" },
+  { valor: "Jueves", etiqueta: "Jueves" },
+  { valor: "Viernes", etiqueta: "Viernes" },
+  { valor: "Sabado", etiqueta: "Sábado" },
+  { valor: "Domingo", etiqueta: "Domingo" },
+];
 
 export default function HorariosTutorPage() {
   const { mostrarToast } = useToast();
@@ -86,12 +94,12 @@ export default function HorariosTutorPage() {
         ) : (
           <div className="mt-2 flex flex-wrap gap-2">
             {DIAS.map((dia) => {
-              const activo = dias.includes(dia);
+              const activo = dias.includes(dia.valor);
               return (
                 <button
-                  key={dia}
+                  key={dia.valor}
                   type="button"
-                  onClick={() => toggleDia(dia)}
+                  onClick={() => toggleDia(dia.valor)}
                   aria-pressed={activo}
                   className={`rounded-full border px-3 py-1.5 text-sm font-medium transition ${
                     activo
@@ -99,7 +107,7 @@ export default function HorariosTutorPage() {
                       : "border-charcoal/20 text-charcoal-light hover:border-sage"
                   }`}
                 >
-                  {dia}
+                  {dia.etiqueta}
                 </button>
               );
             })}

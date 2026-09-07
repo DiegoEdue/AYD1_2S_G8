@@ -30,6 +30,12 @@ export default function TutorCard({ tutor }) {
         <p className="mt-3 flex items-center gap-1 text-sm text-charcoal-light">
             <Icon name="Ubicacion" className="h-4 w-4 shrink-0" /> {tutor.direccion}
         </p>
+        <p className="mt-1 flex items-center gap-1 text-sm text-charcoal-light">
+            <Icon name="Horarios" className="h-4 w-4 shrink-0" />{" "}
+            {tutor.dias.length
+            ? `Atiende: ${tutor.dias.join(", ")} de ${tutor.horaInicio || "—"} a ${tutor.horaFin || "—"}`
+            : `Horario de ${tutor.horaInicio || "—"} a ${tutor.horaFin || "—"}`}
+        </p>
         <span className="mt-4 text-sm font-semibold text-crimson group-hover:underline">
             Ver horarios y agendar →
         </span>
