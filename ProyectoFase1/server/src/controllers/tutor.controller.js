@@ -3,25 +3,7 @@ const sessionModel = require('../models/session')
 const { sendCancellationEmail } = require('../services/email')
 
 // Validación de días y horas
-const days = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-const normalizeDay = (value = '') => {
-    const map = {
-        Miercoles: 'Miércoles',
-        Sabado: 'Sábado',
-        'Miércoles': 'Miércoles',
-        'Sábado': 'Sábado',
-    };
-
-    return map[String(value).trim()] || String(value).trim();
-};
-const dbDay = (value = '') => {
-    const map = {
-        'Miércoles': 'Miercoles',
-        'Sábado': 'Sabado',
-    };
-
-    return map[String(value).trim()] || String(value).trim();
-};
+const days = ['Lunes', 'Martes', 'Miercoles', 'Jueves', 'Viernes', 'Sabado', 'Domingo'];
 const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)$/; // Formato HH:MM
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
@@ -56,9 +38,16 @@ const upsertSchedule = async (req, res) => {
         return res.status(400).json({ message: 'Faltan parámetros requeridos.', status: "error" });
     }
 
-    const normalizedDias = Array.isArray(dias) ? dias.map((d) => dbDay(normalizeDay(d))) : [];
+    let parsedDias = dias;
+    if (typeof dias === 'string') {
+        try {
+            parsedDias = JSON.parse(dias);
+        } catch {
+            parsedDias = dias.split(',');
+        }
+    }
 
-    if (!Array.isArray(dias) || dias.length === 0 || !dias.every((d) => days.some((day) => normalizeDay(day) === normalizeDay(d)))) {
+    if (!Array.isArray(parsedDias) || parsedDias.length === 0 || !parsedDias.every((d) => days.includes(d))) {
         return res.status(400).json({ message: 'Días de atención inválidos.', status: "error" });
     }
 
@@ -72,7 +61,7 @@ const upsertSchedule = async (req, res) => {
     }
     
     try {
-        const horario = await scheduleModel.upsert(id_Tutor, { dias: normalizedDias, startTime, endTime })
+        const horario = await scheduleModel.upsert(id_Tutor, { dias: parsedDias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
             data: horario,
