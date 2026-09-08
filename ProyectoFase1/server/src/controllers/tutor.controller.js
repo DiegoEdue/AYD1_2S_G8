@@ -78,6 +78,16 @@ const upsertSchedule = async (req, res) => {
     }
 
     try {
+        // HU-011: Validar que no existan sesiones activas/programadas fuera del nuevo horario
+        const conflictos = await scheduleModel.findConflictingSessions(id_Tutor, { dias: parsedDias, startTime, endTime });
+        if (conflictos.length > 0) {
+            return res.status(409).json({
+                message: 'No se puede actualizar el horario: tienes sesiones activas o programadas fuera del nuevo rango horario. Cancela o reprograma dichas sesiones primero.',
+                status: 'error',
+                data: conflictos
+            });
+        }
+
         const horario = await scheduleModel.upsert(id_Tutor, { dias: parsedDias, startTime, endTime })
         return res.status(200).json({
             message: 'Horario creado/actualizado exitosamente',
@@ -125,7 +135,7 @@ const getHistorySessions = async (req, res) => {
     if (!Number.isInteger(page) || page < 1) page = 1;
     if (!Number.isInteger(limit) || limit < 1 || limit > 100) limit = 20;
     try {
-        const { sesiones, total } = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
+        const { data: sesiones, total } = await sessionModel.findHistoryByTutor(tutorId, { page, limit });
         return res.status(200).json({
             message: 'Historial de sesiones obtenido exitosamente',
             status: 'success',
