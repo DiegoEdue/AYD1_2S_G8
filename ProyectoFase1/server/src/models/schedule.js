@@ -30,6 +30,47 @@ const findhorarioByTutorId = async (id_Tutor) => {
     };
 }
 
+// Devuelve las sesiones activas/programadas del tutor que quedarían FUERA
+// del nuevo rango horario propuesto (días de la semana o franja [inicio, fin)).
+// Solo considera sesiones futuras (fecha_sesion >= hoy) con estado 'Activa'.
+const findConflictingSessions = async (id_Tutor, { dias, startTime, endTime }) => {
+    const dayCase = `
+        CASE EXTRACT(DOW FROM s.fecha_sesion)
+            WHEN 0 THEN 'Domingo'
+            WHEN 1 THEN 'Lunes'
+            WHEN 2 THEN 'Martes'
+            WHEN 3 THEN 'Miercoles'
+            WHEN 4 THEN 'Jueves'
+            WHEN 5 THEN 'Viernes'
+            WHEN 6 THEN 'Sabado'
+        END`;
+
+    const result = await db.query(
+        `SELECT s.id_sesion, s.fecha_sesion, s.hora_sesion, s.motivo,
+                CONCAT(e.nombre, ' ', e.apellido) AS estudiante
+        FROM sesion s
+        JOIN estudiante e ON s.id_estudiante = e.id_estudiante
+        WHERE s.id_tutor = $1
+          AND s.estado = 'Activa'
+          AND s.fecha_sesion >= CURRENT_DATE
+          AND (
+              s.hora_sesion < $2::time
+              OR s.hora_sesion >= $3::time
+              OR ${dayCase} NOT IN (${dias.map((_, i) => `$${i + 4}`).join(', ')})
+          )
+        ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC`,
+        [id_Tutor, startTime, endTime, ...dias]
+    );
+
+    return result.rows.map((row) => ({
+        id: row.id_sesion,
+        fecha: row.fecha_sesion.toISOString().slice(0, 10),
+        hora: row.hora_sesion.slice(0, 5),
+        estudiante: row.estudiante,
+        motivo: row.motivo,
+    }));
+}
+
 const upsert = async (id_Tutor, { dias, startTime, endTime }) => {
     const client = await db.pool.connect(); // debemos de especificar que es de pool, ya que sql no tiene el
 
@@ -69,5 +110,6 @@ const upsert = async (id_Tutor, { dias, startTime, endTime }) => {
 
 module.exports = {
     findhorarioByTutorId,
+    findConflictingSessions,
     upsert
 };
