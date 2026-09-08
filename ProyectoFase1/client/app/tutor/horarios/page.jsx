@@ -22,6 +22,7 @@ export default function HorariosTutorPage() {
   const [horaInicio, setHoraInicio] = useState("08:00");
   const [horaFin, setHoraFin] = useState("12:00");
   const [error, setError] = useState("");
+  const [sesionesConflicto, setSesionesConflicto] = useState([]);
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
 
@@ -49,6 +50,7 @@ export default function HorariosTutorPage() {
 
   async function onGuardar() {
     setError("");
+    setSesionesConflicto([]);
     if (dias.length === 0) {
       setError("Selecciona al menos un día de atención.");
       return;
@@ -66,9 +68,12 @@ export default function HorariosTutorPage() {
         endTime: horaFin,
       });
       await apiFetch(`/tutor/schedule?${params.toString()}`, { method: "PUT" });
+      setSesionesConflicto([]);
       mostrarToast("Horario actualizado correctamente.", "exito");
     } catch (err) {
       setError(err.message || "No pudimos guardar el horario.");
+      const conflictos = err.details?.data;
+      setSesionesConflicto(Array.isArray(conflictos) ? conflictos : []);
     } finally {
       setGuardando(false);
     }
@@ -83,7 +88,19 @@ export default function HorariosTutorPage() {
 
       {error && (
         <div role="alert" className="mt-4 rounded-lg bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark">
-          {error}
+          <p>{error}</p>
+          {sesionesConflicto.length > 0 && (
+            <ul className="mt-2 list-inside list-disc space-y-1">
+              {sesionesConflicto.map((s) => (
+                <li key={s.id}>
+                  <span className="font-medium">{s.fecha}</span> a las{" "}
+                  <span className="font-medium">{s.hora}</span> con{" "}
+                  <span className="font-medium">{s.estudiante}</span>
+                  {s.motivo ? ` — ${s.motivo}` : ""}
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
 
