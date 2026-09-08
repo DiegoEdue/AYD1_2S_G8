@@ -70,7 +70,7 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
     const result = await db.query(
         `${SELECT_BASE}
         WHERE s.id_tutor = $1 AND s.estado <> 'Activa'
-        ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC;
+        ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC
         LIMIT $2 OFFSET $3;`,
         [id_Tutor, limit, offset]
     );
@@ -84,7 +84,7 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
         estadoDescripcion: ESTADOS_SESION[row.estado] || row.estado, 
     }));
 
-    return { data, total: result.row[0].length }; // devuelve las sess
+    return { data, total: result.rows.length }; // devuelve las sess
 }
 
 // Marca la sesión como atendida y actualiza el resumen
