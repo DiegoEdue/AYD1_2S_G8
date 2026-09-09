@@ -3,7 +3,10 @@ const { comparePassword } = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/auth');
 const db = require('../config/db');
-const { sendApprovalEmail, sendDeactivationEmail } = require('../services/email');
+const {
+  sendApprovalEmail,
+  sendDeactivationEmail,
+} = require('../services/email');
 const {
   generateSecret,
   encryptSecret,
@@ -30,7 +33,7 @@ const getPendingStudents = async (req, res) => {
       FROM tutor t
       JOIN solicitud s ON s.id_tutor = t.id_tutor
       WHERE t.estado_aprobacion = 'pendiente' AND s.estado = 'pendiente'
-      ORDER BY fecha_registro ASC`
+      ORDER BY fecha_registro ASC`,
     );
 
     return res.status(200).json({
@@ -42,7 +45,8 @@ const getPendingStudents = async (req, res) => {
     console.error('Error en getPendingStudents:', error);
     return res.status(500).json({
       status: 'error',
-      message: 'Error interno del servidor al consultar estudiantes pendientes.',
+      message:
+        'Error interno del servidor al consultar estudiantes pendientes.',
     });
   }
 };
@@ -62,26 +66,42 @@ const approveStudent = async (req, res) => {
     if (rol === 'tutor') {
       const tutorRes = await db.query(
         'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1 AND estado_aprobacion = $2',
-        [id, 'pendiente']
+        [id, 'pendiente'],
       );
       if (tutorRes.rows.length === 0) {
-        return res.status(404).json({ status: 'error', message: 'Tutor no encontrado.' });
+        return res
+          .status(404)
+          .json({ status: 'error', message: 'Tutor no encontrado.' });
       }
       const tutor = tutorRes.rows[0];
-      await db.query('UPDATE tutor SET estado_aprobacion = $1 WHERE id_tutor = $2', ['aprobado', id]);
+      await db.query(
+        'UPDATE tutor SET estado_aprobacion = $1 WHERE id_tutor = $2',
+        ['aprobado', id],
+      );
       await db.query(
         `UPDATE solicitud SET estado = 'aceptada', fecha_procesado = CURRENT_TIMESTAMP
          WHERE id_tutor = $1 AND tipo_usuario = 'tutor' AND estado = 'pendiente'`,
-        [id]
+        [id],
       );
-      sendApprovalEmail({ to: tutor.correo, name: `${tutor.nombre} ${tutor.apellido}`, approved: true })
-        .catch(err => console.error('Error al enviar correo de aprobación:', err));
-      return res.status(200).json({ status: 'success', message: 'Tutor aprobado exitosamente.', data: tutor });
+      sendApprovalEmail({
+        to: tutor.correo,
+        name: `${tutor.nombre} ${tutor.apellido}`,
+        approved: true,
+      }).catch((err) =>
+        console.error('Error al enviar correo de aprobación:', err),
+      );
+      return res
+        .status(200)
+        .json({
+          status: 'success',
+          message: 'Tutor aprobado exitosamente.',
+          data: tutor,
+        });
     }
 
     const studentRes = await db.query(
       'SELECT id_estudiante, nombre, apellido, correo, estado_aprobacion FROM estudiante WHERE id_estudiante = $1 AND estado_aprobacion = $2',
-      [id, 'pendiente']
+      [id, 'pendiente'],
     );
 
     if (studentRes.rows.length === 0) {
@@ -97,19 +117,25 @@ const approveStudent = async (req, res) => {
       `UPDATE estudiante 
        SET estado_aprobacion = 'aprobado' 
        WHERE id_estudiante = $1`,
-      [id]
+      [id],
     );
 
     await db.query(
       `UPDATE solicitud 
        SET estado = 'aceptada', fecha_procesado = CURRENT_TIMESTAMP 
        WHERE id_estudiante = $1 AND tipo_usuario = 'estudiante'`,
-      [id]
+      [id],
     );
 
     const fullName = `${student.nombre} ${student.apellido}`;
 
-    sendApprovalEmail({ to: student.correo, name: fullName, approved: true }).catch(err => console.error('Error al enviar correo de aprobación:', err));
+    sendApprovalEmail({
+      to: student.correo,
+      name: fullName,
+      approved: true,
+    }).catch((err) =>
+      console.error('Error al enviar correo de aprobación:', err),
+    );
 
     return res.status(200).json({
       status: 'success',
@@ -145,26 +171,43 @@ const rejectStudent = async (req, res) => {
     if (rol === 'tutor') {
       const tutorRes = await db.query(
         'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1 AND estado_aprobacion = $2',
-        [id, 'pendiente']
+        [id, 'pendiente'],
       );
       if (tutorRes.rows.length === 0) {
-        return res.status(404).json({ status: 'error', message: 'Tutor no encontrado.' });
+        return res
+          .status(404)
+          .json({ status: 'error', message: 'Tutor no encontrado.' });
       }
       const tutor = tutorRes.rows[0];
-      await db.query('UPDATE tutor SET estado_aprobacion = $1 WHERE id_tutor = $2', ['rechazado', id]);
+      await db.query(
+        'UPDATE tutor SET estado_aprobacion = $1 WHERE id_tutor = $2',
+        ['rechazado', id],
+      );
       await db.query(
         `UPDATE solicitud SET estado = 'rechazada', fecha_procesado = CURRENT_TIMESTAMP, motivo_rechazo = $2
          WHERE id_tutor = $1 AND tipo_usuario = 'tutor' AND estado = 'pendiente'`,
-        [id, motivo || 'Solicitud rechazada por el administrador']
+        [id, motivo || 'Solicitud rechazada por el administrador'],
       );
-      sendApprovalEmail({ to: tutor.correo, name: `${tutor.nombre} ${tutor.apellido}`, approved: false, reason: motivo })
-        .catch(err => console.error('Error al enviar correo de rechazo:', err));
-      return res.status(200).json({ status: 'success', message: 'Tutor rechazado exitosamente.', data: tutor });
+      sendApprovalEmail({
+        to: tutor.correo,
+        name: `${tutor.nombre} ${tutor.apellido}`,
+        approved: false,
+        reason: motivo,
+      }).catch((err) =>
+        console.error('Error al enviar correo de rechazo:', err),
+      );
+      return res
+        .status(200)
+        .json({
+          status: 'success',
+          message: 'Tutor rechazado exitosamente.',
+          data: tutor,
+        });
     }
 
     const studentRes = await db.query(
       'SELECT id_estudiante, nombre, apellido, correo, estado_aprobacion FROM estudiante WHERE id_estudiante = $1 AND estado_aprobacion = $2',
-      [id, 'pendiente']
+      [id, 'pendiente'],
     );
 
     if (studentRes.rows.length === 0) {
@@ -180,19 +223,24 @@ const rejectStudent = async (req, res) => {
       `UPDATE estudiante 
        SET estado_aprobacion = 'rechazado' 
        WHERE id_estudiante = $1`,
-      [id]
+      [id],
     );
 
     await db.query(
       `UPDATE solicitud 
        SET estado = 'rechazada', fecha_procesado = CURRENT_TIMESTAMP, motivo_rechazo = $2 
        WHERE id_estudiante = $1 AND tipo_usuario = 'estudiante'`,
-      [id, motivo || 'Solicitud rechazada por el administrador']
+      [id, motivo || 'Solicitud rechazada por el administrador'],
     );
 
     const fullName = `${student.nombre} ${student.apellido}`;
 
-    sendApprovalEmail({ to: student.correo, name: fullName, approved: false, reason: motivo }).catch(err => console.error('Error al enviar correo de rechazo:', err));
+    sendApprovalEmail({
+      to: student.correo,
+      name: fullName,
+      approved: false,
+      reason: motivo,
+    }).catch((err) => console.error('Error al enviar correo de rechazo:', err));
 
     return res.status(200).json({
       status: 'success',
@@ -244,7 +292,10 @@ const loginAdmin = async (req, res) => {
 
     const admin = result[0];
 
-    const isValidPassword = await comparePassword(password, admin.password_hash);
+    const isValidPassword = await comparePassword(
+      password,
+      admin.password_hash,
+    );
     if (!isValidPassword) {
       return res.status(401).json({
         status: 'error',
@@ -301,7 +352,8 @@ const verify2fa = async (req, res) => {
     if (!adminId || !token) {
       return res.status(400).json({
         status: 'error',
-        message: 'Por favor, ingrese el id del administrador y el código de verificación.',
+        message:
+          'Por favor, ingrese el id del administrador y el código de verificación.',
       });
     }
 
@@ -368,7 +420,8 @@ const verify2fa = async (req, res) => {
     if (error.message === 'Secreto TOTP almacenado en formato inválido.') {
       return res.status(500).json({
         status: 'error',
-        message: 'Error al desencriptar el secreto 2FA. Verifique OTP_ENCRYPTION_KEY.',
+        message:
+          'Error al desencriptar el secreto 2FA. Verifique OTP_ENCRYPTION_KEY.',
       });
     }
     return res.status(500).json({
@@ -419,25 +472,37 @@ const getUsers = async (req, res) => {
     const consultas = [];
 
     if (!rol || rol === 'estudiante') {
-      consultas.push(db.query(`
+      consultas.push(
+        db.query(`
         SELECT id_estudiante AS id, nombre, apellido, carnet AS identificador,
                correo, estado_aprobacion AS estado, 'estudiante' AS rol
-        FROM estudiante WHERE estado_aprobacion IN ('aprobado', 'baja')`));
+        FROM estudiante WHERE estado_aprobacion IN ('aprobado', 'baja')`),
+      );
     }
     if (!rol || rol === 'tutor') {
-      consultas.push(db.query(`
+      consultas.push(
+        db.query(`
         SELECT id_tutor AS id, nombre, apellido, carnet_id AS identificador,
                correo, estado_aprobacion AS estado, 'tutor' AS rol
-        FROM tutor WHERE estado_aprobacion IN ('aprobado', 'baja')`));
+        FROM tutor WHERE estado_aprobacion IN ('aprobado', 'baja')`),
+      );
     }
 
     const resultados = await Promise.all(consultas);
-    const data = resultados.flatMap((resultado) => resultado.rows)
-      .sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`));
+    const data = resultados
+      .flatMap((resultado) => resultado.rows)
+      .sort((a, b) =>
+        `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`),
+      );
     return res.status(200).json({ status: 'success', data });
   } catch (error) {
     console.error('Error en getUsers:', error);
-    return res.status(500).json({ status: 'error', message: 'Error interno al consultar usuarios.' });
+    return res
+      .status(500)
+      .json({
+        status: 'error',
+        message: 'Error interno al consultar usuarios.',
+      });
   }
 };
 
@@ -459,7 +524,7 @@ const getApprovedStudents = async (req, res) => {
               fecha_nacimiento, foto_url, correo, estado_aprobacion, fecha_registro 
        FROM estudiante 
        WHERE estado_aprobacion = 'aprobado' 
-       ORDER BY nombre ASC, apellido ASC`
+       ORDER BY nombre ASC, apellido ASC`,
     );
 
     return res.status(200).json({
@@ -491,7 +556,7 @@ const deactivateStudent = async (req, res) => {
     // 1. Obtener datos del estudiante antes de eliminar
     const studentRes = await db.query(
       'SELECT id_estudiante, nombre, apellido, correo FROM estudiante WHERE id_estudiante = $1',
-      [id]
+      [id],
     );
 
     if (studentRes.rows.length === 0) {
@@ -514,12 +579,17 @@ const deactivateStudent = async (req, res) => {
       to: student.correo,
       name: fullName,
       role: 'Estudiante',
-      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
-    }).catch(err => console.error('Error al enviar correo de baja de estudiante:', err));
+      reason:
+        motivo ||
+        'Baja y eliminación de cuenta procesada por la administración',
+    }).catch((err) =>
+      console.error('Error al enviar correo de baja de estudiante:', err),
+    );
 
     return res.status(200).json({
       status: 'success',
-      message: 'Estudiante dado de baja y eliminado exitosamente de la base de datos.',
+      message:
+        'Estudiante dado de baja y eliminado exitosamente de la base de datos.',
       data: {
         id_estudiante: parseInt(id, 10),
         nombre: fullName,
@@ -546,7 +616,7 @@ const getApprovedTutors = async (req, res) => {
               hora_inicio_atencion, hora_fin_atencion, fecha_registro 
        FROM tutor 
        WHERE estado_aprobacion = 'aprobado' 
-       ORDER BY nombre ASC, apellido ASC`
+       ORDER BY nombre ASC, apellido ASC`,
     );
 
     return res.status(200).json({
@@ -578,7 +648,7 @@ const deactivateTutor = async (req, res) => {
     // 1. Obtener datos del tutor antes de eliminar
     const tutorRes = await db.query(
       'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1',
-      [id]
+      [id],
     );
 
     if (tutorRes.rows.length === 0) {
@@ -603,12 +673,17 @@ const deactivateTutor = async (req, res) => {
       to: tutor.correo,
       name: fullName,
       role: 'Tutor',
-      reason: motivo || 'Baja y eliminación de cuenta procesada por la administración',
-    }).catch(err => console.error('Error al enviar correo de baja de tutor:', err));
+      reason:
+        motivo ||
+        'Baja y eliminación de cuenta procesada por la administración',
+    }).catch((err) =>
+      console.error('Error al enviar correo de baja de tutor:', err),
+    );
 
     return res.status(200).json({
       status: 'success',
-      message: 'Tutor dado de baja y eliminado exitosamente de la base de datos.',
+      message:
+        'Tutor dado de baja y eliminado exitosamente de la base de datos.',
       data: {
         id_tutor: parseInt(id, 10),
         nombre: fullName,
@@ -626,23 +701,39 @@ const deactivateTutor = async (req, res) => {
   }
 };
 
-
 const getReports = async (req, res) => {
   try {
-    const [states, subjects, totals] = await Promise.all([
-      db.query(`SELECT estado, COUNT(*)::integer AS cantidad FROM sesion GROUP BY estado ORDER BY estado`),
+    const [states, subjects, tutors, totals] = await Promise.all([
+      db.query(
+        `SELECT estado, COUNT(*)::integer AS cantidad FROM sesion GROUP BY estado ORDER BY estado`,
+      ),
       db.query(`SELECT m.nombre AS materia, COUNT(*)::integer AS cantidad
                 FROM sesion s JOIN materia m ON m.id_materia = s.id_materia
-                GROUP BY m.nombre ORDER BY cantidad DESC`),
+                WHERE s.estado = 'Atendida'
+                GROUP BY m.nombre ORDER BY cantidad DESC, m.nombre ASC`),
+      db.query(`SELECT CONCAT(t.nombre, ' ', t.apellido) AS tutor,
+                       COUNT(*)::integer AS sesiones
+                FROM sesion s JOIN tutor t ON t.id_tutor = s.id_tutor
+                WHERE s.estado = 'Atendida'
+                GROUP BY t.id_tutor, t.nombre, t.apellido
+                ORDER BY sesiones DESC, tutor ASC`),
       db.query(`SELECT COUNT(*)::integer AS sesiones, COUNT(DISTINCT id_estudiante)::integer AS estudiantes,
                        COUNT(DISTINCT id_tutor)::integer AS tutores FROM sesion`),
     ]);
-    return res.status(200).json({ status: 'success', data: {
-      totales: totals.rows[0], porEstado: states.rows, porMateria: subjects.rows,
-    }});
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        totales: totals.rows[0],
+        porEstado: states.rows,
+        porMateria: subjects.rows,
+        porTutor: tutors.rows,
+      },
+    });
   } catch (error) {
     console.error('Error en getReports:', error);
-    return res.status(500).json({ status: 'error', message: 'Error interno al generar reportes.' });
+    return res
+      .status(500)
+      .json({ status: 'error', message: 'Error interno al generar reportes.' });
   }
 };
 
