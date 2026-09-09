@@ -1,7 +1,9 @@
 # Scrum Meetings - G8
 
-Este documento contiene los enlaces a las grabaciones de todas las reuniones realizadas durante el desarrollo del proyecto EduConnect, siguiendo la metodología Scrum.  
-Cada reunión fue grabada y organizada por tipo de evento Sprint Planning, Daily Scrum y Sprint Retrospective, llevandose a cabo 6 reuniones del tipo Daily Scrum por Sprint y 2 Sprints.
+> [!INFO]
+> Este documento contiene los enlaces a las grabaciones de todas las reuniones realizadas durante el desarrollo del proyecto EduConnect, siguiendo la metodología Scrum.
+>
+> Cada reunión fue grabada y organizada por tipo de evento Sprint Planning, Daily Scrum y Sprint Retrospective, llevandose a cabo 6 reuniones del tipo Daily Scrum por Sprint y 2 Sprints.
 
 Durante el proyecto se realizaron:
 
@@ -85,18 +87,18 @@ Duración del Sprint: `17:38 minutos`
 
 #### 2.2.2 Daily 2
 
-- Duración: `8:08 minutos`  
-- Enlace: [Daily 2]()
+- Duración: `6:58 minutos`  
+- Enlace: [Daily 2](https://drive.google.com/file/d/14kCPHVE5tuGOm6eXcAESIk26q4f9Yadv/view?usp=drive_link)
 
 #### 2.2.3 Daily 3
 
-- Duración: `6:16 minutos`
-- Enlace: [Daily 3]()
+- Duración: `6:54 minutos`
+- Enlace: [Daily 3](https://drive.google.com/file/d/1MFU_74S5Qd__oPYh_XA3B_E7zfnGMTmW/view?usp=drive_link)
 
 #### 2.2.4 Daily 4
 
-- Duración: `5:40 minutos`  
-- Enlace: [Daily 4]()
+- Duración: `5:39 minutos`  
+- Enlace: [Daily 4](https://drive.google.com/file/d/1HHZomNgzBASHns-N-noK5we3XyHpe_V0/view?usp=drive_link)
 
 #### 2.2.5 Daily 5
 

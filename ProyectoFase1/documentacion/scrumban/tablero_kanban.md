@@ -150,6 +150,17 @@ En este sprint se agregaron nuevas historias de usuario enfocadas en la document
 ![Sprint 2 - Tablero Inicial (Parte 11)](./img/IS11.png)  
 ![Sprint 2 - Tablero Inicial (Parte 12)](./img/IS12.png)  
 
+#### 4.1.2.2 Estado Intermedio
+
+![Sprint 2 - Mitad del Srint (Parte 1)](./img/MS1.png)  
+![Sprint 2 - Mitad del Srint (Parte 2)](./img/MS2.png)  
+![Sprint 2 - Mitad del Srint (Parte 3)](./img/MS3.png)  
+![Sprint 2 - Mitad del Srint (Parte 4)](./img/MS4.png)  
+![Sprint 2 - Mitad del Srint (Parte 5)](./img/MS5.png)  
+![Sprint 2 - Mitad del Srint (Parte 6)](./img/MS6.png)  
+![Sprint 2 - Mitad del Srint (Parte 7)](./img/MS7.png)  
+![Sprint 2 - Mitad del Srint (Parte 8)](./img/MS8.png)
+
 > [!INFO]
 >
 > En las imágenes se muestra el estado del tablero en tres puntos específicos del sprint. Si desea ver el estado en un día en específico del tablero se puede observar en las grabaciones que se encuentran en el documento de scrum meetings [Scrum Meetings](scrumn_meetings.md).
