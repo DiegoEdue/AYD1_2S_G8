@@ -9,7 +9,7 @@ import { useToast } from "@/components/ui/Toast";
 import Icon from "@/components/ui/Icon";
 import Avatar from "@/components/ui/Avatar";
 import { listarTutores, obtenerHorarioTutor } from "@/lib/api/tutores";
-import { programarSesion } from "@/lib/api/sesiones";
+import { listarSesionesActivasEstudiante, programarSesion } from "@/lib/api/sesiones";
 
 const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 
@@ -41,6 +41,7 @@ export default function DetalleTutorPage() {
     const [error, setError] = useState("");
     const [enviando, setEnviando] = useState(false);
     const [cargandoDisponibilidad, setCargandoDisponibilidad] = useState(false);
+    const [sesionesActivas, setSesionesActivas] = useState([]);
 
     useEffect(() => {
         async function cargarTutor() {
@@ -67,6 +68,7 @@ export default function DetalleTutorPage() {
                         : [],
                     horaInicio: encontrado.hora_inicio_atencion?.slice(0, 5) || "08:00",
                     horaFin: encontrado.hora_fin_atencion?.slice(0, 5) || "18:00",
+                    franjas: [],
                 });
             } catch {
                 setTutor(null);
@@ -75,6 +77,12 @@ export default function DetalleTutorPage() {
 
         cargarTutor();
     }, [id]);
+
+    useEffect(() => {
+        listarSesionesActivasEstudiante()
+            .then((response) => setSesionesActivas(Array.isArray(response?.data) ? response.data : []))
+            .catch(() => setSesionesActivas([]));
+    }, []);
 
     useEffect(() => {
         if (!id || !fechaConsulta) return;
@@ -128,6 +136,19 @@ export default function DetalleTutorPage() {
         }
         if (form.hora < tutor.horaInicio || form.hora > tutor.horaFin) {
         setError(`El horario del tutor ese día es de ${tutor.horaInicio} a ${tutor.horaFin}.`);
+        return;
+        }
+        const franja = tutor.franjas.find((item) => item.hora === form.hora);
+        if (franja?.estado === "ocupada") {
+        setError("Ese horario ya está ocupado. Selecciona una franja libre.");
+        return;
+        }
+        if (sesionesActivas.some((sesion) => sesion.fecha === form.fecha && sesion.hora?.slice(0, 5) === form.hora)) {
+        setError("Ya tienes otra sesión activa en esa fecha y hora.");
+        return;
+        }
+        if (sesionesActivas.some((sesion) => String(sesion.id_tutor ?? sesion.tutor_id ?? sesion.tutorId) === String(tutor.id))) {
+        setError("Ya tienes una sesión activa con este tutor.");
         return;
         }
 
@@ -216,6 +237,26 @@ export default function DetalleTutorPage() {
             </div>
             )}
 
+            {fechaConsulta && tutorAtiendeEseDia && tutor.franjas?.length > 0 && (
+            <div className="mt-4">
+                <p className="text-sm font-medium text-charcoal">Franjas del día</p>
+                <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {tutor.franjas.map((franja) => (
+                    <span
+                    key={franja.hora}
+                    className={`rounded-lg border px-3 py-2 text-center text-xs font-semibold ${
+                        franja.estado === "ocupada"
+                        ? "border-crimson/20 bg-crimson-light/30 text-crimson-dark"
+                        : "border-sage/30 bg-sage-light/60 text-charcoal-dark"
+                    }`}
+                    >
+                    {franja.hora} · {franja.estado === "ocupada" ? "Ocupada" : "Libre"}
+                    </span>
+                ))}
+                </div>
+            </div>
+            )}
+
             <Button className="mt-5" onClick={abrirModal}>
             Programar sesión
             </Button>
@@ -247,18 +288,37 @@ export default function DetalleTutorPage() {
                 id="fecha"
                 type="date"
                 value={form.fecha}
-                onChange={(e) => setForm((f) => ({ ...f, fecha: e.target.value }))}
+                onChange={(e) => {
+                    setForm((f) => ({ ...f, fecha: e.target.value, hora: "" }));
+                    setFechaConsulta(e.target.value);
+                }}
                 className={inputClass(false)}
                 />
             </FormField>
             <FormField label="Hora" name="hora" required ayuda={`Entre ${tutor.horaInicio} y ${tutor.horaFin}`}>
+                {tutor.franjas?.length > 0 ? (
+                <select
+                    id="hora"
+                    value={form.hora}
+                    onChange={(e) => setForm((f) => ({ ...f, hora: e.target.value }))}
+                    className={inputClass(false)}
+                >
+                    <option value="">Selecciona una franja libre</option>
+                    {tutor.franjas.map((franja) => (
+                    <option key={franja.hora} value={franja.hora} disabled={franja.estado === "ocupada"}>
+                        {franja.hora} - {franja.estado === "ocupada" ? "Ocupada" : "Disponible"}
+                    </option>
+                    ))}
+                </select>
+                ) : (
                 <input
-                id="hora"
-                type="time"
-                value={form.hora}
-                onChange={(e) => setForm((f) => ({ ...f, hora: e.target.value }))}
-                className={inputClass(false)}
+                    id="hora"
+                    type="time"
+                    value={form.hora}
+                    onChange={(e) => setForm((f) => ({ ...f, hora: e.target.value }))}
+                    className={inputClass(false)}
                 />
+                )}
             </FormField>
             <FormField label="Materia" name="materia" required>
                 <select
