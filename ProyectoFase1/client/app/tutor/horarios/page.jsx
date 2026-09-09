@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
 import { useToast } from "@/components/ui/Toast";
 import { inputClass } from "@/components/ui/FormField";
 import { apiFetch } from "@/lib/api/client";
@@ -23,6 +24,7 @@ export default function HorariosTutorPage() {
   const [horaFin, setHoraFin] = useState("12:00");
   const [error, setError] = useState("");
   const [sesionesConflicto, setSesionesConflicto] = useState([]);
+  const [modalAbierto, setModalAbierto] = useState(false);
   const [guardando, setGuardando] = useState(false);
   const [cargando, setCargando] = useState(true);
 
@@ -74,6 +76,7 @@ export default function HorariosTutorPage() {
       setError(err.message || "No pudimos guardar el horario.");
       const conflictos = err.details?.data;
       setSesionesConflicto(Array.isArray(conflictos) ? conflictos : []);
+      setModalAbierto(true);
     } finally {
       setGuardando(false);
     }
@@ -86,21 +89,9 @@ export default function HorariosTutorPage() {
         El horario que elijas aplicará por igual a todos los días seleccionados.
       </p>
 
-      {error && (
-        <div role="alert" className="mt-4 rounded-lg bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark">
-          <p>{error}</p>
-          {sesionesConflicto.length > 0 && (
-            <ul className="mt-2 list-inside list-disc space-y-1">
-              {sesionesConflicto.map((s) => (
-                <li key={s.id}>
-                  <span className="font-medium">{s.fecha}</span> a las{" "}
-                  <span className="font-medium">{s.hora}</span> con{" "}
-                  <span className="font-medium">{s.estudiante}</span>
-                  {s.motivo ? ` — ${s.motivo}` : ""}
-                </li>
-              ))}
-            </ul>
-          )}
+      {error && !modalAbierto && (
+        <div role="alert" className="mt-4 rounded-lg border border-crimson/30 bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark">
+          {error}
         </div>
       )}
 
@@ -162,6 +153,36 @@ export default function HorariosTutorPage() {
           Guardar horario
         </Button>
       </div>
+
+      <Modal
+        abierto={modalAbierto}
+        onCerrar={() => setModalAbierto(false)}
+        titulo="No se pudo actualizar el horario"
+        footer={
+          <Button variante="fantasma" onClick={() => setModalAbierto(false)}>
+            Entendido
+          </Button>
+        }
+      >
+        <p>{error}</p>
+        {sesionesConflicto.length > 0 && (
+          <>
+            <p className="mt-3 font-medium text-crimson-dark">
+              Sesiones que debes cancelar o reprogramar:
+            </p>
+            <ul className="mt-2 space-y-1.5 border-t border-crimson/10 pt-2">
+              {sesionesConflicto.map((s) => (
+                <li key={s.id}>
+                  <span className="font-medium">{s.fecha}</span> a las{" "}
+                  <span className="font-medium">{s.hora}</span> con{" "}
+                  <span className="font-medium">{s.estudiante}</span>
+                  {s.motivo ? ` — ${s.motivo}` : ""}
+                </li>
+              ))}
+            </ul>
+          </>
+        )}
+      </Modal>
     </div>
   );
 }
