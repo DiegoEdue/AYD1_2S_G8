@@ -32,6 +32,9 @@ const VACIO_ESTUDIANTE = {
     universidad: "",
     };
 
+    const OPCIONES_GENERO = ["Masculino", "Femenino"];
+    const OPCIONES_DIRECCION_TUTORIA = ["Física", "Online"];
+
     function validarPasswordFuerte(pw) {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
     }
@@ -72,6 +75,9 @@ const VACIO_ESTUDIANTE = {
         if (!form.nombre) e.nombre = "Ingresa tu nombre.";
         if (!form.apellido) e.apellido = "Ingresa tu apellido.";
         if (!form.carnet) e.carnet = "Ingresa tu carnet o ID.";
+        if (!OPCIONES_GENERO.includes(form.genero)) e.genero = "Selecciona un género.";
+        if (!form.direccion) e.direccion = "Ingresa tu dirección.";
+        if (!form.telefono) e.telefono = "Ingresa tu teléfono.";
         if (!form.correo || !/^\S+@\S+\.\S+$/.test(form.correo))
         e.correo = "Ingresa un correo electrónico válido.";
         if (!validarPasswordFuerte(form.password))
@@ -80,7 +86,12 @@ const VACIO_ESTUDIANTE = {
         if (rol === "tutor") {
         if (!form.especialidad) e.especialidad = "Indica las materias que impartes.";
         if (!form.numeroIdentificacion) e.numeroIdentificacion = "Ingresa tu número de identificación.";
+        if (!OPCIONES_DIRECCION_TUTORIA.includes(form.direccionTutoria)) {
+            e.direccionTutoria = "Selecciona Física u Online.";
+        }
         if (!form.universidad) e.universidad = "Ingresa tu universidad de graduación.";
+        if (!form.anioInicio) e.anioInicio = "Ingresa el año de inicio de tutorías.";
+        if (!form.foto) e.foto = "La fotografía del tutor es obligatoria.";
         }
         setErrores(e);
         return Object.keys(e).length === 0;
@@ -150,7 +161,7 @@ const VACIO_ESTUDIANTE = {
                     Foto de perfil
                     </label>
                     <p className="text-xs text-charcoal-light">
-                    Opcional. Si no subes una, se mostrarán tus iniciales.
+                    {rol === "tutor" ? "Obligatoria para crear tu perfil profesional." : "Opcional. Si no subes una, se mostrarán tus iniciales."}
                     </p>
                     <div className="mt-1 flex items-center gap-3">
                     <label
@@ -177,6 +188,7 @@ const VACIO_ESTUDIANTE = {
                         </button>
                     )}
                     </div>
+                {errores.foto && <p role="alert" className="text-xs font-medium text-crimson">{errores.foto}</p>}
                 </div>
                 </div>
 
@@ -209,28 +221,33 @@ const VACIO_ESTUDIANTE = {
                     className={inputClass(!!errores.carnet)}
                 />
                 </FormField>
-                <FormField label="Género" name="genero">
-                <input
+                <FormField label="Género" name="genero" required error={errores.genero}>
+                <select
                     id="genero"
                     value={form.genero}
                     onChange={(e) => set("genero", e.target.value)}
-                    className={inputClass(false)}
-                />
+                    className={inputClass(!!errores.genero)}
+                >
+                    <option value="">Selecciona una opción</option>
+                    {OPCIONES_GENERO.map((opcion) => (
+                    <option key={opcion} value={opcion}>{opcion}</option>
+                    ))}
+                </select>
                 </FormField>
-                <FormField label="Dirección" name="direccion">
+                <FormField label="Dirección" name="direccion" required error={errores.direccion}>
                 <input
                     id="direccion"
                     value={form.direccion}
                     onChange={(e) => set("direccion", e.target.value)}
-                    className={inputClass(false)}
+                    className={inputClass(!!errores.direccion)}
                 />
                 </FormField>
-                <FormField label="Teléfono" name="telefono">
+                <FormField label="Teléfono" name="telefono" required error={errores.telefono}>
                 <input
                     id="telefono"
                     value={form.telefono}
                     onChange={(e) => set("telefono", e.target.value)}
-                    className={inputClass(false)}
+                    className={inputClass(!!errores.telefono)}
                 />
                 </FormField>
                 <FormField
@@ -286,21 +303,32 @@ const VACIO_ESTUDIANTE = {
                         className={inputClass(!!errores.numeroIdentificacion)}
                     />
                     </FormField>
-                    <FormField label="Dirección de tutoría" name="direccionTutoria" ayuda="Física u Online">
-                    <input
+                    <FormField
+                    label="Dirección de tutoría"
+                    name="direccionTutoria"
+                    required
+                    error={errores.direccionTutoria}
+                    ayuda="Selecciona si atiendes de forma física u online."
+                    >
+                    <select
                         id="direccionTutoria"
                         value={form.direccionTutoria}
                         onChange={(e) => set("direccionTutoria", e.target.value)}
-                        className={inputClass(false)}
-                    />
+                        className={inputClass(!!errores.direccionTutoria)}
+                    >
+                        <option value="">Selecciona una opción</option>
+                        {OPCIONES_DIRECCION_TUTORIA.map((opcion) => (
+                        <option key={opcion} value={opcion}>{opcion}</option>
+                        ))}
+                    </select>
                     </FormField>
-                    <FormField label="Año de inicio de tutorías" name="anioInicio">
+                    <FormField label="Año de inicio de tutorías" name="anioInicio" required error={errores.anioInicio}>
                     <input
                         id="anioInicio"
                         type="number"
                         value={form.anioInicio}
                         onChange={(e) => set("anioInicio", e.target.value)}
-                        className={inputClass(false)}
+                        className={inputClass(!!errores.anioInicio)}
                     />
                     </FormField>
                     <FormField

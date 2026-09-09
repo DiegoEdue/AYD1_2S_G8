@@ -45,6 +45,25 @@ export async function obtenerPerfil(rol) {
   return apiFetch(rol === "tutor" ? "/tutor/profile" : "/estudiante/profile");
 }
 
-export async function actualizarPerfil(datos) {
-  return apiFetch("/perfil", { method: "PUT", body: datos });
+export async function actualizarPerfil(rol, datos) {
+  if (rol === "tutor") {
+    const payload = {
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      fechaNacimiento: datos.fecha_nacimiento,
+      genero: datos.genero,
+      direccion: datos.direccion,
+      telefono: datos.telefono,
+      fotoUrl: datos.foto_url,
+      direccionTutoria: datos.direccion_tutoria,
+      anioInicioTutorias: datos.anio_inicio_tutorias,
+      universidadGraduacion: datos.universidad_graduacion,
+    };
+
+    if (datos.password_nueva) payload.password = datos.password_nueva;
+
+    return apiFetch("/tutor/profile", { method: "PATCH", body: payload });
+  }
+
+  return apiFetch("/student/profile", { method: "PUT", body: datos });
 }
