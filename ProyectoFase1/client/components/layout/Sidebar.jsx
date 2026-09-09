@@ -31,7 +31,7 @@ const NAV_POR_ROL = {
     const items = NAV_POR_ROL[rol] || [];
 
     return (
-        <aside className="flex h-screen w-64 shrink-0 flex-col bg-charcoal text-white">
+        <aside className="flex h-full w-64 shrink-0 flex-col bg-charcoal text-white">
         <div className="flex items-center gap-2.5 px-6 py-5">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white p-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
