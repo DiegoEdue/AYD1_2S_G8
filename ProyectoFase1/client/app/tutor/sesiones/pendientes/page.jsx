@@ -34,7 +34,7 @@ export default function SesionesPendientesTutorPage() {
           ordenadas.map((s) => ({
             ...s,
             id: s.id ?? s.id_sesion,
-            direccion: "Online",
+            direccion: s.direccion || s.direccion_tutoria || "Online",
             estado: "pendiente",
           }))
         );
