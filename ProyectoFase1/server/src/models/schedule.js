@@ -32,7 +32,9 @@ const findhorarioByTutorId = async (id_Tutor) => {
 
 // Devuelve las sesiones activas/programadas del tutor que quedarían FUERA
 // del nuevo rango horario propuesto (días de la semana o franja [inicio, fin)).
-// Solo considera sesiones futuras (fecha_sesion >= hoy) con estado 'Activa'.
+// Considera TODAS las sesiones con estado 'Activa' (agendadas), sin importar
+// si su fecha ya pasó: hasta que la sesión se atienda o se cancele, bloquea
+// el cambio de horario si queda fuera del nuevo rango.
 const findConflictingSessions = async (id_Tutor, { dias, startTime, endTime }) => {
     const dayCase = `
         CASE EXTRACT(DOW FROM s.fecha_sesion)
@@ -52,7 +54,6 @@ const findConflictingSessions = async (id_Tutor, { dias, startTime, endTime }) =
         JOIN estudiante e ON s.id_estudiante = e.id_estudiante
         WHERE s.id_tutor = $1
           AND s.estado = 'Activa'
-          AND s.fecha_sesion >= CURRENT_DATE
           AND (
               s.hora_sesion < $2::time
               OR s.hora_sesion >= $3::time
