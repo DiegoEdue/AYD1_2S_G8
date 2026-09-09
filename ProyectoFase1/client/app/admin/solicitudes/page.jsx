@@ -5,6 +5,7 @@ import Tabs from "@/components/ui/Tabs";
 import Table from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
+import Avatar from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
 import { aprobarSolicitud, listarSolicitudes, rechazarSolicitud } from "@/lib/api/admin";
 
@@ -28,6 +29,9 @@ export default function SolicitudesPage() {
             carnet: s.carnet || s.carnet_id || "-",
             correo: s.correo || "-",
             genero: s.genero || "-",
+            fechaNacimiento: s.fecha_nacimiento || "-",
+            foto: s.foto_url || "",
+            identificacionTutor: s.numero_identificacion_tutor || "-",
             especialidad: s.especialidad || "-",
           }))
         );
@@ -90,16 +94,18 @@ export default function SolicitudesPage() {
         <p className="text-sm text-charcoal-light">Cargando solicitudes…</p>
       ) : (
         <Table
-          columnas={["Nombre", "Carnet/ID", "Correo", "Detalle", "Acciones"]}
+          columnas={["Foto", "Nombre", "Carnet/ID", "Género", "Nacimiento", "Detalle", "Acciones"]}
           filas={filtradas}
           vacio="No hay solicitudes pendientes en esta categoría."
           renderFila={(s) => (
             <>
+              <td className="px-4 py-3"><Avatar nombre={s.nombre} foto={s.foto} size="h-9 w-9" /></td>
               <td className="px-4 py-3 font-medium text-charcoal">{s.nombre}</td>
               <td className="px-4 py-3 text-charcoal-light">{s.carnet}</td>
-              <td className="px-4 py-3 text-charcoal-light">{s.correo}</td>
+              <td className="px-4 py-3 text-charcoal-light">{s.genero}</td>
+              <td className="px-4 py-3 text-charcoal-light">{s.fechaNacimiento}</td>
               <td className="px-4 py-3 text-charcoal-light">
-                {s.rol === "tutor" ? s.especialidad : s.genero}
+                {s.rol === "tutor" ? `${s.especialidad} · ID tutor: ${s.identificacionTutor}` : s.correo}
               </td>
               <td className="px-4 py-3">
                 <div className="flex gap-2">
