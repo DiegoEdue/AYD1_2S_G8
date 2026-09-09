@@ -4,16 +4,21 @@ import { useEffect, useRef } from "react";
 
 export default function Modal({ abierto, onCerrar, titulo, children, footer }) {
     const dialogRef = useRef(null);
+    const onCerrarRef = useRef(onCerrar);
+
+    useEffect(() => {
+        onCerrarRef.current = onCerrar;
+    }, [onCerrar]);
 
     useEffect(() => {
         if (!abierto) return;
         const onKeyDown = (e) => {
-        if (e.key === "Escape") onCerrar();
+        if (e.key === "Escape") onCerrarRef.current();
         };
         document.addEventListener("keydown", onKeyDown);
         dialogRef.current?.focus();
         return () => document.removeEventListener("keydown", onKeyDown);
-    }, [abierto, onCerrar]);
+    }, [abierto]);
 
     if (!abierto) return null;
 
