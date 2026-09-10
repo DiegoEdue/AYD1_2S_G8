@@ -161,6 +161,24 @@ En este sprint se agregaron nuevas historias de usuario enfocadas en la document
 ![Sprint 2 - Mitad del Srint (Parte 7)](./img/MS7.png)  
 ![Sprint 2 - Mitad del Srint (Parte 8)](./img/MS8.png)
 
+#### 4.1.2.3 Estado Final
+
+![Sprint 2 - Final de Sprint (Parte 1)](./img/FS1.png)  
+![Sprint 2 - Final de Sprint (Parte 2)](./img/FS2.png)  
+![Sprint 2 - Final de Sprint (Parte 3)](./img/FS3.png)
+![Sprint 2 - Final de Sprint (Parte 4)](./img/FS4.png)  
+![Sprint 2 - Final de Sprint (Parte 5)](./img/FS5.png)  
+![Sprint 2 - Final de Sprint (Parte 6)](./img/FS6.png)
+![Sprint 2 - Final de Sprint (Parte 7)](./img/FS7.png)  
+![Sprint 2 - Final de Sprint (Parte 8)](./img/FS8.png)  
+![Sprint 2 - Final de Sprint (Parte 9)](./img/FS9.png)
+![Sprint 2 - Final de Sprint (Parte 10)](./img/FS10.png)  
+![Sprint 2 - Final de Sprint (Parte 11)](./img/FS11.png)  
+![Sprint 2 - Final de Sprint (Parte 12)](./img/FS12.png)
+![Sprint 2 - Final de Sprint (Parte 13)](./img/FS13.png)  
+![Sprint 2 - Final de Sprint (Parte 14)](./img/FS14.png)  
+![Sprint 2 - Final de Sprint (Parte 15)](./img/FS15.png)
+
 > [!INFO]
 >
 > En las imágenes se muestra el estado del tablero en tres puntos específicos del sprint. Si desea ver el estado en un día en específico del tablero se puede observar en las grabaciones que se encuentran en el documento de scrum meetings [Scrum Meetings](scrumn_meetings.md).
