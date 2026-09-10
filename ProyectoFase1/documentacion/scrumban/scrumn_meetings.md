@@ -102,16 +102,16 @@ Duración del Sprint: `17:38 minutos`
 
 #### 2.2.5 Daily 5
 
-- Duración: `5:34 minutos`
-- Enlace: [Daily 5]()
+- Duración: `6:23 minutos`
+- Enlace: [Daily 5](https://drive.google.com/file/d/15qj0GP0Y6UXNBUoJ4ujHNBIxooliIi1D/view?usp=drive_link)
 
 #### 2.2.6 Daily 6
 
-- Duración: `5:53 minutos`
-- Enlace: [Daily 6]()
+- Duración: `5:10 minutos`
+- Enlace: [Daily 6](https://drive.google.com/file/d/1yxYEOrm-FnOls-0Jo00FYK82hwk23LNi/view?usp=drive_link)
 
 ### 2.3 Sprint Retrospective
 
 - Fecha `01/09/2026`  
-- Duración: `15:55 minutos`
-- Enlace: [Sprint Retrospective]()
+- Duración: `21:08 minutos`
+- Enlace: [Sprint Retrospective](https://drive.google.com/file/d/1Qxbf60Y9z4ivG_jM7tmCR2zN1AFENVex/view?usp=drive_link)
