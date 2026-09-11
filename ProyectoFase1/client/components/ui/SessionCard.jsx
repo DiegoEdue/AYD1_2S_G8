@@ -2,6 +2,7 @@ import StatusPill from "./StatusPill";
 import Icon from "./Icon";
 
 export default function SessionCard({ sesion, contraparteLabel, contraparteNombre, acciones }) {
+    const cancelada = sesion.estado === "cancelada-tutor" || sesion.estado === "cancelada-estudiante";
     return (
         <div className="flex flex-col gap-3 rounded-card border border-charcoal/10 bg-white p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between">
         <div>
@@ -31,7 +32,7 @@ export default function SessionCard({ sesion, contraparteLabel, contraparteNombr
             <p className="mt-1 text-sm text-charcoal-light">Motivo: {sesion.motivo}</p>
             )}
             {sesion.resumen && (
-            <p className="mt-1 rounded-lg bg-cream-light/60 px-3 py-2 text-sm text-charcoal">
+            <p className={`mt-1 rounded-lg px-3 py-2 text-sm ${cancelada ? "bg-crimson-light/40 text-crimson-dark" : "bg-cream-light/60 text-charcoal"}`}>
                 Resumen: {sesion.resumen}
             </p>
             )}

@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { sileo, Toaster } from "sileo";
 
 const ACCION_POR_TIPO = {
@@ -19,9 +20,9 @@ const ACCION_POR_TIPO = {
     }
 
     export function useToast() {
-    function mostrarToast(mensaje, tipo = "info") {
+        const mostrarToast = useCallback((mensaje, tipo = "info") => {
         const disparar = ACCION_POR_TIPO[tipo] || sileo.info;
         disparar({ title: mensaje });
-    }
+        }, []);
     return { mostrarToast };
 }
