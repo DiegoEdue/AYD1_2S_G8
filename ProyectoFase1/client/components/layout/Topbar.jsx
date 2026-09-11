@@ -15,7 +15,7 @@ export default function Topbar({ titulo }) {
                 <span className="text-sm text-charcoal-light">
                 Hola, <span className="font-semibold text-charcoal">{usuario.nombre}</span>
                 </span>
-                <Avatar nombre={usuario.nombre} foto={usuario.foto_url} size="h-9 w-9" textSize="text-xs" />
+                <Avatar nombre={`${usuario.nombre || ""} ${usuario.apellido || ""}`} foto={usuario.foto_url} size="h-9 w-9" textSize="text-xs" />
             </div>
             )}
         </div>
