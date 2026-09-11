@@ -8,6 +8,10 @@ export default function HistorialEstudiantePage() {
   const [sesiones, setSesiones] = useState([]);
   const [cargando, setCargando] = useState(true);
 
+  function normalizarEstado(estado = "") {
+    return estado.toLowerCase().replaceAll("_", "-");
+  }
+
   useEffect(() => {
     async function cargar() {
       try {
@@ -41,7 +45,18 @@ export default function HistorialEstudiantePage() {
           {sesiones.map((sesion) => (
             <SessionCard
               key={sesion.id}
-              sesion={{ ...sesion, direccion: sesion.direccion || "Online", estado: sesion.estado?.toLowerCase() }}
+              sesion={{
+                ...sesion,
+                direccion: sesion.direccion || "Online",
+                estado: normalizarEstado(sesion.estado),
+                resumen: sesion.resumen || (
+                  normalizarEstado(sesion.estado) === "cancelada-tutor"
+                    ? "Cancelada por tutor"
+                    : normalizarEstado(sesion.estado) === "cancelada-estudiante"
+                      ? "Cancelada por estudiante"
+                      : sesion.resumen
+                ),
+              }}
               contraparteLabel="Tutor"
               contraparteNombre={sesion.tutor}
             />
