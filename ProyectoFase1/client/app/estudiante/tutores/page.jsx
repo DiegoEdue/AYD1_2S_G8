@@ -46,7 +46,9 @@ export default function TutoresPage() {
                 : [],
             universidad: t.universidad_graduacion || t.universidad || "No especificada",
             direccion: t.direccion_tutoria || "Online",
-            anios: Number(t.anios ?? t.experiencia ?? 0),
+            anios: Number(t.anios ?? t.experiencia ?? (
+              t.anio_inicio_tutorias ? new Date().getFullYear() - Number(t.anio_inicio_tutorias) : 0
+            )),
             genero: normalizarGenero(t.genero),
             edad: Number(t.edad) || calcularEdad(t.fecha_nacimiento),
             fechaNacimiento: t.fecha_nacimiento || t.fechaNacimiento || "",
