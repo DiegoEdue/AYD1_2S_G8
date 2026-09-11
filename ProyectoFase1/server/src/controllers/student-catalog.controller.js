@@ -7,7 +7,9 @@ const getTutorCatalog = async (req, res) => {
         const studentId = req.user.id;
 
         const result = await sql`
-            SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
+                 SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
+                     t.genero, t.fecha_nacimiento, t.anio_inicio_tutorias,
+                     t.universidad_graduacion,
                    t.direccion_tutoria, t.hora_inicio_atencion, t.hora_fin_atencion,
                    ARRAY_AGG(DISTINCT tda.dia_semana) FILTER (WHERE tda.dia_semana IS NOT NULL) AS dias_atencion,
                    ARRAY_AGG(DISTINCT m.nombre) AS materias,
@@ -16,11 +18,7 @@ const getTutorCatalog = async (req, res) => {
             JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor
             JOIN materia m ON tm.id_materia = m.id_materia
             LEFT JOIN tutor_dia_atencion tda ON t.id_tutor = tda.id_tutor
-            WHERE t.estado_aprobacion = 'aprobado'
-              AND t.id_tutor NOT IN (
-                  SELECT s.id_tutor FROM sesion s
-                  WHERE s.id_estudiante = ${studentId} AND s.estado = 'Activa'
-              )
+                        WHERE t.estado_aprobacion = 'aprobado'
             GROUP BY t.id_tutor
             ORDER BY t.nombre, t.apellido
         `;
@@ -269,7 +267,9 @@ const searchTutors = async (req, res) => {
         const { materia, experienciaMin, sexo, edadMin, edadMax, universidad } = req.query;
 
         let query = sql`
-            SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url, t.direccion_tutoria,
+                 SELECT t.id_tutor, t.nombre, t.apellido, t.foto_url,
+                     t.genero, t.fecha_nacimiento, t.anio_inicio_tutorias,
+                     t.universidad_graduacion, t.direccion_tutoria,
                    t.hora_inicio_atencion, t.hora_fin_atencion,
                    ARRAY_AGG(DISTINCT tda.dia_semana) FILTER (WHERE tda.dia_semana IS NOT NULL) AS dias_atencion,
                    ARRAY_AGG(DISTINCT m.nombre) AS materias,
@@ -278,11 +278,7 @@ const searchTutors = async (req, res) => {
             JOIN tutor_materia tm ON t.id_tutor = tm.id_tutor
             JOIN materia m ON tm.id_materia = m.id_materia
             LEFT JOIN tutor_dia_atencion tda ON t.id_tutor = tda.id_tutor
-            WHERE t.estado_aprobacion = 'aprobado'
-              AND t.id_tutor NOT IN (
-                  SELECT s.id_tutor FROM sesion s
-                  WHERE s.id_estudiante = ${studentId} AND s.estado = 'Activa'
-              )
+                        WHERE t.estado_aprobacion = 'aprobado'
         `;
 
         if (materia) {
