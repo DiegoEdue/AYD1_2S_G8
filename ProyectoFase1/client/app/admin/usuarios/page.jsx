@@ -5,7 +5,6 @@ import Tabs from "@/components/ui/Tabs";
 import Table from "@/components/ui/Table";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import Avatar from "@/components/ui/Avatar";
 import StatusPill from "@/components/ui/StatusPill";
 import { useToast } from "@/components/ui/Toast";
 import {
@@ -125,7 +124,6 @@ export default function UsuariosPage() {
           vacio={`No hay ${rol === "estudiante" ? "estudiantes" : "tutores"} aprobados para mostrar.`}
           renderFila={(u) => {
             const isEstudiante = rol === "estudiante";
-            const id = isEstudiante ? u.id_estudiante : u.id_tutor;
             const carnet = isEstudiante ? u.carnet : u.carnet_id;
             const detalle = isEstudiante
               ? u.genero
@@ -135,20 +133,13 @@ export default function UsuariosPage() {
             return (
               <>
                 <td className="px-4 py-3 font-medium text-charcoal">
-                  <div className="flex items-center gap-3">
-                    <Avatar
-                      nombre={`${u.nombre} ${u.apellido}`}
-                      foto={u.foto_url}
-                      size="h-9 w-9"
-                    />
-                    <div>
-                      <p className="font-semibold text-charcoal">
-                        {u.nombre} {u.apellido}
-                      </p>
-                      {isEstudiante && u.telefono && (
-                        <p className="text-xs text-charcoal-light">Tel: {u.telefono}</p>
-                      )}
-                    </div>
+                  <div>
+                    <p className="font-semibold text-charcoal">
+                      {u.nombre} {u.apellido}
+                    </p>
+                    {isEstudiante && u.telefono && (
+                      <p className="text-xs text-charcoal-light">Tel: {u.telefono}</p>
+                    )}
                   </div>
                 </td>
                 <td className="px-4 py-3 text-charcoal-light font-mono text-xs">
