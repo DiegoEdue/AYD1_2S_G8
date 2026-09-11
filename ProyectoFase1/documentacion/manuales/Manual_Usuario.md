@@ -4,12 +4,13 @@
 
 ## 1. Introducción
 
-CineCraft es una aplicación web para gestionar reseñas de películas, organizar opiniones por categoría, compartir contenido con otros usuarios y revisar solicitudes de acceso para administradores.
+EduConnect es una aplicación web para la gestión de tutorías académicas, la cual facilita la comunicación entre tutores y estudiantes. Ya que permite la reserva, gestión y seguimiento de sesiones de tutorías de fomra eficiente.
 
 La interfaz está pensada para dos perfiles principales:
 
-- Usuario normal: crea, edita, elimina, destaca y comparte reseñas.
-- Administrador: revisa solicitudes de registro, aprueba o rechaza nuevos usuarios, consulta reportes e historial.
+- Estudiante: Busca tutores y gestiona sus sesiones.
+- Tutor: Administra sus horarios y atiende estudiantes.
+- Administrador: Revisa solicitudes, da de baja a estudiantes o tutores y gestiona reportes.
 
 ---
 
@@ -21,15 +22,30 @@ La interfaz está pensada para dos perfiles principales:
 - Conexión a Internet para cargar la aplicación.
 - Dirección de correo válida.
 
-### Acceso inicial
+### Acceso como tutor o estudiante
+
 1. En el navegador ponga la dirección **http://localhost:3000**.
 2. En la pantalla de rediccionará al login para acceder al dashboard.
-3. Ingrese su correo electrónico institucional y contraseña.
+3. Ingrese su correo electrónico y contraseña.
 4. El sistema dirigirá automáticamente al usuario según su rol:
-   - Usuario normal: a la sección de reseñas.
-   - Administrador: a la sección de solicitudes.
+   - Estudiante: a la sección de buscar tutores.
+   - Tutor: a la sección de horarios.
 
 ![Login](./img/login.png)
+
+## Acceso como administrador
+
+1. En el navegador ponga la dirección **http://localhost:3000**.
+2. En la pantalla de rediccionará al login para acceder al dashboard.
+3. Ingrese su correo electrónico y contraseña.
+4. El sistema dirigirá automáticamente a la verificación de dos pasos, en dicha sección la primera vez se debe de escanear un código qr o copiar y pegar el código que aparece resaltado en amarillo.
+5. Si se vuelve a iniciar sesión, para la verificación de dos pasos será necesario introducir el código que aparece en tu aplicación de autenticación de confianza.
+
+![Login](./img/login2.png)
+
+![2FA](./img/segundo-factor.png)
+
+![2FA2](./img/segundo-factor2.png)
 
 ---
 
@@ -39,294 +55,189 @@ La interfaz está pensada para dos perfiles principales:
 
 1. En la pantalla de login, haga clic en "Solicita tu registro".
 
-![Registro](./img/registro.png)
-
-2. Complete el formulario con:
-   - Nombre completo
+2. Para una cuenta de estudiante llene el siguiente formulario:
+   - Foto de perfil
+   - Nombre
+   - Apellido
+   - Género
+   - Dirección
+   - Teléfono
+   - Fecha de nacimiento
    - Correo electrónico
    - Contraseña (mínimo 8 caracteres)
    - Confirmación de la contraseña
-3. Envíe la solicitud.
 
-![Solicitud](./img/solicitud.png)
+3. Para una cuenta de estudiante llene el siguiente formulario:
+   - Foto de perfil
+   - Nombre
+   - Apellido
+   - Carnet o ID
+   - Género
+   - Dirección
+   - Teléfono
+   - Fecha de nacimiento
+   - Correo electrónico
+   - Especialidad(materias)
+   - Número de identificación (DPI/ID)
+   - Dirección de tutoría
+   - Año de inicio de tutorías
+   - Universidad de graduación
+   - Contraseña (mínimo 8 caracteres)
+   - Confirmación de la contraseña
 
-4. El sistema mostrará un mensaje confirmando que la solicitud fue enviada y quedará pendiente de revisión.
+4. Envíe la solicitud.
 
-![Confirmacion](./img/confirmacion.png)
+![Registro](./img/registro-estudiante.png)
 
+![Registro2](./img/registro-tutor.png)
+5. El sistema mostrará un mensaje confirmando que la solicitud fue enviada y quedará pendiente de revisión.
+
+![Confirmacion](./img/visibilidad2.png)
 
 ### Inicio de sesión
 
-- El usuario debe usar el correo asociado a la cuenta autorizada.
+- El usuario debe usar el correo asociado a la cuenta autorizada. De lo contrario dará error, para ver la solución a dicho error dirijase a la [Sección de errores](#8-solución-de-errores-cómunes)
 
-![CredencialesCorrectas](./img/credencialescorrectas.png)
+![CredencialesIncorrectas](./img/error3.png)
 
-- Si el correo incluye la palabra "admin", el sistema identifica al perfil como administrador.
+- Si desea iniciar sesión como admin debe seleccionar la pestaña de admin para iniciar sesión como admin.
 
-![Admin](./img/admin.png)
+![Admin](./img/login2.png)
 
-- Si las credenciales no coinciden, la aplicación muestra un mensaje de error y no permite continuar. (Sección de errores)
-
----
-
-## 4. Panel de usuario
-
-Una vez iniciada la sesión, el usuario accede a un panel con navegación lateral y cabecera superior.
-
-![Dashboard](./img/dashboard.png)
-
-### Menú principal del usuario
-
-- Dashboard: vista principal con todas las reseñas activas.
-
-![Resenas](./img/resenas2.png)
-
-- Compartidas: reseñas compartidas contigo y por ti.
-
-![Sharewithme](./img/sharewithme.png)
-
-![Shareforme](./img/shareforme.png)
-
-- Mi perfil: configuración básica del perfil.
-
-![Perfil](./img/perfil.png)
-
-- Cerrar sesión: termina la sesión actual.
-
-![CerrarSesion](./img/outsession.png)
+- Si las credenciales no coinciden, la aplicación muestra un mensaje de error y no permite continuar, para ver la solución a dicho error dirijase a la [Sección de errores](#8-solución-de-errores-cómunes)
 
 ---
 
-## 5. Gestión de reseñas
+## 4. Panel de estudiante
 
-### Crear una reseña
+Una vez iniciada la sesión, el estudiante accede a un panel con navegación lateral y cabecera superior.
 
-1. En la vista "Mis reseñas", haga clic en cualquiera de los dos botones que dicen "Nueva reseña".
+![Dashboard](./img/filtros-estudiante.png)
 
-![Newreview](./img/dashboard.png)
+### Sidebar estudiante
 
-2. Complete la información:
-   - Título de la película: Este campo es obligatorio.
-   - Calificación: Elegir una calificación de 1 a 5 estrellas presionando sobre ellas.
-   - Género: Para elegir una se debe eliminar la que está por defecto y se desplegarán las opciones. Si se desea agregar una nueva, basta con escribir el nuevo género.
-   - Comentario: Puede ser una reseña larga o breve.
+- Búsqueda de tutores: vista principal con todas las tutores disponibles, con distintos filtros para hacer una búsqueda más específica. Y luego es necesario escoger un tutor, un día que tenga disponible, un horario libre y motivo de la tutoría.
 
-![Newreview](./img/newresena.png)
+![Busqueda](./img/filtros-estudiante.png)
 
-![Categorias](./img/categorias.png)
+![Busqueda](./img/tutor-estudiante.png)
 
+- Mis sesiones: vista para ver las tutorías activas y poder cancelarlas si así lo requiere.
 
-3. Guarde la reseña.
-4. La nueva reseña aparece en la lista principal.
+![Sesiones](./img/sesiones-estudiante.png)
 
-![Resena](./img/resena1.png)
+- Historial: se ven las tutorías que ya fueron recibidas y las que fueron canceladas por mí o por el tutor.
 
-### Ver reseñas
+![Historial](./img/historial-estudiante3.png)
 
-La vista principal muestra las reseñas activas, con las siguientes opciones:
+- Perfil: actualización de datos correspondiente al perfil actual. Al actualizar datos es necesario seleccionar el botón de "Guardar cambios" para que no haya problema.
 
-- Filtro "Todas"
-- Filtro "Destacadas"
-- Filtro "Archivadas"
-
-Cada tarjeta muestra:
-
-- Título de la película
-- Calificación
-- Etiqueta
-- Comentario
-- Acciones rápidas de edición, archivado, destacado y eliminación
-
-Código de color:
-Es importante saber que la cantidad de estrellas está asociado a un código de color.
-
-- 1-2 estrellas: Rojo
-- 3-4 estrellas: Amarillo
-- 5 estrellas: Verde
-
-**Todas**
-![CodigoColor](./img/codigocolor.png)
-
-### Destacar una reseña
-
-1. Abra la reseña deseada.
-2. Use el botón de favorito o destacado.
-3. La reseña pasa a la sección de "Destacadas".
-
-![Destacadas](./img/destacadas.png)
-
-### Archivar una reseña
-
-1. Seleccione la reseña.
-2. Active la opción de archivar.
-3. La reseña deja de mostrarse en el dashboard principal y aparece en "Archivadas".
-
-![Archivadas](./img/archivadas.png)
-
-### Editar una reseña
-
-1. Haga clic en la opción de edición de la reseña.
-2. Modifique los campos requeridos.
-3. Guarde los cambios.
-
-![EditReview](./img/editresena.png)
-
-![EditReview2](./img/editresena2.png)
-
-### Eliminar una reseña
-
-1. Acceda a la acción de eliminación.
-2. Confirme la acción en el diálogo de confirmación.
-3. La reseña se elimina de forma permanente del listado.
-
-![DeleteReview](./img/deleteresena.png)
+![Sesiones](./img/perfil-estudiante.png)
 
 ---
 
-## 6. Compartir reseñas
+## 5. Panel de tutor
 
-### Compartir con otro usuario
+### Sidebar tutor
 
-1. Seleccione la reseña a compartir.
-2. Use la opción de compartir.
-3. Ingrese el correo del destinatario.
-4. Envíe la solicitud de compartición.
+- Mis sesiones: vista para ver las tutorías activas, marcar como atendidas y poder cancelarlas si así lo requiere.
 
-![ShareReview](./img/compartirresena.png)
+![Sesiones](./img/sesiones-tutor.png)
 
-### Ver reseñas compartidas
+- Mis horarios: vista para asignar un horario predeterminado o también poder moficiar el ya existente.
 
-En la sección "Compartidas" puede consultar:
+![Horario](./img/horarios-tutor.png)
 
-- Compartidas conmigo: reseñas enviadas por otros usuarios.
+![Horario2](./img/horarios-tutor2.png)
 
-![Sharewithme](./img/sharewithme.png)
+- Historial: se ven las tutorías que ya fueron atendidas y las que fueron canceladas por mí o por el estudiante.
 
-- Compartidas por mí: reseñas que tú enviaste a otros.
+![Historial](./img/historial-tutor2.png)
 
-![Shareforme](./img/shareforme.png)
+- Perfil: actualización de datos correspondiente al perfil actual. Al actualizar datos es necesario seleccionar el botón de "Guardar cambios" para que no haya problema.
 
----
-
-## 7. Perfil del usuario
-
-En "Mi perfil" puede:
-
-- Actualizar el nombre completo.
-- Revisar el correo asociado a la cuenta y editarlo.
-- Guardar cambios si se modifica el nombre.
-
-Se valida que el nombre y el correo no quede vacío antes de guardar.
-
-![EditProfile](./img/perfileditado.png)
+![Sesiones](./img/perfil-tutor.png)
 
 ---
 
-## 8. Panel de administrador
+## 6. Panel de Administrador
 
-### Menú principal del administrador
+### Solicitudes de estudiantes y tutores
 
-- Solicitudes
-- Historial
-- Reportes
+En esta sección es posible aceptar o rechazar a los estudiantes y tutores. Antes de rechazar es necesario escribir el motivo por el cual se rechaza.
 
-### Solicitudes de registro
+![Solicitud1](./img/solicitudes-admin.png)
+![Solicitud2](./img/solicitudes-admin2.png)
+![Solicitud3](./img/solicitudes-admin3.png)
 
-El administrador puede:
+### Usuarios
 
-- Revisar la lista de usuarios pendientes.
-- Aprobar solicitud: admite al usuario a la plataforma.
-- Rechazar solicitud: solicita un motivo opcional y descarta la solicitud.
+En esta sección es posible dar de baja a los estudiantes y a los tutores. Antes de darlos de baja es necesario confirmar dicha acción, ya que no se puede revertir.
 
-![ConfirmacionRechazo](./img/confirmacionrechazo.png)
+![Usuarios](./img/tutores-admin.png)
 
-### Historial
-
-La vista de historial muestra todas las solicitudes ya procesadas, separadas por:
-
-- Todas
-
-![Historial](./img/historialtodas.png)
-
-- Aprobadas
-
-![Aprobadas](./img/aprobadas.png)
-
-- Rechazadas
-
-![Rechazadas](./img/rechazadas.png)
-
-También se muestra el motivo del rechazo cuando aplica.
+![Usuarios2](./img/usuarios-admin.png)
 
 ### Reportes
 
-La sección de reportes muestra:
+En esta sección se visualizan los reportes del sistema. Relacionados a las sesiones por estado (atendida, cancelada por el estudiante o cancelada por el tutor) y la demanda por materia (cantidad de estudiantes en cada materia).
 
-- Top 5 de usuarios con más reseñas.
-- Top 5 de usuarios con más reseñas compartidas.
-
-![Reportes](./img/reportes.png)
+![Reportes](./img/reportes-admin.png)
 
 ---
 
-## 9. Recomendaciones de uso
+## 7. Recomendaciones de uso
 
-- Mantenga un nombre claro para cada reseña para facilitar la búsqueda.
-- Use etiquetas consistentes para organizar los géneros.
-- Archive reseñas antiguas cuando ya no formen parte del dashboard activo.
-- Verifique el correo del destinatario antes de compartir una reseña.
-- Revise periódicamente las solicitudes pendientes si es administrador.
+- Complete correctamente sus datos de registro y espere la aprobación del administrador antes de intentar iniciar sesión como estudiante o tutor.
+- Use un correo electrónico válido y accesible, ya que será el medio principal de comunicación, recuperación de acceso y notificaciones del sistema.
+- Para administradores, mantenga segura la autenticación de dos factores: escanee el código QR en una app confiable y no comparta la clave de verificación.
+- Antes de reservar una tutoría, confirme la disponibilidad del tutor, la fecha, el horario y el motivo de la sesión para evitar cancelaciones innecesarias.
+- Revise su perfil y sus datos de contacto regularmente para asegurar que la información del estudiante o tutor esté actualizada.
+- Revise periódicamente la bandeja de solicitudes pendientes en el panel administrativo para aprobar o rechazar registros sin demoras.
+- Si detecta inconsistencias en horarios, solicitudes o perfil, repórtelas al administrador para mantener la plataforma ordenada y confiable.
 
 ---
 
-## 10. Solución de errores cómunes
+## 8. Solución de errores cómunes
 
 ### No puedo iniciar sesión
 
 - Verifique que el correo y la contraseña sean correctos.
-- Confirme que la cuenta haya sido aprobada por un administrador.
-
-![Error1](./img/error1.png)
-
-![Error8](./img/error8.png)
-
-### No veo mis reseñas
-
-- Confirme que la reseña no esté archivada.
-- Actualice la página si la vista tarda en cargar.
-- Verifique la conexión a Internet.
-
-### La solicitud de registro no fue aceptada
-
-- Puede haber sido rechazada por un administrador.
-- Revise el motivo si estuvo disponible en el historial del administrador.
-
-![Rechazada](./img/rechazadas.png)
-
-### No se puede compartir una reseña
-
-- Revisar que el correo del destinatario sea válido.
-- Asegurarse que el otro usuario tenga acceso a "Cinecraft".
-
-![Error2](./img/error2.png)
-
-### Edición de perfil
-
-- Asegurarse de llenar los campos.
+- Confirme que la cuenta haya sido aprobada por un administrador.7
+- Confirme que la cuenta de administrador existe.
 
 ![Error3](./img/error3.png)
-
-### Registro
-
-- Asegurarse de llenar todos los campos.
-- Ingresar una dirección de correo válida.
-- Ingresar una contraseña de 8 carácteres de longitud y asegurarse de agregar al menos un número.
-- Asegurarse que ambas contraseñas sean iguales.
-
-![Error6](./img/error6.png)
-
-![Error7](./img/error7.png)
 
 ![Error4](./img/error4.png)
 
 ![Error5](./img/error5.png)
+
+### No me puedo registrar
+
+- Confirme que todos los campos estén llenos.
+- Compruebe que cumple con los requisitos de cada campo.
+
+![Error](./img/error.png)
+
+![Error2](./img/error2.png)
+
+### No puedo seleccionar un horario
+
+- Verifique que dicho horario no esté ocupado.
+- Compruebe si ese día el tutor da tutorías.
+
+![Error6](./img/error6.png)
+
+![Error8](./img/error8.png)
+
+### No puedo editar mi perfil
+
+- Asegurarse de llenar los campos.
+
+![Error9](./img/error9.png)
+
+### No puedo programar sesión
+
+- Asegurese de llenar los campos.
+
+![Error7](./img/error7.png)
