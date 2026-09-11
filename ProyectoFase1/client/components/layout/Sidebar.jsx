@@ -35,7 +35,7 @@ const NAV_POR_ROL = {
         <div className="flex items-center gap-2.5 px-6 py-5">
             <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white p-1.5">
             {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/logo-educonnect.png" alt="" className="h-full w-full object-contain" />
+            <img src="/logo-educonnect.png" alt="EduConnect" className="h-full w-full object-contain" />
             </span>
             <div>
             <span className="font-display text-xl">EduConnect</span>
