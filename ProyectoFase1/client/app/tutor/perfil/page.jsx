@@ -52,8 +52,8 @@ export default function PerfilTutorPage() {
     if (!form.direccion.trim()) nuevosErrores.direccion = "Ingresa tu dirección.";
     if (!form.telefono.trim()) nuevosErrores.telefono = "Ingresa tu teléfono.";
     if (form.password_nueva && !form.password_actual) nuevosErrores.password_actual = "Ingresa tu contraseña actual.";
-    if (form.password_nueva && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{8,}$/.test(form.password_nueva)) {
-      nuevosErrores.password_nueva = "Usa 8 caracteres, mayúscula, minúscula, número y símbolo.";
+    if (form.password_nueva && !/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(form.password_nueva)) {
+      nuevosErrores.password_nueva = "Usa mínimo 8 caracteres, con mayúscula, minúscula y número, sin símbolos.";
     }
     setErrores(nuevosErrores);
     if (Object.keys(nuevosErrores).length) return;

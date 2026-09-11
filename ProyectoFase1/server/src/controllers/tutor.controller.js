@@ -21,7 +21,7 @@ const NON_EDITABLE_FIELDS = [
     'horaFinAtencion'
 ];
 
-const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{8,}$/;
+const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/;
 
 // Configuración de Horarios de Atención del Tutor (HU-010)
 // GET /api/tutor/schedule
@@ -258,7 +258,7 @@ const updateProfile = async (req, res) => {
             if (!passwordRegex.test(body.password)) {
                 return res.status(400).json({
                     status: 'error',
-                    message: 'La contraseña debe tener al menos 8 caracteres e incluir  mayúscula, minúscula, número y un carácter especial.',
+                    message: 'La contraseña debe tener al menos 8 caracteres e incluir mayúscula, minúscula y número.',
                 });
             }
 

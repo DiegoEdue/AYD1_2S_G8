@@ -94,12 +94,11 @@ export default function SolicitudesPage() {
         <p className="text-sm text-charcoal-light">Cargando solicitudes…</p>
       ) : (
         <Table
-          columnas={["Foto", "Nombre", "Carnet/ID", "Género", "Nacimiento", "Detalle", "Acciones"]}
+          columnas={["Nombre", "Carnet/ID", "Género", "Nacimiento", "Detalle", "Acciones"]}
           filas={filtradas}
           vacio="No hay solicitudes pendientes en esta categoría."
           renderFila={(s) => (
             <>
-              <td className="px-4 py-3"><Avatar nombre={s.nombre} foto={s.foto} size="h-9 w-9" /></td>
               <td className="px-4 py-3 font-medium text-charcoal">{s.nombre}</td>
               <td className="px-4 py-3 text-charcoal-light">{s.carnet}</td>
               <td className="px-4 py-3 text-charcoal-light">{s.genero}</td>

@@ -15,6 +15,15 @@ function calcularEdad(fecha) {
   return edad;
 }
 
+function normalizarGenero(genero = "") {
+  const valor = genero.toString().trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (valor === "m" || valor === "masculino") return "M";
+  if (valor === "f" || valor === "femenino") return "F";
+  return valor;
+}
+
+const CLAVE_CATALOGO = "educonnect_catalogo_tutores";
+
 export default function TutoresPage() {
   const [tutores, setTutores] = useState([]);
   const [cargando, setCargando] = useState(true);
@@ -22,11 +31,12 @@ export default function TutoresPage() {
 
   useEffect(() => {
     async function cargar() {
+      setCargando(true);
       try {
-        const response = await listarTutores();
+        const hayFiltros = Object.values(filtros).some((valor) => valor !== "");
+        const response = await listarTutores(filtros);
         const data = Array.isArray(response?.data) ? response.data : [];
-        setTutores(
-          data.map((t) => ({
+        const actuales = data.map((t) => ({
             id: String(t.id_tutor ?? t.id),
             nombre: `${t.nombre ?? ""} ${t.apellido ?? ""}`.trim(),
             especialidad: Array.isArray(t.materias)
@@ -34,17 +44,31 @@ export default function TutoresPage() {
               : typeof t.materias === "string"
                 ? [t.materias]
                 : [],
-            universidad: t.universidad_graduacion || "USAC",
+            universidad: t.universidad_graduacion || t.universidad || "No especificada",
             direccion: t.direccion_tutoria || "Online",
-            anios: Number(t.anios ?? 0),
-            genero: t.genero || "",
-            edad: calcularEdad(t.fecha_nacimiento),
+            anios: Number(t.anios ?? t.experiencia ?? 0),
+            genero: normalizarGenero(t.genero),
+            edad: Number(t.edad) || calcularEdad(t.fecha_nacimiento),
+            fechaNacimiento: t.fecha_nacimiento || t.fechaNacimiento || "",
             foto: t.foto_url || "",
             dias: Array.isArray(t.dias_atencion) ? t.dias_atencion : [],
             horaInicio: t.hora_inicio_atencion ? t.hora_inicio_atencion.slice(0, 5) : "08:00",
             horaFin: t.hora_fin_atencion ? t.hora_fin_atencion.slice(0, 5) : "18:00",
-          }))
-        );
+          }));
+
+        let guardados = [];
+        try {
+          const almacenados = JSON.parse(window.localStorage.getItem(CLAVE_CATALOGO) || "[]");
+          guardados = Array.isArray(almacenados) ? almacenados : [];
+        } catch {
+          guardados = [];
+        }
+
+        const porId = new Map((hayFiltros ? [] : guardados).map((tutor) => [tutor.id, tutor]));
+        actuales.forEach((tutor) => porId.set(tutor.id, { ...porId.get(tutor.id), ...tutor }));
+        const combinados = Array.from(porId.values());
+        setTutores(combinados);
+        window.localStorage.setItem(CLAVE_CATALOGO, JSON.stringify(combinados));
       } catch (error) {
         setTutores([]);
       } finally {
@@ -53,7 +77,7 @@ export default function TutoresPage() {
     }
 
     cargar();
-  }, []);
+  }, [filtros]);
 
   const resultados = useMemo(() => {
     return tutores.filter((t) => {
@@ -65,9 +89,10 @@ export default function TutoresPage() {
         t.universidad.toLowerCase().includes(filtros.universidad.toLowerCase());
       const coincideExperiencia =
         !filtros.experienciaMin || t.anios >= Number(filtros.experienciaMin);
-      const coincideGenero = !filtros.genero || t.genero === filtros.genero;
-      const coincideEdadMin = !filtros.edadMin || t.edad >= Number(filtros.edadMin);
-      const coincideEdadMax = !filtros.edadMax || t.edad <= Number(filtros.edadMax);
+      const coincideGenero = !filtros.genero || normalizarGenero(t.genero) === filtros.genero;
+      const edadValida = Number.isFinite(Number(t.edad)) && Number(t.edad) > 0;
+      const coincideEdadMin = !filtros.edadMin || !edadValida || t.edad >= Number(filtros.edadMin);
+      const coincideEdadMax = !filtros.edadMax || !edadValida || t.edad <= Number(filtros.edadMax);
       return coincideMateria && coincideUniversidad && coincideExperiencia && coincideGenero && coincideEdadMin && coincideEdadMax;
     });
   }, [tutores, filtros]);

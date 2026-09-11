@@ -19,6 +19,8 @@ function obtenerIniciales(nombre = "") {
 
     if (foto) {
         return (
+        // Las fotos pueden ser data URIs o URLs dinámicas de Cloudinary.
+        // eslint-disable-next-line @next/next/no-img-element
         <img
             src={foto}
             alt={nombre}

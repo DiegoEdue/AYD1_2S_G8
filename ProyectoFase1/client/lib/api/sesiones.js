@@ -65,5 +65,20 @@ export async function actualizarPerfil(rol, datos) {
     return apiFetch("/tutor/profile", { method: "PATCH", body: payload });
   }
 
-  return apiFetch("/student/profile", { method: "PUT", body: datos });
+  const payload = {
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    genero: datos.genero,
+    direccion: datos.direccion,
+    telefono: datos.telefono,
+    fecha_nacimiento: datos.fecha_nacimiento,
+    ...(datos.foto_url ? { foto_url: datos.foto_url } : {}),
+  };
+
+  if (datos.password_nueva) {
+    payload.password_actual = datos.password_actual;
+    payload.password_nueva = datos.password_nueva;
+  }
+
+  return apiFetch("/student/profile", { method: "PUT", body: payload });
 }

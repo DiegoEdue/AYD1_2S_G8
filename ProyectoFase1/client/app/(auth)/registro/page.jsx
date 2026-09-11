@@ -20,6 +20,7 @@ const VACIO_ESTUDIANTE = {
     fechaNacimiento: "",
     correo: "",
     password: "",
+    confirmarPassword: "",
     foto: null,
     };
 
@@ -32,11 +33,40 @@ const VACIO_ESTUDIANTE = {
     universidad: "",
     };
 
-    const OPCIONES_GENERO = ["Masculino", "Femenino"];
+    const OPCIONES_GENERO = [
+    { valor: "M", etiqueta: "Masculino" },
+    { valor: "F", etiqueta: "Femenino" },
+    ];
     const OPCIONES_DIRECCION_TUTORIA = ["Física", "Online"];
 
     function validarPasswordFuerte(pw) {
-    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(pw);
+    return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(pw);
+    }
+
+    function distanciaTexto(a, b) {
+    const fila = Array.from({ length: b.length + 1 }, (_, indice) => indice);
+    for (let indiceA = 1; indiceA <= a.length; indiceA += 1) {
+        let diagonal = fila[0];
+        fila[0] = indiceA;
+        for (let indiceB = 1; indiceB <= b.length; indiceB += 1) {
+        const superior = fila[indiceB];
+        fila[indiceB] = a[indiceA - 1] === b[indiceB - 1]
+            ? diagonal
+            : Math.min(diagonal, superior, fila[indiceB - 1]) + 1;
+        diagonal = superior;
+        }
+    }
+    return fila[b.length];
+    }
+
+    function validarEspecialidades(valor) {
+    const materias = valor
+        .split(",")
+        .map((materia) => materia.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
+        .filter(Boolean);
+    return materias.findIndex((materia, indice) =>
+        materias.slice(0, indice).some((anterior) => materia === anterior || distanciaTexto(materia, anterior) <= 1)
+    ) !== -1;
     }
 
     export default function RegistroPage() {
@@ -75,16 +105,19 @@ const VACIO_ESTUDIANTE = {
         if (!form.nombre) e.nombre = "Ingresa tu nombre.";
         if (!form.apellido) e.apellido = "Ingresa tu apellido.";
         if (!form.carnet) e.carnet = "Ingresa tu carnet o ID.";
-        if (!OPCIONES_GENERO.includes(form.genero)) e.genero = "Selecciona un género.";
+        if (!OPCIONES_GENERO.some((opcion) => opcion.valor === form.genero)) e.genero = "Selecciona un género.";
         if (!form.direccion) e.direccion = "Ingresa tu dirección.";
         if (!form.telefono) e.telefono = "Ingresa tu teléfono.";
         if (!form.correo || !/^\S+@\S+\.\S+$/.test(form.correo))
         e.correo = "Ingresa un correo electrónico válido.";
         if (!validarPasswordFuerte(form.password))
-        e.password = "Mínimo 8 caracteres, con mayúscula, minúscula y número.";
+        e.password = "Usa mínimo 8 caracteres, con mayúscula, minúscula y número, sin símbolos.";
+        if (!form.confirmarPassword || form.password !== form.confirmarPassword)
+        e.confirmarPassword = "Las contraseñas deben coincidir.";
         if (!form.fechaNacimiento) e.fechaNacimiento = "Ingresa tu fecha de nacimiento.";
         if (rol === "tutor") {
         if (!form.especialidad) e.especialidad = "Indica las materias que impartes.";
+        else if (validarEspecialidades(form.especialidad)) e.especialidad = "No repitas materias iguales o con una variación de un carácter.";
         if (!form.numeroIdentificacion) e.numeroIdentificacion = "Ingresa tu número de identificación.";
         if (!OPCIONES_DIRECCION_TUTORIA.includes(form.direccionTutoria)) {
             e.direccionTutoria = "Selecciona Física u Online.";
@@ -230,7 +263,7 @@ const VACIO_ESTUDIANTE = {
                 >
                     <option value="">Selecciona una opción</option>
                     {OPCIONES_GENERO.map((opcion) => (
-                    <option key={opcion} value={opcion}>{opcion}</option>
+                    <option key={opcion.valor} value={opcion.valor}>{opcion.etiqueta}</option>
                     ))}
                 </select>
                 </FormField>
@@ -360,6 +393,22 @@ const VACIO_ESTUDIANTE = {
                     value={form.password}
                     onChange={(e) => set("password", e.target.value)}
                     className={inputClass(!!errores.password)}
+                />
+                </FormField>
+
+                <FormField
+                label="Confirmar contraseña"
+                name="confirmarPassword"
+                required
+                error={errores.confirmarPassword}
+                >
+                <input
+                    id="confirmarPassword"
+                    type="password"
+                    autoComplete="new-password"
+                    value={form.confirmarPassword}
+                    onChange={(e) => set("confirmarPassword", e.target.value)}
+                    className={inputClass(!!errores.confirmarPassword)}
                 />
                 </FormField>
 

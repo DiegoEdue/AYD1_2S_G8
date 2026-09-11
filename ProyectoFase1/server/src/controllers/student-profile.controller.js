@@ -1,5 +1,6 @@
 const sql = require("../config/db");
 const { comparePassword, hashPassword } = require("../utils/bcrypt");
+const { subirImagen } = require("../utils/cloudinaryUpload");
 
 const validatePasswordComplexity = password => {
     if (!password || password.length < 8) {
@@ -13,9 +14,6 @@ const validatePasswordComplexity = password => {
     }
     if (!/[0-9]/.test(password)) {
         return { valid: false, message: "La contraseña debe tener al menos un número" };
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>]/.test(password)) {
-        return { valid: false, message: "La contraseña debe tener al menos un símbolo especial" };
     }
     return { valid: true };
 };
@@ -105,7 +103,11 @@ const updateStudentProfile = async (req, res) => {
         if (direccion !== undefined) updateData.direccion = direccion.trim();
         if (telefono !== undefined) updateData.telefono = telefono.trim();
         if (fecha_nacimiento !== undefined) updateData.fecha_nacimiento = fecha_nacimiento;
-        if (foto_url !== undefined) updateData.foto_url = foto_url;
+        if (foto_url !== undefined) {
+            updateData.foto_url = foto_url.startsWith("data:image/")
+                ? await subirImagen(foto_url, "educonnect/estudiantes")
+                : foto_url;
+        }
 
         if (password_nueva !== undefined) {
             if (!password_actual) {

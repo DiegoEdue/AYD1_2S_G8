@@ -29,6 +29,14 @@ const obtenerDiaSemana = (fecha) => {
     return DIAS_SEMANA[(valor.getDay() + 6) % 7];
 };
 
+const sumarHora = (hora) => {
+    const [horas, minutos] = hora.split(":").map(Number);
+    const total = horas * 60 + minutos + 60;
+    return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
+};
+
+const CLAVE_CATALOGO = "educonnect_catalogo_tutores";
+
 export default function DetalleTutorPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -47,20 +55,30 @@ export default function DetalleTutorPage() {
         async function cargarTutor() {
             try {
                 const response = await listarTutores();
-                const encontrado = (response?.data || []).find(
+                let almacenados = [];
+                try {
+                    const cache = JSON.parse(window.localStorage.getItem(CLAVE_CATALOGO) || "[]");
+                    almacenados = Array.isArray(cache) ? cache : [];
+                } catch {
+                    almacenados = [];
+                }
+                const encontrado = [...(response?.data || []), ...almacenados].find(
                     (item) => String(item.id_tutor ?? item.id) === String(id)
                 );
                 if (!encontrado) return;
 
-                const materias = Array.isArray(encontrado.materias_detalle)
+                const materiasFuente = Array.isArray(encontrado.materias_detalle)
                     ? encontrado.materias_detalle
-                    : (encontrado.materias || []).map((nombre) => ({ id: null, nombre }));
+                    : encontrado.materias || encontrado.especialidad || [];
+                const materias = Array.isArray(materiasFuente)
+                    ? materiasFuente.map((materia) => typeof materia === "string" ? { id: null, nombre: materia } : materia)
+                    : String(materiasFuente).split(",").map((nombre) => ({ id: null, nombre: nombre.trim() })).filter((materia) => materia.nombre);
                 setTutor({
                     id: String(encontrado.id_tutor ?? encontrado.id),
                     nombre: `${encontrado.nombre || ""} ${encontrado.apellido || ""}`.trim(),
                     especialidad: materias.map((materia) => materia.nombre),
                     materias,
-                    universidad: encontrado.universidad_graduacion || "USAC",
+                    universidad: encontrado.universidad_graduacion || encontrado.universidad || "No especificada",
                     direccion: encontrado.direccion_tutoria || "Online",
                     foto: encontrado.foto_url || "",
                     dias: Array.isArray(encontrado.dias_atencion)
@@ -134,8 +152,8 @@ export default function DetalleTutorPage() {
         setError(`${tutor.nombre} no atiende los días ${dia}. Elige otra fecha.`);
         return;
         }
-        if (form.hora < tutor.horaInicio || form.hora > tutor.horaFin) {
-        setError(`El horario del tutor ese día es de ${tutor.horaInicio} a ${tutor.horaFin}.`);
+        if (form.hora < tutor.horaInicio || form.hora >= tutor.horaFin) {
+        setError(`Las sesiones de una hora deben iniciar entre ${tutor.horaInicio} y ${sumarHora(tutor.horaFin)}; la última termina a las ${tutor.horaFin}.`);
         return;
         }
         const franja = tutor.franjas.find((item) => item.hora === form.hora);
@@ -250,7 +268,7 @@ export default function DetalleTutorPage() {
                         : "border-sage/30 bg-sage-light/60 text-charcoal-dark"
                     }`}
                     >
-                    {franja.hora} · {franja.estado === "ocupada" ? "Ocupada" : "Libre"}
+                    {franja.hora}-{sumarHora(franja.hora)} · {franja.estado === "ocupada" ? "Ocupada" : "Libre"}
                     </span>
                 ))}
                 </div>

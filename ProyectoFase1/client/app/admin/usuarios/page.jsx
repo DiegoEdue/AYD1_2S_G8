@@ -49,7 +49,7 @@ export default function UsuariosPage() {
     }
 
     cargarUsuarios();
-  }, [rol]);
+  }, [rol, mostrarToast]);
 
   async function confirmarDarDeBaja() {
     if (!usuarioBaja) return;

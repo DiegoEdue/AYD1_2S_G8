@@ -1,10 +1,17 @@
 import { apiFetch } from "./client";
 
 export async function listarTutores(filtros = {}) {
-  const params = new URLSearchParams(
-    Object.entries(filtros).filter(([, v]) => v !== "" && v != null)
-  ).toString();
-  return apiFetch(`/student/catalog${params ? `?${params}` : ""}`);
+  const filtrosApi = {
+    materia: filtros.materia,
+    universidad: filtros.universidad,
+    experienciaMin: filtros.experienciaMin,
+    sexo: filtros.genero,
+    edadMin: filtros.edadMin,
+    edadMax: filtros.edadMax,
+  };
+  const entradas = Object.entries(filtrosApi).filter(([, valor]) => valor !== "" && valor != null);
+  const params = new URLSearchParams(entradas).toString();
+  return apiFetch(`${entradas.length ? "/student/catalog/search" : "/student/catalog"}${params ? `?${params}` : ""}`);
 }
 
 export async function obtenerTutor(id) {
