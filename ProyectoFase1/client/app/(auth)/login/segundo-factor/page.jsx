@@ -14,24 +14,25 @@ export default function SegundoFactorAdminPage() {
     const router = useRouter();
 
     const [codigo, setCodigo] = useState("");
-    const [data, setData] = useState(null);
+    const [data] = useState(() => {
+        if (typeof window === "undefined") return null;
+        const raw = window.sessionStorage.getItem("educonnect_2fa");
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            window.sessionStorage.removeItem("educonnect_2fa");
+            return null;
+        }
+    });
     const [error, setError] = useState("");
     const [verificando, setVerificando] = useState(false);
 
     useEffect(() => {
-        const raw = sessionStorage.getItem("educonnect_2fa");
-        if (!raw) {
-            router.push("/login");
-            return;
-        }
-
-        try {
-            setData(JSON.parse(raw));
-        } catch {
-            sessionStorage.removeItem("educonnect_2fa");
+        if (!data) {
             router.push("/login");
         }
-    }, [router]);
+    }, [data, router]);
 
     async function onSubmit(ev) {
         ev.preventDefault();
