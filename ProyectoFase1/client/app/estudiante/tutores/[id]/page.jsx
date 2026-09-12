@@ -24,9 +24,28 @@ const normalizarDia = (dia = "") => {
     return map[dia] || dia;
 };
 
+const ordenarDias = (dias = []) => DIAS_SEMANA.filter((dia) => dias.some((item) => normalizarDia(item) === dia));
+
 const obtenerDiaSemana = (fecha) => {
     const valor = new Date(`${fecha}T12:00:00`);
     return DIAS_SEMANA[(valor.getDay() + 6) % 7];
+};
+
+const fechaLocalISO = () => {
+    const hoy = new Date();
+    const zona = hoy.getTimezoneOffset() * 60000;
+    return new Date(hoy.getTime() - zona).toISOString().slice(0, 10);
+};
+
+const normalizarHora = (valor, fallback) => {
+    if (!valor) return fallback;
+    const texto = String(valor).trim();
+    const coincidencia = texto.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+    if (!coincidencia) return fallback;
+    let horas = Number(coincidencia[1]);
+    if (coincidencia[3]?.toUpperCase() === "PM" && horas < 12) horas += 12;
+    if (coincidencia[3]?.toUpperCase() === "AM" && horas === 12) horas = 0;
+    return `${String(horas).padStart(2, "0")}:${coincidencia[2]}`;
 };
 
 const sumarHora = (hora) => {
@@ -82,10 +101,10 @@ export default function DetalleTutorPage() {
                     direccion: encontrado.direccion_tutoria || "Online",
                     foto: encontrado.foto_url || "",
                     dias: Array.isArray(encontrado.dias_atencion)
-                        ? encontrado.dias_atencion.map(normalizarDia)
+                        ? ordenarDias(encontrado.dias_atencion)
                         : [],
-                    horaInicio: encontrado.hora_inicio_atencion?.slice(0, 5) || "08:00",
-                    horaFin: encontrado.hora_fin_atencion?.slice(0, 5) || "18:00",
+                    horaInicio: normalizarHora(encontrado.hora_inicio_atencion, "08:00"),
+                    horaFin: normalizarHora(encontrado.hora_fin_atencion, "18:00"),
                     franjas: [],
                 });
             } catch {
@@ -112,9 +131,9 @@ export default function DetalleTutorPage() {
                 const disponibilidad = response?.data;
                 setTutor((actual) => actual && {
                     ...actual,
-                    dias: disponibilidad?.dias_atencion || actual.dias,
-                    horaInicio: disponibilidad?.horario_general?.inicio?.slice(0, 5) || actual.horaInicio,
-                    horaFin: disponibilidad?.horario_general?.fin?.slice(0, 5) || actual.horaFin,
+                    dias: disponibilidad?.dias_atencion ? ordenarDias(disponibilidad.dias_atencion) : actual.dias,
+                    horaInicio: normalizarHora(disponibilidad?.horario_general?.inicio, actual.horaInicio),
+                    horaFin: normalizarHora(disponibilidad?.horario_general?.fin, actual.horaFin),
                     disponible: disponibilidad?.disponible,
                     franjas: disponibilidad?.franjas || [],
                 });
@@ -143,6 +162,10 @@ export default function DetalleTutorPage() {
 
     async function confirmarSesion() {
         setError("");
+        if (form.fecha < fechaLocalISO()) {
+        setError("No puedes programar una sesión en una fecha pasada.");
+        return;
+        }
         if (!form.fecha || !form.hora || !form.materia) {
         setError("Completa fecha, hora y materia para continuar.");
         return;
@@ -233,6 +256,7 @@ export default function DetalleTutorPage() {
             </p>
             <input
             type="date"
+            min={fechaLocalISO()}
             value={fechaConsulta}
             onChange={(e) => setFechaConsulta(e.target.value)}
             className={`${inputClass(false)} mt-3 max-w-[220px]`}
