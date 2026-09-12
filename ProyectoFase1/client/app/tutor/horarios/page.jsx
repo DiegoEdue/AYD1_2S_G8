@@ -17,6 +17,20 @@ const DIAS = [
   { valor: "Domingo", etiqueta: "Domingo" },
 ];
 
+const ordenarDias = (valores = []) => DIAS.map((dia) => dia.valor).filter((dia) => valores.includes(dia));
+
+const normalizarHora = (valor, fallback) => {
+  if (!valor) return fallback;
+  const texto = String(valor).trim();
+  const coincidencia = texto.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!coincidencia) return fallback;
+  let horas = Number(coincidencia[1]);
+  const minutos = coincidencia[2];
+  if (coincidencia[3]?.toUpperCase() === "PM" && horas < 12) horas += 12;
+  if (coincidencia[3]?.toUpperCase() === "AM" && horas === 12) horas = 0;
+  return `${String(horas).padStart(2, "0")}:${minutos}`;
+};
+
 export default function HorariosTutorPage() {
   const { mostrarToast } = useToast();
   const [dias, setDias] = useState([]);
@@ -33,9 +47,9 @@ export default function HorariosTutorPage() {
       try {
         const response = await apiFetch("/tutor/schedule");
         const horario = response?.data || response;
-        setDias(Array.isArray(horario?.dias) ? horario.dias : []);
-        setHoraInicio(horario?.hora_inicio || "08:00");
-        setHoraFin(horario?.hora_fin || "12:00");
+        setDias(ordenarDias(Array.isArray(horario?.dias) ? horario.dias : []));
+        setHoraInicio(normalizarHora(horario?.hora_inicio, "08:00"));
+        setHoraFin(normalizarHora(horario?.hora_fin, "12:00"));
       } catch (err) {
         setDias([]);
       } finally {
