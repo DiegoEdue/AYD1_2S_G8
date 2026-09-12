@@ -22,6 +22,24 @@ function normalizarGenero(genero = "") {
   return valor;
 }
 
+const DIAS_SEMANA = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+function normalizarDia(dia = "") {
+  const valor = dia.toString().trim();
+  return { Miercoles: "Miércoles", Sabado: "Sábado" }[valor] || valor;
+}
+
+function normalizarHora(valor, fallback) {
+  if (!valor) return fallback;
+  const coincidencia = String(valor).match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);
+  if (!coincidencia) return fallback;
+  let horas = Number(coincidencia[1]);
+  const periodo = coincidencia[3]?.toUpperCase();
+  if (periodo === "PM" && horas < 12) horas += 12;
+  if (periodo === "AM" && horas === 12) horas = 0;
+  return `${String(horas).padStart(2, "0")}:${coincidencia[2]}`;
+}
+
 const CLAVE_CATALOGO = "educonnect_catalogo_tutores";
 
 export default function TutoresPage() {
@@ -53,9 +71,11 @@ export default function TutoresPage() {
             edad: Number(t.edad) || calcularEdad(t.fecha_nacimiento),
             fechaNacimiento: t.fecha_nacimiento || t.fechaNacimiento || "",
             foto: t.foto_url || "",
-            dias: Array.isArray(t.dias_atencion) ? t.dias_atencion : [],
-            horaInicio: t.hora_inicio_atencion ? t.hora_inicio_atencion.slice(0, 5) : "08:00",
-            horaFin: t.hora_fin_atencion ? t.hora_fin_atencion.slice(0, 5) : "18:00",
+            dias: Array.isArray(t.dias_atencion)
+              ? DIAS_SEMANA.filter((dia) => t.dias_atencion.some((item) => normalizarDia(item) === dia))
+              : [],
+            horaInicio: normalizarHora(t.hora_inicio_atencion, "08:00"),
+            horaFin: normalizarHora(t.hora_fin_atencion, "18:00"),
           }));
 
         let guardados = [];
