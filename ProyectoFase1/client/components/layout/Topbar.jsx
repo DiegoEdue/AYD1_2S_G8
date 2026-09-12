@@ -12,7 +12,7 @@ export default function Topbar({ titulo }) {
             {usuario && (
             <div className="flex items-center gap-2.5">
                 <span className="text-sm text-charcoal-light">
-                Hola, <span className="font-semibold text-charcoal">{usuario.nombre} {usuario.apellido || ""}</span>
+                Hola, <span className="font-semibold text-charcoal">{usuario.nombre || usuario.nombre_usuario} {usuario.apellido || ""}</span>
                 </span>
             </div>
             )}
