@@ -107,7 +107,20 @@ const getProfile = async (req, res) => {
     const tutorId = req.user.id;
 
     const result = await db.query(
-      'SELECT id_tutor, nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, anio_inicio_tutorias, universidad_graduacion, estado_aprobacion, hora_inicio_atencion, hora_fin_atencion, fecha_registro FROM tutor WHERE id_tutor = $1',
+      `SELECT t.id_tutor, t.nombre, t.apellido, t.carnet_id, t.fecha_nacimiento,
+              t.genero, t.direccion, t.telefono, t.foto_url,
+              t.numero_identificacion_tutor, t.direccion_tutoria, t.correo,
+              t.anio_inicio_tutorias, t.universidad_graduacion, t.estado_aprobacion,
+              t.hora_inicio_atencion, t.hora_fin_atencion, t.fecha_registro,
+              COALESCE(ARRAY(
+                SELECT m.nombre
+                FROM tutor_materia tm
+                JOIN materia m ON m.id_materia = tm.id_materia
+                WHERE tm.id_tutor = t.id_tutor
+                ORDER BY m.nombre
+              ), '{}') AS especialidad
+       FROM tutor t
+       WHERE t.id_tutor = $1`,
       [tutorId]
     );
 
