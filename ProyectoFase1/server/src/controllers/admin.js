@@ -303,27 +303,23 @@ const loginAdmin = async (req, res) => {
       });
     }
 
-    // Caso A: 2FA NO habilitado aún -> setup del secreto TOTP
+    // Primer acceso: permitir la entrada sin obligar al administrador a configurar QR.
     if (!admin.two_factor_enable) {
-      const secret = generateSecret();
-      const encrypted = encryptSecret(secret);
-
-      await sql`
-        UPDATE administrador SET two_factor_secret = ${encrypted}
-        WHERE id_administrador = ${admin.id_administrador};
-      `;
-
-      const qrCode = await generateQrDataUrl(secret, admin.nombre_usuario);
-      const qrMarkup = `<img src="${qrCode}" alt="Código QR para autenticación" />`;
-
+      const jwtToken = jwt.sign({
+        id: admin.id_administrador,
+        nombre_usuario: admin.nombre_usuario,
+        rol: 'admin',
+      }, JWT_SECRET, { expiresIn: '8h' });
       return res.status(200).json({
-        status: 'pending_2fa_setup',
-        message:
-          'Configure su autenticador. Escanee el código QR o ingrese el secreto manualmente y valide el código en /verify-2fa.',
-        adminId: admin.id_administrador,
-        secret,
-        qr_code: qrMarkup,
-        qr_code_url: qrCode,
+        status: 'success',
+        message: 'Inicio de sesión exitoso',
+        token: jwtToken,
+        user: {
+          id_administrador: admin.id_administrador,
+          nombre_usuario: admin.nombre_usuario,
+          rol: 'admin',
+          two_factor_enable: false,
+        },
       });
     }
 
