@@ -47,13 +47,11 @@ export default function LoginPage() {
                 resultado = await login({ email: email.trim(), password });
             }
 
-            if (resultado?.requiereSegundoFactor) {
+            if (resultado?.requiereSegundoFactor && resultado.status === "pending_2fa_verify") {
                 sessionStorage.setItem(
                     "educonnect_2fa",
                     JSON.stringify({
                         adminId: resultado.adminId,
-                        secret: resultado.secret,
-                        qr_code: resultado.qr_code,
                         status: resultado.status,
                     })
                 );
