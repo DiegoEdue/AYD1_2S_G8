@@ -66,20 +66,8 @@ export default function SegundoFactorAdminPage() {
             <div className="p-8">
             <h1 className="font-display text-xl text-charcoal">Verificación en dos pasos</h1>
             <p className="mt-1 text-sm text-charcoal-light">
-                Escanea el código QR con tu app autenticadora y escribe el código de 6 dígitos.
+                Ingresa el código vigente de tu aplicación autenticadora.
             </p>
-
-            {data?.qr_code && (
-                <div className="mt-4 overflow-hidden rounded-lg border border-charcoal/10 bg-paper p-3 text-center">
-                    <div dangerouslySetInnerHTML={{ __html: data.qr_code }} />
-                </div>
-            )}
-
-            {data?.secret && (
-                <div className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-charcoal">
-                    <span className="font-semibold">Secreto manual:</span> {data.secret}
-                </div>
-            )}
 
             {error && (
                 <div
