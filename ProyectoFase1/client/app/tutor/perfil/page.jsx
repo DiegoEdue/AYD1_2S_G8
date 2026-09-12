@@ -164,7 +164,10 @@ export default function PerfilTutorPage() {
         <FormField label="Año de inicio de tutorías" name="anio_inicio_tutorias"><input id="anio_inicio_tutorias" type="number" value={form.anio_inicio_tutorias} onChange={(e) => cambiar("anio_inicio_tutorias", e.target.value)} className={inputClass(false)} /></FormField>
         <FormField label="Universidad de graduación" name="universidad_graduacion"><input id="universidad_graduacion" value={form.universidad_graduacion} onChange={(e) => cambiar("universidad_graduacion", e.target.value)} className={inputClass(false)} /></FormField>
         <FormField label="Fotografía de perfil" name="foto_url">
-          <input id="foto_url" type="file" accept="image/*" onChange={seleccionarFoto} className="w-full text-sm text-charcoal" />
+          <label htmlFor="foto_url" className="inline-flex cursor-pointer items-center rounded-lg border border-charcoal/20 px-4 py-2 text-sm font-semibold text-charcoal transition hover:border-crimson hover:text-crimson">
+            {form.foto_url && form.foto_url !== perfil.foto_url ? "Cambiar fotografía" : "Seleccionar fotografía"}
+          </label>
+          <input id="foto_url" type="file" accept="image/*" onChange={seleccionarFoto} className="sr-only" />
         </FormField>
         <div className="sm:col-span-2 border-t border-charcoal/10 pt-4"><p className="text-sm font-semibold text-charcoal">Cambiar contraseña (opcional)</p></div>
         <FormField label="Contraseña actual" name="password_actual" error={errores.password_actual}><input id="password_actual" type="password" value={form.password_actual} onChange={(e) => cambiar("password_actual", e.target.value)} className={inputClass(!!errores.password_actual)} /></FormField>
