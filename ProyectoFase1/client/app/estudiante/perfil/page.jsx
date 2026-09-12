@@ -86,7 +86,7 @@ export default function PerfilEstudiantePage() {
   return (
     <form onSubmit={guardar} className="max-w-2xl rounded-card border border-charcoal/10 bg-white p-6 shadow-soft">
       <div className="flex items-center gap-4">
-        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={perfil.foto_url} size="h-14 w-14" />
+        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={form.foto_url || perfil.foto_url} size="h-14 w-14" />
         <div>
           <h2 className="font-display text-xl text-charcoal">{perfil.nombre} {perfil.apellido}</h2>
           <p className="text-sm text-charcoal-light">Perfil de estudiante</p>
@@ -121,7 +121,7 @@ export default function PerfilEstudiantePage() {
         <FormField label="Dirección" name="direccion" required error={errores.direccion}>
           <input id="direccion" value={form.direccion} onChange={(e) => cambiar("direccion", e.target.value)} className={inputClass(!!errores.direccion)} />
         </FormField>
-        <FormField label="Fotografía" name="foto_url">
+        <FormField label="Fotografía de perfil" name="foto_url" ayuda="Selecciona una imagen y luego guarda los cambios.">
           <input id="foto_url" type="file" accept="image/*" onChange={seleccionarFoto} className="w-full text-sm text-charcoal" />
         </FormField>
         <div className="sm:col-span-2 border-t border-charcoal/10 pt-4">
