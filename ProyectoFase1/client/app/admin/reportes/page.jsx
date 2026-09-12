@@ -44,7 +44,12 @@ const ESTADOS = {
   pendiente: { etiqueta: "Pendiente", color: "#fecea8" },
 };
 
-const normalizarEstado = (estado = "") => estado.toLowerCase().replaceAll("-", "_");
+const normalizarEstado = (estado = "") => estado
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replaceAll("-", "_")
+  .replaceAll(" ", "_");
 
 export default function ReportesPage() {
   const [reporte, setReporte] = useState(null);
@@ -70,7 +75,7 @@ export default function ReportesPage() {
   const porEstado = (reporte?.porEstado || []).map((item) => ({
     ...item,
     estadoOriginal: item.estado,
-    estado: ESTADOS[normalizarEstado(item.estado)]?.etiqueta || item.estado,
+    etiqueta: ESTADOS[normalizarEstado(item.estado)]?.etiqueta || "Estado no identificado",
     color: ESTADOS[normalizarEstado(item.estado)]?.color || COLORES[0],
   }));
 
@@ -223,7 +228,7 @@ export default function ReportesPage() {
                 <Pie
                   data={porEstado}
                   dataKey="cantidad"
-                  nameKey="estado"
+                  nameKey="etiqueta"
                   innerRadius={50}
                   outerRadius={90}
                   paddingAngle={3}
