@@ -58,6 +58,7 @@ export async function actualizarPerfil(rol, datos) {
       direccionTutoria: datos.direccion_tutoria,
       anioInicioTutorias: datos.anio_inicio_tutorias,
       universidadGraduacion: datos.universidad_graduacion,
+      especialidad: datos.especialidad,
     };
 
     if (datos.password_nueva) payload.password = datos.password_nueva;
