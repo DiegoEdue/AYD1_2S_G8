@@ -12,6 +12,13 @@ export default function HistorialTutorPage() {
     return estado.toLowerCase().replaceAll("_", "-");
   }
 
+  function resumenCancelacion(estado) {
+    const normalizado = normalizarEstado(estado);
+    if (normalizado === "cancelada-tutor") return "Cancelada por tutor";
+    if (normalizado === "cancelada-estudiante") return "Cancelada por estudiante";
+    return undefined;
+  }
+
   useEffect(() => {
     async function cargar() {
       try {
@@ -45,7 +52,12 @@ export default function HistorialTutorPage() {
           {sesiones.map((sesion) => (
             <SessionCard
               key={sesion.id}
-              sesion={{ ...sesion, direccion: sesion.direccion || "Online", estado: normalizarEstado(sesion.estado) }}
+              sesion={{
+                ...sesion,
+                direccion: sesion.direccion || "Online",
+                estado: normalizarEstado(sesion.estado),
+                resumen: sesion.resumen || resumenCancelacion(sesion.estado),
+              }}
               contraparteLabel="Estudiante"
               contraparteNombre={sesion.estudiante}
             />
