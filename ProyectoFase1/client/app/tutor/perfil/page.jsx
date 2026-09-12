@@ -30,17 +30,63 @@ export default function PerfilTutorPage() {
   const [form, setForm] = useState(PERFIL_VACIO);
   const [errores, setErrores] = useState({});
   const [guardando, setGuardando] = useState(false);
+  const [materiaNueva, setMateriaNueva] = useState("");
 
   useEffect(() => {
     obtenerPerfil("tutor").then((response) => {
       const datos = response?.data || null;
       setPerfil(datos);
-      if (datos) setForm({ ...PERFIL_VACIO, ...datos, especialidad: Array.isArray(datos.especialidad) ? datos.especialidad.join(", ") : datos.especialidad || "", password_actual: "", password_nueva: "" });
+      if (datos) setForm({
+        ...PERFIL_VACIO,
+        ...datos,
+        foto_url: datos.foto_url || datos.fotoUrl || "",
+        numero_identificacion_tutor: datos.numero_identificacion_tutor || datos.numeroIdentificacionTutor || "",
+        direccion_tutoria: datos.direccion_tutoria || datos.direccionTutoria || "",
+        anio_inicio_tutorias: datos.anio_inicio_tutorias || datos.anioInicioTutorias || "",
+        universidad_graduacion: datos.universidad_graduacion || datos.universidadGraduacion || "",
+        especialidad: Array.isArray(datos.especialidad)
+          ? datos.especialidad.join(", ")
+          : Array.isArray(datos.subjects)
+            ? datos.subjects.map((materia) => materia.nombre).join(", ")
+            : datos.especialidad || "",
+        password_actual: "",
+        password_nueva: "",
+      });
     }).catch(() => setPerfil(null));
   }, []);
 
   function cambiar(campo, valor) {
     setForm((actual) => ({ ...actual, [campo]: valor }));
+  }
+
+  function seleccionarFoto(evento) {
+    const archivo = evento.target.files?.[0];
+    if (!archivo) return;
+    const lector = new FileReader();
+    lector.onload = () => cambiar("foto_url", lector.result);
+    lector.readAsDataURL(archivo);
+  }
+
+  function agregarMateria(evento) {
+    evento.preventDefault();
+    const materia = materiaNueva.trim();
+    if (!materia) return;
+    const materias = form.especialidad.split(",").map((item) => item.trim()).filter(Boolean);
+    if (!materias.some((item) => item.toLowerCase() === materia.toLowerCase())) {
+      cambiar("especialidad", [...materias, materia].join(", "));
+    }
+    setMateriaNueva("");
+  }
+
+  function quitarMateria(materiaQuitada) {
+    cambiar(
+      "especialidad",
+      form.especialidad
+        .split(",")
+        .map((materia) => materia.trim())
+        .filter((materia) => materia && materia !== materiaQuitada)
+        .join(", ")
+    );
   }
 
   async function guardar(evento) {
@@ -80,7 +126,7 @@ export default function PerfilTutorPage() {
   return (
     <form onSubmit={guardar} className="max-w-3xl rounded-card border border-charcoal/10 bg-white p-6 shadow-soft">
       <div className="flex items-center gap-4">
-        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={perfil.foto_url} size="h-14 w-14" />
+        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={form.foto_url || perfil.foto_url} size="h-14 w-14" />
         <div>
           <h2 className="font-display text-xl text-charcoal">{perfil.nombre} {perfil.apellido}</h2>
           <p className="text-sm text-charcoal-light">Perfil de tutor</p>
@@ -98,12 +144,28 @@ export default function PerfilTutorPage() {
         <FormField label="Teléfono" name="telefono" required error={errores.telefono}><input id="telefono" value={form.telefono} onChange={(e) => cambiar("telefono", e.target.value)} className={inputClass(!!errores.telefono)} /></FormField>
         <FormField label="Dirección personal" name="direccion" required error={errores.direccion}><input id="direccion" value={form.direccion} onChange={(e) => cambiar("direccion", e.target.value)} className={inputClass(!!errores.direccion)} /></FormField>
         <FormField label="Número de identificación de tutor" name="numero_identificacion_tutor"><input id="numero_identificacion_tutor" value={form.numero_identificacion_tutor} onChange={(e) => cambiar("numero_identificacion_tutor", e.target.value)} className={inputClass(false)} /></FormField>
-        <FormField label="Especialidad (materias)" name="especialidad"><input id="especialidad" value={form.especialidad} onChange={(e) => cambiar("especialidad", e.target.value)} className={inputClass(false)} /></FormField>
+          <FormField label="Especialidades actuales" name="especialidad" ayuda="Añade o quita materias y guarda los cambios.">
+            <div className="flex min-h-10 flex-wrap gap-2 rounded-lg border border-charcoal/20 px-3 py-2">
+              {form.especialidad.split(",").map((materia) => materia.trim()).filter(Boolean).map((materia) => (
+                <button key={materia} type="button" onClick={() => quitarMateria(materia)} className="rounded-full bg-cream-light px-2.5 py-1 text-xs font-medium text-charcoal-dark hover:bg-crimson-light hover:text-crimson-dark" title="Quitar materia">
+                  {materia} ×
+                </button>
+              ))}
+              {!form.especialidad && <span className="text-sm text-charcoal-light">Sin especialidades registradas</span>}
+            </div>
+            <div className="mt-2 flex gap-2">
+              <input value={materiaNueva} onChange={(e) => setMateriaNueva(e.target.value)} className={inputClass(false)} placeholder="Nueva materia" />
+              <Button type="button" variante="secundario" onClick={agregarMateria}>Añadir</Button>
+            </div>
+          </FormField>
         <FormField label="Dirección de tutoría" name="direccion_tutoria">
           <select id="direccion_tutoria" value={form.direccion_tutoria} onChange={(e) => cambiar("direccion_tutoria", e.target.value)} className={inputClass(false)}><option value="">Selecciona una opción</option><option value="Física">Física</option><option value="Online">Online</option></select>
         </FormField>
         <FormField label="Año de inicio de tutorías" name="anio_inicio_tutorias"><input id="anio_inicio_tutorias" type="number" value={form.anio_inicio_tutorias} onChange={(e) => cambiar("anio_inicio_tutorias", e.target.value)} className={inputClass(false)} /></FormField>
         <FormField label="Universidad de graduación" name="universidad_graduacion"><input id="universidad_graduacion" value={form.universidad_graduacion} onChange={(e) => cambiar("universidad_graduacion", e.target.value)} className={inputClass(false)} /></FormField>
+        <FormField label="Fotografía de perfil" name="foto_url">
+          <input id="foto_url" type="file" accept="image/*" onChange={seleccionarFoto} className="w-full text-sm text-charcoal" />
+        </FormField>
         <div className="sm:col-span-2 border-t border-charcoal/10 pt-4"><p className="text-sm font-semibold text-charcoal">Cambiar contraseña (opcional)</p></div>
         <FormField label="Contraseña actual" name="password_actual" error={errores.password_actual}><input id="password_actual" type="password" value={form.password_actual} onChange={(e) => cambiar("password_actual", e.target.value)} className={inputClass(!!errores.password_actual)} /></FormField>
         <FormField label="Nueva contraseña" name="password_nueva" error={errores.password_nueva}><input id="password_nueva" type="password" value={form.password_nueva} onChange={(e) => cambiar("password_nueva", e.target.value)} className={inputClass(!!errores.password_nueva)} /></FormField>
