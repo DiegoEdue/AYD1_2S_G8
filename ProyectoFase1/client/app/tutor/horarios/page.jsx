@@ -61,7 +61,9 @@ export default function HorariosTutorPage() {
   }, []);
 
   function toggleDia(dia) {
-    setDias((prev) => (prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]));
+    setDias((prev) => ordenarDias(
+      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia]
+    ));
   }
 
   async function onGuardar() {
@@ -143,7 +145,10 @@ export default function HorariosTutorPage() {
             </label>
             <input
               id="horaInicio"
-              type="time"
+              type="text"
+              inputMode="numeric"
+              pattern="(?:[01]\d|2[0-3]):[0-5]\d"
+              placeholder="HH:MM"
               value={horaInicio}
               onChange={(e) => setHoraInicio(e.target.value)}
               className={`${inputClass(false)} mt-1.5`}
@@ -155,7 +160,10 @@ export default function HorariosTutorPage() {
             </label>
             <input
               id="horaFin"
-              type="time"
+              type="text"
+              inputMode="numeric"
+              pattern="(?:[01]\d|2[0-3]):[0-5]\d"
+              placeholder="HH:MM"
               value={horaFin}
               onChange={(e) => setHoraFin(e.target.value)}
               className={`${inputClass(false)} mt-1.5`}
