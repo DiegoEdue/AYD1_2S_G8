@@ -126,7 +126,7 @@ export default function PerfilTutorPage() {
   return (
     <form onSubmit={guardar} className="max-w-3xl rounded-card border border-charcoal/10 bg-white p-6 shadow-soft">
       <div className="flex items-center gap-4">
-        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={form.foto_url || perfil.foto_url} size="h-14 w-14" />
+        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={form.foto_url || form.fotoUrl || perfil.foto_url || perfil.fotoUrl} size="h-14 w-14" />
         <div>
           <h2 className="font-display text-xl text-charcoal">{perfil.nombre} {perfil.apellido}</h2>
           <p className="text-sm text-charcoal-light">Perfil de tutor</p>
@@ -165,7 +165,7 @@ export default function PerfilTutorPage() {
         <FormField label="Universidad de graduación" name="universidad_graduacion"><input id="universidad_graduacion" value={form.universidad_graduacion} onChange={(e) => cambiar("universidad_graduacion", e.target.value)} className={inputClass(false)} /></FormField>
         <FormField label="Fotografía de perfil" name="foto_url">
           <label htmlFor="foto_url" className="inline-flex cursor-pointer items-center rounded-lg border border-charcoal/20 px-4 py-2 text-sm font-semibold text-charcoal transition hover:border-crimson hover:text-crimson">
-            {form.foto_url && form.foto_url !== perfil.foto_url ? "Cambiar fotografía" : "Seleccionar fotografía"}
+            {form.foto_url || perfil.foto_url || perfil.fotoUrl ? "Cambiar fotografía" : "Seleccionar fotografía"}
           </label>
           <input id="foto_url" type="file" accept="image/*" onChange={seleccionarFoto} className="sr-only" />
         </FormField>
