@@ -72,12 +72,14 @@ export default function ReportesPage() {
     return tope ? datos.slice(0, tope) : datos;
   }, [reporte, tope]);
 
-  const porEstado = (reporte?.porEstado || []).map((item) => ({
-    ...item,
-    estadoOriginal: item.estado,
-    etiqueta: ESTADOS[normalizarEstado(item.estado)]?.etiqueta || "Estado no identificado",
-    color: ESTADOS[normalizarEstado(item.estado)]?.color || COLORES[0],
-  }));
+  const porEstado = (reporte?.porEstado || [])
+    .filter((item) => !["cancelada_estudiante", "cancelada_tutor"].includes(normalizarEstado(item.estado)))
+    .map((item) => ({
+      ...item,
+      estadoOriginal: item.estado,
+      etiqueta: ESTADOS[normalizarEstado(item.estado)]?.etiqueta || "Estado no identificado",
+      color: ESTADOS[normalizarEstado(item.estado)]?.color || COLORES[0],
+    }));
 
   if (error) {
     return <p className="text-sm text-crimson">{error}</p>;
