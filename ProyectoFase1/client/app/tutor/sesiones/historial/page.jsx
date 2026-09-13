@@ -56,7 +56,7 @@ export default function HistorialTutorPage() {
                 ...sesion,
                 direccion: sesion.direccion || "Online",
                 estado: normalizarEstado(sesion.estado),
-                resumen: sesion.resumen || resumenCancelacion(sesion.estado),
+                resumen: sesion.resumen || sesion.estadoDescripcion || resumenCancelacion(sesion.estado),
               }}
               contraparteLabel="Estudiante"
               contraparteNombre={sesion.estudiante}
