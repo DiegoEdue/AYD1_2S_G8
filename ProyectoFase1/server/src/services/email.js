@@ -1,16 +1,19 @@
 //const { Resend } = require('resend')
 //const resend = new Resend(process.env.RESEND_API_KEY); // Inicializa el cliente de Resend con la clave de API la api las pasare
 const nodemailer = require('nodemailer');
+
 const transporter = nodemailer.createTransport({
-    host: process.env.MAILTRAP_HOST || 'sandbox.smtp.mailtrap.io',
-    port: Number(process.env.MAILTRAP_PORT) || 2525,
+    service: (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('gmail')) || !process.env.SMTP_HOST ? 'gmail' : undefined,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
     auth: {
-        user: process.env.MAILTRAP_USER,
-        pass: process.env.MAILTRAP_PASS,
+        user: process.env.SMTP_USER || process.env.MAILTRAP_USER,
+        pass: process.env.SMTP_PASS || process.env.MAILTRAP_PASS,
     },
 });
 
-const MAIL_FROM = process.env.MAIL_FROM || '"EduConnect" <no-reply@educonnect.com>';
+const MAIL_FROM = process.env.MAIL_FROM || `"EduConnect" <${process.env.SMTP_USER || 'cachitoj8@gmail.com'}>`;
 
 const sendCancellationEmail = async ({ to, tutorName, studentName, date, time, subject, reason }) => {
     const html = `
@@ -114,4 +117,3 @@ const sendDeactivationEmail = async ({ to, name, role = 'usuario', reason = '' }
 };
 
 module.exports = { sendCancellationEmail, sendApprovalEmail, sendDeactivationEmail };
-
