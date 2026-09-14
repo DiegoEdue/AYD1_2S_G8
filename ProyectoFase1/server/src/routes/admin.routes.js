@@ -4,6 +4,7 @@ const {
   loginAdmin,
   verify2fa,
   getProfileAdmin,
+  updateProfileAdmin,
   getUsers,
   deactivateUser,
   getReports,
@@ -43,6 +44,7 @@ router.put('/tutors/:id/deactivate', deactivateTutor);
 
 // Rutas adicionales de administración
 router.get('/profile', getProfileAdmin);
+router.put('/profile', updateProfileAdmin);
 router.get('/usuarios', getUsers);
 router.patch('/usuarios/:id/dar-de-baja', deactivateUser);
 router.get('/reportes', getReports);
