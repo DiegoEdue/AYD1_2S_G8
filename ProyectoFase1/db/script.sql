@@ -43,7 +43,7 @@ CREATE TABLE tutor (
     genero                      VARCHAR(20)  NOT NULL,
     direccion                   VARCHAR(255) NOT NULL,
     telefono                    VARCHAR(20)  NOT NULL,
-    foto_url                    VARCHAR(255) NOT NULL,
+    foto_url                    VARCHAR(255),
     numero_identificacion_tutor VARCHAR(30)  NOT NULL UNIQUE,
     direccion_tutoria           VARCHAR(255) NOT NULL,
     correo                      VARCHAR(150) NOT NULL UNIQUE,
@@ -64,6 +64,8 @@ CREATE TABLE tutor (
         CHECK (hora_fin_atencion IS NULL OR hora_inicio_atencion IS NULL
                OR hora_fin_atencion > hora_inicio_atencion)
 );
+
+ALTER TABLE tutor ALTER COLUMN foto_url DROP NOT NULL;
 
 -- 3) Tabla que depende de estudiante, tutor y administrador
 --    (registra las solicitudes de registro pendientes de aprobación)
