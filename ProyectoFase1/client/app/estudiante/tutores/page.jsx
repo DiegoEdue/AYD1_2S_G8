@@ -51,7 +51,6 @@ export default function TutoresPage() {
     async function cargar() {
       setCargando(true);
       try {
-        const hayFiltros = Object.values(filtros).some((valor) => valor !== "");
         const response = await listarTutores(filtros);
         const data = Array.isArray(response?.data) ? response.data : [];
         const actuales = data.map((t) => ({
@@ -78,19 +77,8 @@ export default function TutoresPage() {
             horaFin: normalizarHora(t.hora_fin_atencion, "18:00"),
           }));
 
-        let guardados = [];
-        try {
-          const almacenados = JSON.parse(window.localStorage.getItem(CLAVE_CATALOGO) || "[]");
-          guardados = Array.isArray(almacenados) ? almacenados : [];
-        } catch {
-          guardados = [];
-        }
-
-        const porId = new Map((hayFiltros ? [] : guardados).map((tutor) => [tutor.id, tutor]));
-        actuales.forEach((tutor) => porId.set(tutor.id, { ...porId.get(tutor.id), ...tutor }));
-        const combinados = Array.from(porId.values());
-        setTutores(combinados);
-        window.localStorage.setItem(CLAVE_CATALOGO, JSON.stringify(combinados));
+        setTutores(actuales);
+        window.localStorage.setItem(CLAVE_CATALOGO, JSON.stringify(actuales));
       } catch (error) {
         setTutores([]);
       } finally {
