@@ -10,8 +10,7 @@ CREATE TABLE administrador (
     nombre_usuario    VARCHAR(50)  NOT NULL UNIQUE,
     password_hash     VARCHAR(255) NOT NULL,
     two_factor_secret VARCHAR(255) UNIQUE,
-    two_factor_enable BOOLEAN      NOT NULL DEFAULT FALSE,
-    foto_url          VARCHAR(500)
+    two_factor_enable BOOLEAN      NOT NULL DEFAULT FALSE
 );
 
 -- 2) Tablas que dependen de administrador

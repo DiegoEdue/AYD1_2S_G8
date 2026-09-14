@@ -370,7 +370,7 @@ const verify2fa = async (req, res) => {
     }
 
     const result = await sql`
-      SELECT id_administrador, nombre_usuario, two_factor_secret, two_factor_enable, foto_url
+      SELECT id_administrador, nombre_usuario, two_factor_secret, two_factor_enable
       FROM administrador WHERE id_administrador = ${adminId};
     `;
 
@@ -425,7 +425,6 @@ const verify2fa = async (req, res) => {
         nombre_usuario: admin.nombre_usuario,
         rol: 'admin',
         two_factor_enable: true,
-        foto_url: admin.foto_url || null,
       },
     });
   } catch (error) {
@@ -452,7 +451,7 @@ const getProfileAdmin = async (req, res) => {
     const adminId = req.user.id;
 
     const result = await sql`
-      SELECT id_administrador, nombre_usuario, two_factor_enable, foto_url
+      SELECT id_administrador, nombre_usuario, two_factor_enable
       FROM administrador WHERE id_administrador = ${adminId};
     `;
 
@@ -475,46 +474,6 @@ const getProfileAdmin = async (req, res) => {
     return res.status(500).json({
       status: 'error',
       message: 'Error interno al obtener perfil del administrador.',
-    });
-  }
-};
-
-/**
- * Actualizar perfil del administrador (foto_url).
- */
-const updateProfileAdmin = async (req, res) => {
-  try {
-    const adminId = req.user.id;
-    const { foto_url } = req.body || {};
-
-    // Si la foto viene como base64, subirla a Cloudinary
-    let fotoFinal = foto_url || null;
-    if (fotoFinal && fotoFinal.startsWith('data:image/')) {
-      const { subirImagen } = require('../utils/cloudinary');
-      fotoFinal = await subirImagen(fotoFinal, 'educonnect/admins');
-    }
-
-    await sql`
-      UPDATE administrador
-      SET foto_url = ${fotoFinal}
-      WHERE id_administrador = ${adminId};
-    `;
-
-    const result = await sql`
-      SELECT id_administrador, nombre_usuario, two_factor_enable, foto_url
-      FROM administrador WHERE id_administrador = ${adminId};
-    `;
-
-    return res.status(200).json({
-      status: 'success',
-      message: 'Perfil de administrador actualizado.',
-      data: { ...result[0], rol: 'admin' },
-    });
-  } catch (error) {
-    console.error('Error en updateProfileAdmin:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Error interno al actualizar perfil del administrador.',
     });
   }
 };
@@ -765,10 +724,11 @@ const getReports = async (req, res) => {
                 WHERE s.estado = 'Atendida'
                 GROUP BY m.nombre ORDER BY cantidad DESC, m.nombre ASC`),
       db.query(`SELECT CONCAT(t.nombre, ' ', t.apellido) AS tutor,
+                       t.foto_url,
                        COUNT(*)::integer AS sesiones
                 FROM sesion s JOIN tutor t ON t.id_tutor = s.id_tutor
                 WHERE s.estado = 'Atendida'
-                GROUP BY t.id_tutor, t.nombre, t.apellido
+                GROUP BY t.id_tutor, t.nombre, t.apellido, t.foto_url
                 ORDER BY sesiones DESC, tutor ASC`),
       db.query(`SELECT COUNT(*)::integer AS sesiones, COUNT(DISTINCT id_estudiante)::integer AS estudiantes,
                        COUNT(DISTINCT id_tutor)::integer AS tutores FROM sesion`),
@@ -797,7 +757,6 @@ module.exports = {
   loginAdmin,
   verify2fa,
   getProfileAdmin,
-  updateProfileAdmin,
   getUsers,
   deactivateUser,
   getApprovedStudents,
