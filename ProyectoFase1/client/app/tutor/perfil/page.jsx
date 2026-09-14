@@ -5,6 +5,7 @@ import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/Toast";
+import { useAuth } from "@/lib/auth-context";
 import { actualizarPerfil, obtenerPerfil } from "@/lib/api/sesiones";
 
 const PERFIL_VACIO = {
@@ -26,6 +27,7 @@ const PERFIL_VACIO = {
 
 export default function PerfilTutorPage() {
   const { mostrarToast } = useToast();
+  const { usuario, guardarUsuario } = useAuth();
   const [perfil, setPerfil] = useState(null);
   const [form, setForm] = useState(PERFIL_VACIO);
   const [errores, setErrores] = useState({});
@@ -112,7 +114,12 @@ export default function PerfilTutorPage() {
         delete datos.password_nueva;
       }
       const response = await actualizarPerfil("tutor", datos);
-      setPerfil(response?.data || { ...perfil, ...datos });
+      const perfilActualizado = response?.data || { ...perfil, ...datos };
+      setPerfil(perfilActualizado);
+      // Sincronizar foto_url y nombre en el contexto global para actualizar el Topbar
+      if (usuario) {
+        guardarUsuario({ ...usuario, foto_url: perfilActualizado.foto_url, nombre: perfilActualizado.nombre, apellido: perfilActualizado.apellido });
+      }
       mostrarToast("Perfil actualizado correctamente.", "exito");
     } catch (error) {
       mostrarToast(error.message || "No pudimos actualizar tu perfil.", "error");
