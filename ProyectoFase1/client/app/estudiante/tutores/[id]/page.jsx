@@ -54,8 +54,6 @@ const sumarHora = (hora) => {
     return `${String(Math.floor(total / 60) % 24).padStart(2, "0")}:${String(total % 60).padStart(2, "0")}`;
 };
 
-const CLAVE_CATALOGO = "educonnect_catalogo_tutores";
-
 export default function DetalleTutorPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -74,14 +72,7 @@ export default function DetalleTutorPage() {
         async function cargarTutor() {
             try {
                 const response = await listarTutores();
-                let almacenados = [];
-                try {
-                    const cache = JSON.parse(window.localStorage.getItem(CLAVE_CATALOGO) || "[]");
-                    almacenados = Array.isArray(cache) ? cache : [];
-                } catch {
-                    almacenados = [];
-                }
-                const encontrado = [...(response?.data || []), ...almacenados].find(
+                const encontrado = (response?.data || []).find(
                     (item) => String(item.id_tutor ?? item.id) === String(id)
                 );
                 if (!encontrado) return;
