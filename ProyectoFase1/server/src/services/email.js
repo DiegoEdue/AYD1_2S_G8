@@ -1,5 +1,19 @@
-const { Resend } = require('resend')
-const resend = new Resend(process.env.RESEND_API_KEY); // Inicializa el cliente de Resend con la clave de API la api las pasare
+//const { Resend } = require('resend')
+//const resend = new Resend(process.env.RESEND_API_KEY); // Inicializa el cliente de Resend con la clave de API la api las pasare
+const nodemailer = require('nodemailer');
+
+const transporter = nodemailer.createTransport({
+    service: (process.env.SMTP_HOST && process.env.SMTP_HOST.includes('gmail')) || !process.env.SMTP_HOST ? 'gmail' : undefined,
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: {
+        user: process.env.SMTP_USER || process.env.MAILTRAP_USER,
+        pass: process.env.SMTP_PASS || process.env.MAILTRAP_PASS,
+    },
+});
+
+const MAIL_FROM = process.env.MAIL_FROM || `"EduConnect" <${process.env.SMTP_USER || 'cachitoj8@gmail.com'}>`;
 
 const sendCancellationEmail = async ({ to, tutorName, studentName, date, time, subject, reason }) => {
     const html = `
@@ -16,12 +30,19 @@ const sendCancellationEmail = async ({ to, tutorName, studentName, date, time, s
         <p>— Equipo EduConnect</p>
     `;
 
-    return await resend.emails.send({
-        from: `"EduConnect" <onboarding@resend.dev>`,
-        to: to, 
-        subject: `Notificación de Cancelación de Tutoría - ${subject}`,
-        html,
-    });
+    try {
+        const data = await transporter.sendMail({
+            from: MAIL_FROM,
+            to,
+            subject: `Notificación de Cancelación de Tutoría - ${subject}`,
+            html,
+        });
+        console.log('Correo de cancelación enviado:', data.messageId);
+        return { success: true, data };
+    } catch (error) {
+        console.error('Error al enviar el correo de cancelación (nodemailer):', error);
+        return { success: false, error };
+    }
 };
 
 
@@ -51,12 +72,19 @@ const sendApprovalEmail = async ({ to, name, approved, reason = '' }) => {
         </div>
         `;
 
-    return await resend.emails.send({
-        from: `"EduConnect" <onboarding@resend.dev>`,
-        to,
-        subject,
-        html,
-    });
+    try {
+        const data = await transporter.sendMail({
+            from: MAIL_FROM,
+            to,
+            subject,
+            html,
+        });
+        console.log('Correo de aprobación/rechazo enviado:', data.messageId);
+        return { success: true, data };
+    } catch (err) {
+        console.error('Error al enviar el correo de aprobación/rechazo (nodemailer):', err);
+        return { success: false, error: err };
+    }
 };
 
 const sendDeactivationEmail = async ({ to, name, role = 'usuario', reason = '' }) => {
@@ -73,13 +101,19 @@ const sendDeactivationEmail = async ({ to, name, role = 'usuario', reason = '' }
         </div>
     `;
 
-    return await resend.emails.send({
-        from: `"EduConnect" <onboarding@resend.dev>`,
-        to,
-        subject,
-        html,
-    });
+    try {
+        const data = await transporter.sendMail({
+            from: MAIL_FROM,
+            to,
+            subject,
+            html,
+        });
+        console.log('Correo de desactivación enviado:', data.messageId);
+        return { success: true, data };
+    } catch (err) {
+        console.error('Error al enviar el correo de desactivación (nodemailer):', err);
+        return { success: false, error: err };
+    }
 };
 
 module.exports = { sendCancellationEmail, sendApprovalEmail, sendDeactivationEmail };
-

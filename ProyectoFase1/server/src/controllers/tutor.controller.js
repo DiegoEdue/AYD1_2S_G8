@@ -206,12 +206,12 @@ const cancelSession = async (req, res) => {
         try {
             await sendCancellationEmail({
                 to: sesioninfo.correoEstudiante,
-                nombreTutor: sesioninfo.tutor,
-                nombreEstudiante: sesioninfo.estudiante,
-                fecha: sesioninfo.fecha,
-                hora: sesioninfo.hora,
-                materia: sesioninfo.materia,
-                motivo: sesioninfo.motivo,
+                tutorName: sesioninfo.tutor,
+                studentName: sesioninfo.estudiante,
+                date: sesioninfo.fecha,
+                time: sesioninfo.hora,
+                subject: sesioninfo.materia,
+                reason: sesioninfo.motivo,
             });
             emailSent = true;
         } catch (emailError) {
