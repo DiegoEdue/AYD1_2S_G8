@@ -303,27 +303,43 @@ const loginAdmin = async (req, res) => {
       });
     }
 
-    // Primer acceso: permitir la entrada sin obligar al administrador a configurar QR.
-    if (!admin.two_factor_enable) {
-      const jwtToken = jwt.sign({
-        id: admin.id_administrador,
-        nombre_usuario: admin.nombre_usuario,
-        rol: 'admin',
-      }, JWT_SECRET, { expiresIn: '8h' });
+    // Primer acceso: el admin no tiene secreto 2FA todavía → generar QR y guardarlo
+    if (!admin.two_factor_secret) {
+      const plainSecret = generateSecret();
+      const encryptedSecret = encryptSecret(plainSecret);
+
+      await sql`
+        UPDATE administrador SET two_factor_secret = ${encryptedSecret}
+        WHERE id_administrador = ${admin.id_administrador};
+      `;
+
+      const qrDataUrl = await generateQrDataUrl(plainSecret, admin.nombre_usuario);
+
       return res.status(200).json({
-        status: 'success',
-        message: 'Inicio de sesión exitoso',
-        token: jwtToken,
-        user: {
-          id_administrador: admin.id_administrador,
-          nombre_usuario: admin.nombre_usuario,
-          rol: 'admin',
-          two_factor_enable: false,
-        },
+        status: 'pending_2fa_setup',
+        message: 'Escanea el código QR con tu aplicación autenticadora y luego ingresa el código.',
+        adminId: admin.id_administrador,
+        qr_code: qrDataUrl,
+        secret: plainSecret,
       });
     }
 
-    // Caso B: 2FA YA habilitado -> pedir el código TOTP
+    // 2FA ya configurado pero aún no habilitado → también requiere verificar QR una vez más
+    // (edge case: secret guardado pero two_factor_enable todavía false)
+    if (!admin.two_factor_enable) {
+      const plainSecret = decryptSecret(admin.two_factor_secret);
+      const qrDataUrl = await generateQrDataUrl(plainSecret, admin.nombre_usuario);
+
+      return res.status(200).json({
+        status: 'pending_2fa_setup',
+        message: 'Escanea el código QR con tu aplicación autenticadora y luego ingresa el código.',
+        adminId: admin.id_administrador,
+        qr_code: qrDataUrl,
+        secret: plainSecret,
+      });
+    }
+
+    // 2FA YA habilitado → pedir el código TOTP
     return res.status(200).json({
       status: 'pending_2fa_verify',
       message: 'Ingrese el código de su aplicación autenticadora.',
