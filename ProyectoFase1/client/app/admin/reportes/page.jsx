@@ -15,6 +15,7 @@ import {
   YAxis,
 } from "recharts";
 import Tabs from "@/components/ui/Tabs";
+import Avatar from "@/components/ui/Avatar";
 import { obtenerReportes } from "@/lib/api/admin";
 
 const OPCIONES_TOPE = [
@@ -250,6 +251,53 @@ export default function ReportesPage() {
           </p>
         )}
       </div>
+
+      {/* Tabla ranking de tutores con foto */}
+      {porTutor.length > 0 && (
+        <div className="rounded-card border border-charcoal/10 bg-white p-5 shadow-soft">
+          <h3 className="font-display text-lg text-charcoal">Ranking de tutores</h3>
+          <p className="text-sm text-charcoal-light mb-4">
+            Listado detallado de tutores por sesiones atendidas.
+          </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-charcoal/10">
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-charcoal-light">#</th>
+                  <th className="px-3 py-2 text-left text-xs font-semibold uppercase tracking-wide text-charcoal-light">Tutor</th>
+                  <th className="px-3 py-2 text-right text-xs font-semibold uppercase tracking-wide text-charcoal-light">Sesiones atendidas</th>
+                </tr>
+              </thead>
+              <tbody>
+                {porTutor.map((item, indice) => (
+                  <tr key={item.tutor} className="border-b border-charcoal/5 last:border-0 hover:bg-paper transition">
+                    <td className="px-3 py-2.5 text-charcoal-light font-mono text-xs">{indice + 1}</td>
+                    <td className="px-3 py-2.5">
+                      <div className="flex items-center gap-3">
+                        <Avatar
+                          nombre={item.tutor}
+                          foto={item.foto_url || ""}
+                          size="h-8 w-8"
+                          textSize="text-xs"
+                        />
+                        <span className="font-medium text-charcoal">{item.tutor}</span>
+                      </div>
+                    </td>
+                    <td className="px-3 py-2.5 text-right">
+                      <span
+                        className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                        style={{ backgroundColor: COLORES[indice % COLORES.length] + "22", color: COLORES[indice % COLORES.length] }}
+                      >
+                        {item.sesiones}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

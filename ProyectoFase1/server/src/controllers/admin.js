@@ -724,10 +724,11 @@ const getReports = async (req, res) => {
                 WHERE s.estado = 'Atendida'
                 GROUP BY m.nombre ORDER BY cantidad DESC, m.nombre ASC`),
       db.query(`SELECT CONCAT(t.nombre, ' ', t.apellido) AS tutor,
+                       t.foto_url,
                        COUNT(*)::integer AS sesiones
                 FROM sesion s JOIN tutor t ON t.id_tutor = s.id_tutor
                 WHERE s.estado = 'Atendida'
-                GROUP BY t.id_tutor, t.nombre, t.apellido
+                GROUP BY t.id_tutor, t.nombre, t.apellido, t.foto_url
                 ORDER BY sesiones DESC, tutor ASC`),
       db.query(`SELECT COUNT(*)::integer AS sesiones, COUNT(DISTINCT id_estudiante)::integer AS estudiantes,
                        COUNT(DISTINCT id_tutor)::integer AS tutores FROM sesion`),
