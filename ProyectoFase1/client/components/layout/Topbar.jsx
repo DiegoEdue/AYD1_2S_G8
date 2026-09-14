@@ -1,7 +1,6 @@
 "use client";
 
 import { useAuth } from "@/lib/auth-context";
-import Avatar from "@/components/ui/Avatar";
 
 export default function Topbar({ titulo }) {
     const { usuario } = useAuth();
@@ -18,14 +17,6 @@ export default function Topbar({ titulo }) {
                 <span className="text-sm text-charcoal-light">
                     Hola, <span className="font-semibold text-charcoal">{nombreUsuario}</span>
                 </span>
-                {usuario.rol !== "admin" && (
-                    <Avatar
-                        nombre={nombreUsuario}
-                        foto={usuario.foto_url || usuario.fotoUrl}
-                        size="h-9 w-9"
-                        textSize="text-xs"
-                    />
-                )}
             </div>
         )}
         </header>
