@@ -36,6 +36,21 @@ const COLORES = [
   "#3e4c52",
 ];
 
+const ESTADOS = {
+  activa: { etiqueta: "Activa", color: "#99b898" },
+  atendida: { etiqueta: "Atendida", color: "#3e4c52" },
+  cancelada_estudiante: { etiqueta: "Cancelada por estudiante", color: "#e84a5f" },
+  cancelada_tutor: { etiqueta: "Cancelada por tutor", color: "#f17e8d" },
+  pendiente: { etiqueta: "Pendiente", color: "#fecea8" },
+};
+
+const normalizarEstado = (estado = "") => estado
+  .toString()
+  .trim()
+  .toLowerCase()
+  .replaceAll("-", "_")
+  .replaceAll(" ", "_");
+
 export default function ReportesPage() {
   const [reporte, setReporte] = useState(null);
   const [error, setError] = useState(null);
@@ -57,7 +72,14 @@ export default function ReportesPage() {
     return tope ? datos.slice(0, tope) : datos;
   }, [reporte, tope]);
 
-  const porEstado = reporte?.porEstado || [];
+  const porEstado = (reporte?.porEstado || [])
+    .filter((item) => !["cancelada_estudiante", "cancelada_tutor"].includes(normalizarEstado(item.estado)))
+    .map((item) => ({
+      ...item,
+      estadoOriginal: item.estado,
+      etiqueta: ESTADOS[normalizarEstado(item.estado)]?.etiqueta || "Estado no identificado",
+      color: ESTADOS[normalizarEstado(item.estado)]?.color || COLORES[0],
+    }));
 
   if (error) {
     return <p className="text-sm text-crimson">{error}</p>;
@@ -208,13 +230,13 @@ export default function ReportesPage() {
                 <Pie
                   data={porEstado}
                   dataKey="cantidad"
-                  nameKey="estado"
+                  nameKey="etiqueta"
                   innerRadius={50}
                   outerRadius={90}
                   paddingAngle={3}
                 >
                   {porEstado.map((item, indice) => (
-                    <Cell key={item.estado} fill={COLORES[indice % COLORES.length]} />
+                      <Cell key={item.estadoOriginal} fill={item.color} />
                   ))}
                 </Pie>
                 <Tooltip formatter={(valor) => [`${valor} sesiones`, "Cantidad"]} />

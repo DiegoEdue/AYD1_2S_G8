@@ -3,6 +3,7 @@ const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
 const tutorModel = require('../models/tutor')
 const { sendCancellationEmail } = require('../services/email')
+const { subirImagen } = require('../utils/cloudinaryUpload')
 
 // Validación de días y horas
 
@@ -275,7 +276,20 @@ const updateProfile = async (req, res) => {
             updatedData.passwordHash = await hashPassword(body.password);
         }
 
-        if (Object.keys(updatedData).length === 0) {
+        if (typeof updatedData.fotoUrl === 'string' && updatedData.fotoUrl.startsWith('data:image/')) {
+            updatedData.fotoUrl = await subirImagen(updatedData.fotoUrl, 'educonnect/tutores');
+        }
+
+        if (Object.prototype.hasOwnProperty.call(body, 'especialidad')) {
+            const materias = (Array.isArray(body.especialidad) ? body.especialidad : String(body.especialidad).split(','))
+                .map((materia) => String(materia).trim())
+                .filter(Boolean)
+                .filter((materia, index, lista) => lista.findIndex((item) => item.toLowerCase() === materia.toLowerCase()) === index);
+
+            await tutorModel.updateSubjects(tutorId, materias);
+        }
+
+        if (Object.keys(updatedData).length === 0 && !Object.prototype.hasOwnProperty.call(body, 'especialidad')) {
             return res.status(400).json({
                 message: 'No se proporcionaron campos válidos para actualizar.',
                 status: 'error'

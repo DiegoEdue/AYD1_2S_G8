@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login as loginApi, loginAdmin, verificarSegundoFactorAdmin, cerrarSesion } from "@/lib/api/auth";
 import { setToken } from "@/lib/api/client";
@@ -14,18 +14,25 @@ const rutasPorRol = {
 };
 
 export function AuthProvider({ children }) {
-  const [usuario, setUsuario] = useState(() => {
-    if (typeof window === "undefined") return null;
-    const stored = window.localStorage.getItem("educonnect_user");
-    if (!stored) return null;
-    try {
-      return JSON.parse(stored);
-    } catch {
-      window.localStorage.removeItem("educonnect_user");
-      return null;
-    }
-  });
+  const [usuario, setUsuario] = useState(null);
+  const [cargando, setCargando] = useState(true);
   const router = useRouter();
+
+  useEffect(() => {
+    const cargarUsuario = window.setTimeout(() => {
+      const stored = window.localStorage.getItem("educonnect_user");
+      if (stored) {
+        try {
+          setUsuario(JSON.parse(stored));
+        } catch {
+          window.localStorage.removeItem("educonnect_user");
+        }
+      }
+      setCargando(false);
+    }, 0);
+
+    return () => window.clearTimeout(cargarUsuario);
+  }, []);
 
   function guardarUsuario(data) {
     setUsuario(data);
@@ -81,7 +88,7 @@ export function AuthProvider({ children }) {
     cerrarSesion();
   }
 
-  const value = { usuario, cargando: false, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario };
+  const value = { usuario, cargando, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

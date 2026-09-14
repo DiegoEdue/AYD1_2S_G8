@@ -32,7 +32,6 @@ const registroTutor = async (req, res) => {
       !genero ||
       !direccion ||
       !telefono ||
-      !foto_url ||
       !numero_identificacion_tutor ||
       !direccion_tutoria ||
       !correo ||
@@ -86,7 +85,9 @@ const registroTutor = async (req, res) => {
     }
 
     // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = await subirImagen(foto_url, 'educonnect/tutores');
+    const fotoFinal = foto_url
+      ? await subirImagen(foto_url, 'educonnect/tutores')
+      : null;
 
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {

@@ -52,9 +52,8 @@ export default function LoginPage() {
                     "educonnect_2fa",
                     JSON.stringify({
                         adminId: resultado.adminId,
-                        secret: resultado.secret,
-                        qr_code: resultado.qr_code,
                         status: resultado.status,
+                        qr_code: resultado.qr_code ?? null,
                     })
                 );
                 router.push("/login/segundo-factor");

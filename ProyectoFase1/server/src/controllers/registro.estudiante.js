@@ -27,7 +27,6 @@ const registerStudent = async (req, res) => {
       !direccion ||
       !telefono ||
       !fecha_nacimiento ||
-      !foto_url ||
       !correo ||
       !password
     ) {
@@ -72,7 +71,9 @@ const registerStudent = async (req, res) => {
     }
 
     // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = await subirImagen(foto_url, 'educonnect/estudiantes');
+    const fotoFinal = foto_url
+      ? await subirImagen(foto_url, 'educonnect/estudiantes')
+      : null;
 
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.

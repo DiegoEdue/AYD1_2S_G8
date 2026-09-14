@@ -11,7 +11,7 @@ INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono,
 VALUES ('Ana', 'Pérez', '202312345', 'F', 'Zona 1, Mixco', '55551111',
         '2002-05-10', 'ana@correo.com', '<hash>');
 
--- 4. Tutores (foto_url es obligatoria aquí, a diferencia del estudiante)
+-- 4. Tutores (la fotografía es opcional)
 INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero,
                     direccion, telefono, foto_url, numero_identificacion_tutor,
                     direccion_tutoria, correo, password_hash,

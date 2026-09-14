@@ -124,7 +124,6 @@ const VACIO_ESTUDIANTE = {
         }
         if (!form.universidad) e.universidad = "Ingresa tu universidad de graduación.";
         if (!form.anioInicio) e.anioInicio = "Ingresa el año de inicio de tutorías.";
-        if (!form.foto) e.foto = "La fotografía del tutor es obligatoria.";
         }
         setErrores(e);
         return Object.keys(e).length === 0;
@@ -194,7 +193,7 @@ const VACIO_ESTUDIANTE = {
                     Foto de perfil
                     </label>
                     <p className="text-xs text-charcoal-light">
-                    {rol === "tutor" ? "Obligatoria para crear tu perfil profesional." : "Opcional. Si no subes una, se mostrarán tus iniciales."}
+                    Opcional. Si no subes una, se mostrarán tus iniciales.
                     </p>
                     <div className="mt-1 flex items-center gap-3">
                     <label

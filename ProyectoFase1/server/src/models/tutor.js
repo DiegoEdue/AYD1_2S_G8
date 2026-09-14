@@ -104,9 +104,28 @@ const findPasswordHashById = async (tutorId) => {
     return result.rows[0].password_hash;
 }
 
+const updateSubjects = async (tutorId, subjects) => {
+    await db.query('DELETE FROM tutor_materia WHERE id_tutor = $1', [tutorId]);
+
+    for (const subject of subjects) {
+        const materia = await db.query(
+            `INSERT INTO materia (nombre) VALUES ($1)
+             ON CONFLICT (nombre) DO UPDATE SET nombre = EXCLUDED.nombre
+             RETURNING id_materia`,
+            [subject]
+        );
+        await db.query(
+            `INSERT INTO tutor_materia (id_tutor, id_materia)
+             VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [tutorId, materia.rows[0].id_materia]
+        );
+    }
+}
+
 module.exports = {
     EDITABLE_FIELDS,
     findProfileById,
     updateProfile,
     findPasswordHashById,
+    updateSubjects,
 }
