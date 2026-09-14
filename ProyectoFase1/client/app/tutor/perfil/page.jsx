@@ -133,9 +133,9 @@ export default function PerfilTutorPage() {
   return (
     <form onSubmit={guardar} className="max-w-3xl rounded-card border border-charcoal/10 bg-white p-6 shadow-soft">
       <div className="flex items-center gap-4">
-        <Avatar nombre={`${perfil.nombre} ${perfil.apellido}`} foto={form.foto_url || form.fotoUrl || perfil.foto_url || perfil.fotoUrl} size="h-14 w-14" />
+        <Avatar nombre={`${form.nombre || perfil.nombre} ${form.apellido || perfil.apellido}`} foto={form.foto_url || perfil.foto_url || perfil.fotoUrl} size="h-14 w-14" />
         <div>
-          <h2 className="font-display text-xl text-charcoal">{perfil.nombre} {perfil.apellido}</h2>
+          <h2 className="font-display text-xl text-charcoal">{form.nombre || perfil.nombre} {form.apellido || perfil.apellido}</h2>
           <p className="text-sm text-charcoal-light">Perfil de tutor</p>
         </div>
       </div>

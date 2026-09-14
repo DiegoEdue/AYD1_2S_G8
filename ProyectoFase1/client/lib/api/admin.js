@@ -67,3 +67,13 @@ export async function obtenerReportes() {
   return apiFetch("/admin/reportes");
 }
 
+export async function obtenerPerfilAdmin() {
+  return apiFetch("/admin/profile");
+}
+
+export async function actualizarPerfilAdmin(datos) {
+  return apiFetch("/admin/profile", {
+    method: "PUT",
+    body: datos,
+  });
+}
