@@ -97,7 +97,7 @@ export default function SolicitudesPage() {
           columnas={
             rol === "estudiante"
               ? ["Nombre", "Carnet", "Género", "Correo", "Acciones"]
-              : ["Nombre", "Carnet/ID", "Género", "Especialidad", "ID Tutor", "Acciones"]
+              : ["Nombre", "Carnet/ID", "Género", "Detalle", "Acciones"]
           }
           filas={filtradas}
           vacio="No hay solicitudes pendientes en esta categoría."
@@ -119,10 +119,12 @@ export default function SolicitudesPage() {
               {s.rol === "estudiante" ? (
                 <td className="px-4 py-3 text-charcoal-light">{s.correo}</td>
               ) : (
-                <>
-                  <td className="px-4 py-3 text-charcoal-light">{s.especialidad}</td>
-                  <td className="px-4 py-3 text-charcoal-light font-mono text-xs">{s.identificacionTutor}</td>
-                </>
+                <td className="px-4 py-3 text-charcoal-light">
+                  {s.especialidad}
+                  {s.identificacionTutor && s.identificacionTutor !== "-" && (
+                    <span className="ml-1 text-xs text-charcoal-light/70">· ID: {s.identificacionTutor}</span>
+                  )}
+                </td>
               )}
               <td className="px-4 py-3">
                 <div className="flex gap-2">
