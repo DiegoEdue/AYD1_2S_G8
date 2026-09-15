@@ -135,42 +135,37 @@ docker compose up --build
 - **Aplicación:** [http://localhost:3000](http://localhost:3000)
 ---
 
-## Evidencias y Grabaciones de la Metodología SCRUM
+## Documentación del Sistema
 
-En esta sección se presentan las grabaciones de las sesiones de trabajo desarrolladas bajo la metodología **SCRUM** (Sprint Planning, Dailys, Sprint Review y Sprint Retrospective).
----
+A continuación se detallan las distintas áreas de documentación técnica, metodológica y operativa desarrolladas para el proyecto EduConnect. Cada sección cuenta con un enlace directo hacia su respectivo documento explicativo.
 
-### Product Backlog
-| **Product Backlog** | Definición del Product Backlog, selección de historias del Product Backlog y estimación. | [ Ver Grabación](https://drive.google.com/file/d/1q75YWuFa7XgK7U2YHy_UWOzyobt_FT-K/view?usp=drive_link) |
+### Metodología SCRUM y Grabaciones
+Contiene la organización de las sesiones de trabajo desarrolladas bajo la metodología **SCRUM** (Product Backlog, Sprint Planning, Daily Scrums y Sprint Retrospectives de cada Sprint) junto con los enlaces a sus grabaciones.
 
-### Sprint 1
+- **[Ver Actas y Grabaciones de Reuniones SCRUM](ProyectoFase1/documentacion/scrumban/scrumn_meetings.md)**
 
-| Evento SCRUM | Descripción / Objetivo | Enlace a la Grabación (Google Drive) |
-| :--- | :--- | :---: |
-| **Sprint Planning 1** | Definición del Sprint Goal, selección de historias del Product Backlog y estimación. | [ Ver Grabación](https://drive.google.com/file/d/17FYFGTOuUTabm2TiIGbLNlvwbJ0wjLkO/view?usp=drive_link) |
-| **Daily 1** | Sincronización diaria: Avances en modelos de BD y estructura base. | [ Ver Grabación](https://drive.google.com/file/d/1-tcu-1SQwWTm5admJVLWlc7WgzcyH6Ob/view?usp=drive_link) |
-| **Daily 2** | Sincronización diaria: Integración de endpoints de autenticación y registro. | [ Ver Grabación](https://drive.google.com/file/d/1dOtGiRd__jCMIxxWdehIx3wtix-zDhdD/view?usp=drive_link) |
-| **Daily 3** | Sincronización diaria: Desarrollo de vistas de login y 2FA en el frontend. | [ Ver Grabación](https://drive.google.com/file/d/1RICKlzAkMFdB0Gkhh5be_P-Mh2hRoid0/view?usp=drive_link) |
-| **Daily 4** | Sincronización diaria: Primeras pruebas de logins y creacion de usuarios, tutores y administradores. | [ Ver Grabación](https://drive.google.com/file/d/1PT4QoUdLQzsIcKRKAt8XXV01dkDZ2_ER/view?usp=drive_link) |
-| **Daily 5** | Sincronización diaria: Ajustes y cambios en el frontend | [ Ver Grabación](https://drive.google.com/file/d/16FrCgIzBomOrMsruRuFzVflnTrxRjKVi/view?usp=drive_link) |
-| **Daily 6** | Sincronización diaria: Finalizacion de las historias de usuario con los estados de prioridad alta. | [ Ver Grabación](https://drive.google.com/file/d/1d214mUCGeHfCZjb3v-fI4iCM88UG77pt/view?usp=drive_link) |
-| **Sprint Retrospective 1** | Análisis de aciertos, oportunidades de mejora y compromisos para el siguiente sprint. | [ Ver Grabación](https://drive.google.com/file/d/19M0bHMSx0y79Q4j3cfZ24VijYwZcW8Uz/view?usp=drive_link) |
+### Diagramas del Sistema
+Contiene los diagramas conceptuales, de diseño de base de datos y modelado de procesos del sistema:
 
----
+- **[Diagrama Entidad-Relación (ER)](ProyectoFase1/documentacion/diagramas/diagrama-ER.md):** Modelo de datos relacional implementado en PostgreSQL (Neon DB).
+- **[Casos de Uso de Negocio Nivel 0 (CUN Core)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-Core.md):** Diagrama general de los procesos centrales del sistema.
+- **[Casos de Uso Nivel 1 (Primera Descomposición)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-primera-descomposicion.md):** Desglose inicial de los módulos de la aplicación.
+- **[Casos de Uso Nivel 2 (Casos Expandidos)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-expandidos.md):** Detalle de interacción para flujos complejos del sistema.
+- **[Descripciones Textuales de Casos de Uso](ProyectoFase1/documentacion/diagramas/descripciones-textuales.md):** Especificación completa de actores, precondiciones, flujo principal y excepciones.
 
-### Sprint 2
+### Manuales del Sistema
+Documentos guía para desarrolladores, diseñadores y usuarios finales:
 
-| Evento SCRUM | Descripción / Objetivo | Enlace a la Grabación (Google Drive) |
-| :--- | :--- | :---: |
-| **Sprint Planning 2** | Planificación de historias de gestión de tutorías, bajas de usuarios y reportes. | [ Ver Grabación](https://drive.google.com/file/d/18F_hiD1wqGPuwVtZo3DGNiah3e9-lmmN/view?usp=drive_link) |
-| **Daily 2.1** | Sincronización diaria: Implementación de solicitudes de tutoría y estados. | [ Ver Grabación](https://drive.google.com/file/d/1o3HP9X_bro9ykAGz_jCPubwFNIEAbB-R/view?usp=drive_link) |
-| **Daily 2.2** | Sincronización diaria: Módulo de baja de estudiantes y tutores con notificación por correo. | [ Ver Grabación](https://drive.google.com/file/d/14kCPHVE5tuGOm6eXcAESIk26q4f9Yadv/view?usp=drive_link) |
-| **Daily 2.3** | Sincronización diaria: Avance con las historias de usuario y endpoints faltantes. | [ Ver Grabación](https://drive.google.com/file/d/1MFU_74S5Qd__oPYh_XA3B_E7zfnGMTmW/view?usp=drive_link) |
-| **Daily 2.4** | Sincronización diaria: Finalización de historias de usuario y pruebas de codigo. | [ Ver Grabación](https://drive.google.com/file/d/1HHZomNgzBASHns-N-noK5we3XyHpe_V0/view?usp=drive_link) |
-| **Daily 2.5** | Sincronización diaria: Terminacion de historias de usuario, documentacion y diagramas. | [ Ver Grabación](Pendiente) | 
-| **Daily 2.6** | Sincronización diaria: Ultimas pruebas del codigo trabajado en equipo | [ Ver Grabación]() |
-| **Sprint Retrospective 2** | Evaluación de desempeño del equipo, cumplimiento de metas y cierre del proyecto. | [ Ver Grabación](Pendiente) |
-| **Sprint SCRUMBAN** | Definición del Sprint Goal, selección de historias del Product Backlog y estimación. | [ Ver Grabación](https://drive.google.com/file/d/1Q2MIQMZnxJVWzAHD0ipHHYAuteBN_05A/view?usp=drive_link) |
+- **[Manual Técnico del Sistema](ProyectoFase1/documentacion/manuales/Manual_Tecnico.md):** Arquitectura del sistema, configuración de Docker, infraestructura backend, frontend y endpoints de API.
+- **[Manual de Usuario](ProyectoFase1/documentacion/manuales/Manual_Usuario.md):** Guía paso a paso para la navegación de Estudiantes, Tutores y Administradores.
+- **[Manual de UI / UX y Guía de Diseño](ProyectoFase1/documentacion/manuales/Manual_UI_UX.md):** Especificación del sistema de diseño, componentes visuales y paleta de colores.
+
+### Requerimientos del Sistema
+Especificación detallada de los requisitos del software:
+
+- **[Requerimientos Funcionales (RFs)](ProyectoFase1/documentacion/requerimientos/RFs-requerimientos-funcionales.md):** Lista de funcionalidades exigidas por el sistema.
+- **[Requerimientos No Funcionales / Calidad (EACs)](ProyectoFase1/documentacion/requerimientos/EACs-requerimientos-calidad.md):** Escenarios de atributos de calidad como rendimiento, disponibilidad y seguridad.
+- **[Requerimientos de Restricción (RRs)](ProyectoFase1/documentacion/requerimientos/RRs-requerimientos-restriccion.md):** Limitan las opciones de diseño e implementación del proyecto.
 
 ---
 
