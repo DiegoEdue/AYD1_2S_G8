@@ -13,8 +13,7 @@ export default function LoginPage() {
     const { mostrarToast } = useToast();
     const router = useRouter();
 
-    const [rol, setRol] = useState("estudiante");
-    const [email, setEmail] = useState("");
+    const [identificador, setIdentificador] = useState("");
     const [password, setPassword] = useState("");
     const [errores, setErrores] = useState({});
     const [cargando, setCargando] = useState(false);
@@ -22,13 +21,12 @@ export default function LoginPage() {
 
     function validar() {
         const e = {};
-        if (rol === "admin") {
-            if (!email.trim()) e.email = "Ingresa tu nombre de usuario.";
-        } else {
-            if (!email) e.email = "Ingresa tu correo electrónico.";
-            else if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "El correo no tiene un formato válido.";
+        if (!identificador.trim()) {
+            e.identificador = "Ingresa tu correo electrónico o nombre de usuario.";
         }
-        if (!password) e.password = "Ingresa tu contraseña.";
+        if (!password) {
+            e.password = "Ingresa tu contraseña.";
+        }
         setErrores(e);
         return Object.keys(e).length === 0;
     }
@@ -39,12 +37,33 @@ export default function LoginPage() {
         if (!validar()) return;
 
         setCargando(true);
+        const inputLimpio = identificador.trim();
+        const tieneArroba = inputLimpio.includes("@");
+
         try {
             let resultado;
-            if (rol === "admin") {
-                resultado = await loginComoAdmin({ nombre_usuario: email.trim(), password });
+            if (tieneArroba) {
+                // Si contiene '@', intentamos primero como Estudiante/Tutor y fallback a Admin
+                try {
+                    resultado = await login({ email: inputLimpio, password });
+                } catch (errEst) {
+                    try {
+                        resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
+                    } catch {
+                        throw errEst;
+                    }
+                }
             } else {
-                resultado = await login({ email: email.trim(), password });
+                // Si no contiene '@', intentamos primero como Administrador y fallback a Estudiante/Tutor
+                try {
+                    resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
+                } catch (errAdmin) {
+                    try {
+                        resultado = await login({ email: inputLimpio, password });
+                    } catch {
+                        throw errAdmin;
+                    }
+                }
             }
 
             if (resultado?.requiereSegundoFactor) {
@@ -62,7 +81,7 @@ export default function LoginPage() {
 
             mostrarToast("Bienvenido a EduConnect.", "exito");
         } catch (err) {
-            setErrorGeneral(err.message);
+            setErrorGeneral(err.message || "Credenciales incorrectas.");
         } finally {
             setCargando(false);
         }
@@ -77,26 +96,6 @@ export default function LoginPage() {
                 Inicia sesión para gestionar tus tutorías académicas.
             </p>
 
-            <div className="mt-5 flex rounded-full bg-paper p-1">
-                {[
-                    { valor: "estudiante", etiqueta: "Estudiante/Tutor" },
-                    { valor: "admin", etiqueta: "Administrador" },
-                ].map((item) => (
-                    <button
-                        key={item.valor}
-                        type="button"
-                        onClick={() => setRol(item.valor)}
-                        className={`flex-1 rounded-full px-3 py-2 text-sm font-medium transition ${
-                            rol === item.valor
-                                ? "bg-charcoal text-white"
-                                : "text-charcoal-light hover:text-charcoal"
-                        }`}
-                    >
-                        {item.etiqueta}
-                    </button>
-                ))}
-            </div>
-
             {errorGeneral && (
                 <div
                 role="alert"
@@ -108,19 +107,19 @@ export default function LoginPage() {
 
             <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
                 <FormField
-                    label={rol === "admin" ? "Nombre de usuario" : "Correo electrónico"}
-                    name="email"
+                    label="Correo electrónico o nombre de usuario"
+                    name="identificador"
                     required
-                    error={errores.email}
+                    error={errores.identificador}
                 >
                 <input
-                    id="email"
-                    type={rol === "admin" ? "text" : "email"}
-                    autoComplete={rol === "admin" ? "username" : "email"}
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={inputClass(!!errores.email)}
-                    placeholder={rol === "admin" ? "admin" : "tucorreo@usac.edu.gt"}
+                    id="identificador"
+                    type="text"
+                    autoComplete="username"
+                    value={identificador}
+                    onChange={(e) => setIdentificador(e.target.value)}
+                    className={inputClass(!!errores.identificador)}
+                    placeholder="tucorreo@usac.edu.gt o usuario"
                 />
                 </FormField>
 
