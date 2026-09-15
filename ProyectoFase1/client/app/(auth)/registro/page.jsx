@@ -43,30 +43,13 @@ const VACIO_ESTUDIANTE = {
     return /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{8,}$/.test(pw);
     }
 
-    function distanciaTexto(a, b) {
-    const fila = Array.from({ length: b.length + 1 }, (_, indice) => indice);
-    for (let indiceA = 1; indiceA <= a.length; indiceA += 1) {
-        let diagonal = fila[0];
-        fila[0] = indiceA;
-        for (let indiceB = 1; indiceB <= b.length; indiceB += 1) {
-        const superior = fila[indiceB];
-        fila[indiceB] = a[indiceA - 1] === b[indiceB - 1]
-            ? diagonal
-            : Math.min(diagonal, superior, fila[indiceB - 1]) + 1;
-        diagonal = superior;
-        }
-    }
-    return fila[b.length];
-    }
-
     function validarEspecialidades(valor) {
     const materias = valor
         .split(",")
         .map((materia) => materia.trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, ""))
         .filter(Boolean);
-    return materias.findIndex((materia, indice) =>
-        materias.slice(0, indice).some((anterior) => materia === anterior || distanciaTexto(materia, anterior) <= 1)
-    ) !== -1;
+    const sinDuplicados = new Set(materias);
+    return sinDuplicados.size !== materias.length;
     }
 
     export default function RegistroPage() {
