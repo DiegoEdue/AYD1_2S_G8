@@ -89,65 +89,65 @@ export default function LoginPage() {
 
     return (
         <div className="flex min-h-screen items-center justify-center bg-paper px-4 py-10">
-        <div className="w-full max-w-md overflow-hidden rounded-card bg-white shadow-soft">
-            <div className="p-8">
-            <h1 className="font-display text-2xl text-charcoal">EduConnect - G8</h1>
-            <p className="mt-1 text-sm text-charcoal-light">
-                Inicia sesión para gestionar tus tutorías académicas.
-            </p>
+            <div className="w-full max-w-md overflow-hidden rounded-card bg-white shadow-soft">
+                <div className="p-8">
+                    <h1 className="font-display text-2xl text-charcoal">EduConnect - G8</h1>
+                    <p className="mt-1 text-sm text-charcoal-light">
+                        Inicia sesión para gestionar tus tutorías académicas.
+                    </p>
 
-            {errorGeneral && (
-                <div
-                role="alert"
-                className="mt-4 rounded-lg border border-crimson/30 bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark"
-                >
-                {errorGeneral}
+                    {errorGeneral && (
+                        <div
+                            role="alert"
+                            className="mt-4 rounded-lg border border-crimson/30 bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark"
+                        >
+                            {errorGeneral}
+                        </div>
+                    )}
+
+                    <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
+                        <FormField
+                            label="Correo electrónico"
+                            name="identificador"
+                            required
+                            error={errores.identificador}
+                        >
+                            <input
+                                id="identificador"
+                                type="text"
+                                autoComplete="username"
+                                value={identificador}
+                                onChange={(e) => setIdentificador(e.target.value)}
+                                className={inputClass(!!errores.identificador)}
+                                placeholder="tucorreo@usac.edu.gt o usuario"
+                            />
+                        </FormField>
+
+                        <FormField label="Contraseña" name="password" required error={errores.password}>
+                            <input
+                                id="password"
+                                type="password"
+                                autoComplete="current-password"
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
+                                className={inputClass(!!errores.password)}
+                                placeholder="••••••••"
+                            />
+                        </FormField>
+
+                        <Button type="submit" cargando={cargando} className="mt-2 w-full">
+                            Iniciar sesión
+                        </Button>
+                    </form>
+
+                    <p className="mt-6 text-center text-sm text-charcoal-light">
+                        ¿Aún no tienes cuenta?{" "}
+                        <Link href="/registro" className="font-semibold text-crimson hover:underline">
+                            Regístrate aquí
+                        </Link>
+                    </p>
                 </div>
-            )}
-
-            <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
-                <FormField
-                    label="Correo electrónico o nombre de usuario"
-                    name="identificador"
-                    required
-                    error={errores.identificador}
-                >
-                <input
-                    id="identificador"
-                    type="text"
-                    autoComplete="username"
-                    value={identificador}
-                    onChange={(e) => setIdentificador(e.target.value)}
-                    className={inputClass(!!errores.identificador)}
-                    placeholder="tucorreo@usac.edu.gt o usuario"
-                />
-                </FormField>
-
-                <FormField label="Contraseña" name="password" required error={errores.password}>
-                <input
-                    id="password"
-                    type="password"
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className={inputClass(!!errores.password)}
-                    placeholder="••••••••"
-                />
-                </FormField>
-
-                <Button type="submit" cargando={cargando} className="mt-2 w-full">
-                Iniciar sesión
-                </Button>
-            </form>
-
-            <p className="mt-6 text-center text-sm text-charcoal-light">
-                ¿Aún no tienes cuenta?{" "}
-                <Link href="/registro" className="font-semibold text-crimson hover:underline">
-                Regístrate aquí
-                </Link>
-            </p>
             </div>
-        </div>
         </div>
     );
 }

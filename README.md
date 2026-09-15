@@ -139,10 +139,15 @@ docker compose up --build
 
 A continuación se detallan las distintas áreas de documentación técnica, metodológica y operativa desarrolladas para el proyecto EduConnect. Cada sección cuenta con un enlace directo hacia su respectivo documento explicativo.
 
-### Metodología SCRUM y Grabaciones
-Contiene la organización de las sesiones de trabajo desarrolladas bajo la metodología **SCRUM** (Product Backlog, Sprint Planning, Daily Scrums y Sprint Retrospectives de cada Sprint) junto con los enlaces a sus grabaciones.
+### Metodología SCRUM y Scrumban
+Organización del proyecto bajo la metodología ágil SCRUM y Scrumban, incluyendo artefactos, reuniones, prototipos y evaluación del equipo:
 
-- **[Ver Actas y Grabaciones de Reuniones SCRUM](ProyectoFase1/documentacion/scrumban/scrumn_meetings.md)**
+- **[Actas y Grabaciones de Reuniones SCRUM](ProyectoFase1/documentacion/scrumban/scrumn_meetings.md):** Registro de actas y grabaciones de Sprint Planning, Daily Scrums y Sprint Retrospectives.
+- **[Historias de Usuario (Product Backlog)](ProyectoFase1/documentacion/scrumban/historias_usuario.md):** Especificación completa del Product Backlog con criterios de aceptación.
+- **[Sprint Backlog](ProyectoFase1/documentacion/scrumban/sprint_backlog.md):** Planificación y desglose de tareas asignadas para el Sprint 1 y Sprint 2.
+- **[Tablero Kanban / Scrumban](ProyectoFase1/documentacion/scrumban/tablero_kanban.md):** Estructura del flujo de trabajo, estados de desarrollo y seguimiento del tablero Kanban.
+- **[Prototipos de Pantallas](ProyectoFase1/documentacion/scrumban/prototipos.md):** Bocetos y diseños preliminares de la interfaz del sistema.
+- **[Evaluación y Calificación SCRUM](ProyectoFase1/documentacion/scrumban/calificacion_scrum.md):** Matriz de evaluación del desempeño y rendimiento de los integrantes del equipo.
 
 ### Diagramas del Sistema
 Contiene los diagramas conceptuales, de diseño de base de datos y modelado de procesos del sistema:
