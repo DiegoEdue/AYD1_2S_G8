@@ -119,7 +119,7 @@ export default function LoginPage() {
                                 value={identificador}
                                 onChange={(e) => setIdentificador(e.target.value)}
                                 className={inputClass(!!errores.identificador)}
-                                placeholder="tucorreo@usac.edu.gt o usuario"
+                                placeholder="tucorreo@usac.edu.gt"
                             />
                         </FormField>
 
