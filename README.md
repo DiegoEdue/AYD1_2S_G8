@@ -135,13 +135,37 @@ docker compose up --build
 - **Aplicación:** [http://localhost:3000](http://localhost:3000)
 ---
 
-## Evidencias y Grabaciones de la Metodología SCRUM
+## Documentación del Sistema
 
-En esta sección se presentan las grabaciones de las sesiones de trabajo desarrolladas bajo la metodología **SCRUM** (Product Backlog, Sprint Planning, Daily Scrums, y Sprint Retrospectives de cada Sprint).
+A continuación se detallan las distintas áreas de documentación técnica, metodológica y operativa desarrolladas para el proyecto EduConnect. Cada sección cuenta con un enlace directo hacia su respectivo documento explicativo.
 
-Para mantener una documentación centralizada y organizada con las fechas, duraciones y enlaces detallados de cada reunión, consulta el siguiente documento de actas:
+### Metodología SCRUM y Grabaciones
+Contiene la organización de las sesiones de trabajo desarrolladas bajo la metodología **SCRUM** (Product Backlog, Sprint Planning, Daily Scrums y Sprint Retrospectives de cada Sprint) junto con los enlaces a sus grabaciones.
 
-**[Ver Actas y Grabaciones de Reuniones SCRUM](ProyectoFase1/documentacion/scrumban/scrumn_meetings.md)**
+- **[Ver Actas y Grabaciones de Reuniones SCRUM](ProyectoFase1/documentacion/scrumban/scrumn_meetings.md)**
+
+### Diagramas del Sistema
+Contiene los diagramas conceptuales, de diseño de base de datos y modelado de procesos del sistema:
+
+- **[Diagrama Entidad-Relación (ER)](ProyectoFase1/documentacion/diagramas/diagrama-ER.md):** Modelo de datos relacional implementado en PostgreSQL (Neon DB).
+- **[Casos de Uso de Negocio Nivel 0 (CUN Core)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-Core.md):** Diagrama general de los procesos centrales del sistema.
+- **[Casos de Uso Nivel 1 (Primera Descomposición)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-primera-descomposicion.md):** Desglose inicial de los módulos de la aplicación.
+- **[Casos de Uso Nivel 2 (Casos Expandidos)](ProyectoFase1/documentacion/diagramas/diagrama-CUN-expandidos.md):** Detalle de interacción para flujos complejos del sistema.
+- **[Descripciones Textuales de Casos de Uso](ProyectoFase1/documentacion/diagramas/descripciones-textuales.md):** Especificación completa de actores, precondiciones, flujo principal y excepciones.
+
+### Manuales del Sistema
+Documentos guía para desarrolladores, diseñadores y usuarios finales:
+
+- **[Manual Técnico del Sistema](ProyectoFase1/documentacion/manuales/Manual_Tecnico.md):** Arquitectura del sistema, configuración de Docker, infraestructura backend, frontend y endpoints de API.
+- **[Manual de Usuario](ProyectoFase1/documentacion/manuales/Manual_Usuario.md):** Guía paso a paso para la navegación de Estudiantes, Tutores y Administradores.
+- **[Manual de UI / UX y Guía de Diseño](ProyectoFase1/documentacion/manuales/Manual_UI_UX.md):** Especificación del sistema de diseño, componentes visuales y paleta de colores.
+
+### Requerimientos del Sistema
+Especificación detallada de los requisitos del software:
+
+- **[Requerimientos Funcionales (RFs)](ProyectoFase1/documentacion/requerimientos/RFs-requerimientos-funcionales.md):** Lista de funcionalidades exigidas por el sistema.
+- **[Requerimientos No Funcionales / Calidad (EACs)](ProyectoFase1/documentacion/requerimientos/EACs-requerimientos-calidad.md):** Escenarios de atributos de calidad como rendimiento, disponibilidad y seguridad.
+- **[Requerimientos de Restricción (RRs)](ProyectoFase1/documentacion/requerimientos/RRs-requerimientos-restriccion.md):** Limitan las opciones de diseño e implementación del proyecto.
 
 ---
 

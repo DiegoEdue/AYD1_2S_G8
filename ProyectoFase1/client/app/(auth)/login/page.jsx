@@ -22,7 +22,7 @@ export default function LoginPage() {
     function validar() {
         const e = {};
         if (!identificador.trim()) {
-            e.identificador = "Ingresa tu correo electrónico o nombre de usuario.";
+            e.identificador = "Ingresa tu correo electrónico";
         }
         if (!password) {
             e.password = "Ingresa tu contraseña.";
