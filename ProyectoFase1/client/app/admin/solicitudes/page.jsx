@@ -94,7 +94,11 @@ export default function SolicitudesPage() {
         <p className="text-sm text-charcoal-light">Cargando solicitudes…</p>
       ) : (
         <Table
-          columnas={["Nombre", "Carnet/ID", "Género", "Nacimiento", "Detalle", "Acciones"]}
+          columnas={
+            rol === "estudiante"
+              ? ["Nombre", "Carnet", "Género", "Correo", "Acciones"]
+              : ["Nombre", "Carnet/ID", "Género", "Especialidad", "ID Tutor", "Acciones"]
+          }
           filas={filtradas}
           vacio="No hay solicitudes pendientes en esta categoría."
           renderFila={(s) => (
@@ -112,10 +116,14 @@ export default function SolicitudesPage() {
               </td>
               <td className="px-4 py-3 text-charcoal-light">{s.carnet}</td>
               <td className="px-4 py-3 text-charcoal-light">{s.genero}</td>
-              <td className="px-4 py-3 text-charcoal-light">{s.fechaNacimiento}</td>
-              <td className="px-4 py-3 text-charcoal-light">
-                {s.rol === "tutor" ? `${s.especialidad} · ID tutor: ${s.identificacionTutor}` : s.correo}
-              </td>
+              {s.rol === "estudiante" ? (
+                <td className="px-4 py-3 text-charcoal-light">{s.correo}</td>
+              ) : (
+                <>
+                  <td className="px-4 py-3 text-charcoal-light">{s.especialidad}</td>
+                  <td className="px-4 py-3 text-charcoal-light font-mono text-xs">{s.identificacionTutor}</td>
+                </>
+              )}
               <td className="px-4 py-3">
                 <div className="flex gap-2">
                   <Button
