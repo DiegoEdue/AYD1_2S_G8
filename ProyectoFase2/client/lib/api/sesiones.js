@@ -1,0 +1,85 @@
+import { apiFetch } from "./client";
+
+// --- Estudiante ---
+export async function programarSesion({ idTutor, idMateria, fecha, hora, motivo }) {
+  return apiFetch("/student/sessions", {
+    method: "POST",
+    body: { idTutor, idMateria, fecha, hora, motivo },
+  });
+}
+
+export async function listarSesionesActivasEstudiante() {
+  return apiFetch("/student/sessions/active");
+}
+
+export async function listarHistorialEstudiante() {
+  return apiFetch("/student/sessions/history");
+}
+
+export async function cancelarSesionComoEstudiante(id) {
+  return apiFetch(`/student/sessions/${id}/cancel`, { method: "PATCH" });
+}
+
+// --- Tutor ---
+export async function listarSesionesPendientesTutor() {
+  return apiFetch("/tutor/sessions/pending");
+}
+
+export async function listarHistorialTutor() {
+  return apiFetch("/tutor/sessions/history");
+}
+
+export async function atenderSesion(id, { resumen }) {
+  return apiFetch(`/tutor/sessions/${id}/attend`, {
+    method: "PATCH",
+    body: { resumen },
+  });
+}
+
+export async function cancelarSesionComoTutor(id) {
+  return apiFetch(`/tutor/sessions/${id}/cancel`, { method: "PATCH" });
+}
+
+// --- Perfil (compartido estudiante/tutor) ---
+export async function obtenerPerfil(rol) {
+  return apiFetch(rol === "tutor" ? "/tutor/profile" : "/estudiante/profile");
+}
+
+export async function actualizarPerfil(rol, datos) {
+  if (rol === "tutor") {
+    const payload = {
+      nombre: datos.nombre,
+      apellido: datos.apellido,
+      fechaNacimiento: datos.fecha_nacimiento,
+      genero: datos.genero,
+      direccion: datos.direccion,
+      telefono: datos.telefono,
+      fotoUrl: datos.foto_url,
+      direccionTutoria: datos.direccion_tutoria,
+      anioInicioTutorias: datos.anio_inicio_tutorias,
+      universidadGraduacion: datos.universidad_graduacion,
+      especialidad: datos.especialidad,
+    };
+
+    if (datos.password_nueva) payload.password = datos.password_nueva;
+
+    return apiFetch("/tutor/profile", { method: "PATCH", body: payload });
+  }
+
+  const payload = {
+    nombre: datos.nombre,
+    apellido: datos.apellido,
+    genero: datos.genero,
+    direccion: datos.direccion,
+    telefono: datos.telefono,
+    fecha_nacimiento: datos.fecha_nacimiento,
+    ...(datos.foto_url ? { foto_url: datos.foto_url } : {}),
+  };
+
+  if (datos.password_nueva) {
+    payload.password_actual = datos.password_actual;
+    payload.password_nueva = datos.password_nueva;
+  }
+
+  return apiFetch("/student/profile", { method: "PUT", body: payload });
+}

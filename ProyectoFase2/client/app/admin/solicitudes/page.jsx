@@ -1,0 +1,183 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Tabs from "@/components/ui/Tabs";
+import Table from "@/components/ui/Table";
+import Button from "@/components/ui/Button";
+import Modal from "@/components/ui/Modal";
+import Avatar from "@/components/ui/Avatar";
+import { useToast } from "@/components/ui/Toast";
+import { aprobarSolicitud, listarSolicitudes, rechazarSolicitud } from "@/lib/api/admin";
+
+export default function SolicitudesPage() {
+  const { mostrarToast } = useToast();
+  const [rol, setRol] = useState("estudiante");
+  const [solicitudes, setSolicitudes] = useState([]);
+  const [cargando, setCargando] = useState(true);
+  const [confirmacion, setConfirmacion] = useState(null);
+
+  useEffect(() => {
+    async function cargarSolicitudes() {
+      try {
+        const response = await listarSolicitudes();
+        const data = Array.isArray(response?.data) ? response.data : [];
+        setSolicitudes(
+          data.map((s) => ({
+            id: s.id_estudiante ?? s.id_tutor ?? s.id,
+            rol: s.tipo_usuario || "estudiante",
+            nombre: `${s.nombre ?? ""} ${s.apellido ?? ""}`.trim() || "Usuario",
+            carnet: s.carnet || s.carnet_id || "-",
+            correo: s.correo || "-",
+            genero: s.genero || "-",
+            fechaNacimiento: s.fecha_nacimiento || "-",
+            foto: s.foto_url || "",
+            identificacionTutor: s.numero_identificacion_tutor || "-",
+            especialidad: s.especialidad || "-",
+          }))
+        );
+      } catch (error) {
+        setSolicitudes([]);
+      } finally {
+        setCargando(false);
+      }
+    }
+
+    cargarSolicitudes();
+  }, []);
+
+  const filtradas = solicitudes.filter((s) => s.rol === rol);
+
+  async function confirmarAccion() {
+    if (!confirmacion) return;
+
+    const { solicitud, accion } = confirmacion;
+    try {
+      if (accion === "aprobar") {
+        await aprobarSolicitud(solicitud.id, solicitud.rol);
+      } else {
+        await rechazarSolicitud(solicitud.id, solicitud.rol);
+      }
+
+      setSolicitudes((prev) => prev.filter((s) => s.id !== solicitud.id));
+      mostrarToast(
+        accion === "aprobar"
+          ? `${solicitud.nombre} fue aprobado. Se le notificó por correo.`
+          : `${solicitud.nombre} fue rechazado. Se le notificó por correo.`,
+        accion === "aprobar" ? "exito" : "info"
+      );
+    } catch (err) {
+      mostrarToast(err.message || "No pudimos completar la acción.", "error");
+    } finally {
+      setConfirmacion(null);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      <div>
+        <h2 className="font-display text-xl text-charcoal">Solicitudes pendientes</h2>
+        <p className="text-sm text-charcoal-light">
+          Revisa y aprueba o rechaza el registro de nuevos estudiantes y tutores.
+        </p>
+      </div>
+
+      <Tabs
+        tabs={[
+          { valor: "estudiante", etiqueta: "Estudiantes" },
+          { valor: "tutor", etiqueta: "Tutores" },
+        ]}
+        activo={rol}
+        onCambiar={setRol}
+      />
+
+      {cargando ? (
+        <p className="text-sm text-charcoal-light">Cargando solicitudes…</p>
+      ) : (
+        <Table
+          columnas={
+            rol === "estudiante"
+              ? ["Nombre", "Carnet", "Género", "Correo", "Acciones"]
+              : ["Nombre", "Carnet/ID", "Género", "Detalle", "Acciones"]
+          }
+          filas={filtradas}
+          vacio="No hay solicitudes pendientes en esta categoría."
+          renderFila={(s) => (
+            <>
+              <td className="px-4 py-3 font-medium text-charcoal">
+                <div className="flex items-center gap-3">
+                  <Avatar
+                    nombre={s.nombre}
+                    foto={s.foto || ""}
+                    size="h-9 w-9"
+                    textSize="text-xs"
+                  />
+                  <span>{s.nombre}</span>
+                </div>
+              </td>
+              <td className="px-4 py-3 text-charcoal-light">{s.carnet}</td>
+              <td className="px-4 py-3 text-charcoal-light">{s.genero}</td>
+              {s.rol === "estudiante" ? (
+                <td className="px-4 py-3 text-charcoal-light">{s.correo}</td>
+              ) : (
+                <td className="px-4 py-3 text-charcoal-light">
+                  {s.especialidad}
+                  {s.identificacionTutor && s.identificacionTutor !== "-" && (
+                    <span className="ml-1 text-xs text-charcoal-light/70">· ID: {s.identificacionTutor}</span>
+                  )}
+                </td>
+              )}
+              <td className="px-4 py-3">
+                <div className="flex gap-2">
+                  <Button
+                    variante="secundario"
+                    tamanio="sm"
+                    onClick={() => setConfirmacion({ solicitud: s, accion: "aprobar" })}
+                  >
+                    Aceptar
+                  </Button>
+                  <Button
+                    variante="peligro"
+                    tamanio="sm"
+                    onClick={() => setConfirmacion({ solicitud: s, accion: "rechazar" })}
+                  >
+                    Rechazar
+                  </Button>
+                </div>
+              </td>
+            </>
+          )}
+        />
+      )}
+
+      <Modal
+        abierto={!!confirmacion}
+        onCerrar={() => setConfirmacion(null)}
+        titulo={
+          confirmacion?.accion === "aprobar" ? "¿Aprobar esta solicitud?" : "¿Rechazar esta solicitud?"
+        }
+        footer={
+          <>
+            <Button variante="fantasma" onClick={() => setConfirmacion(null)}>
+              Volver
+            </Button>
+            <Button
+              variante={confirmacion?.accion === "aprobar" ? "secundario" : "peligro"}
+              onClick={confirmarAccion}
+            >
+              Sí, {confirmacion?.accion === "aprobar" ? "aprobar" : "rechazar"}
+            </Button>
+          </>
+        }
+      >
+        {confirmacion && (
+          <p>
+            {confirmacion.accion === "aprobar"
+              ? `${confirmacion.solicitud.nombre} podrá iniciar sesión de inmediato.`
+              : `${confirmacion.solicitud.nombre} no podrá acceder a la plataforma.`}{" "}
+            Se le enviará un correo de notificación con el resultado.
+          </p>
+        )}
+      </Modal>
+    </div>
+  );
+}
