@@ -57,6 +57,7 @@ CREATE TABLE tutor (
     hora_inicio_atencion        TIME,
     hora_fin_atencion           TIME,
     fecha_registro              TIMESTAMP    NOT NULL DEFAULT now(),
+    cv_pdf_url                  VARCHAR(500) DEFAULT 'sin_cv_pdf',
     CONSTRAINT chk_tutor_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja')),
     CONSTRAINT chk_tutor_anio
