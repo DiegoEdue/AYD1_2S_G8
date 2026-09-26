@@ -23,13 +23,14 @@ CREATE TABLE estudiante (
     direccion         VARCHAR(255) NOT NULL,
     telefono          VARCHAR(20)  NOT NULL,
     fecha_nacimiento  DATE         NOT NULL,
-    foto_url          VARCHAR(255),
+    foto_url          VARCHAR(255) NOT NULL DEFAULT 'sin_foto',
     correo            VARCHAR(150) NOT NULL UNIQUE,
     password_hash     VARCHAR(255) NOT NULL,
     estado_aprobacion VARCHAR(20)  NOT NULL DEFAULT 'pendiente',
     aprobado_por      INTEGER      REFERENCES administrador(id_administrador)
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
+    carnet_pdf_url    VARCHAR(255) DEFAULT 'sin_pdf',
     CONSTRAINT chk_estudiante_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja'))
 );
