@@ -31,6 +31,9 @@ CREATE TABLE estudiante (
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
     carnet_pdf_url    VARCHAR(255) DEFAULT 'sin_pdf',
+    verification_token          VARCHAR(255) ,
+    is_email_verified           BOOLEAN DEFAULT FALSE,
+    token_created_at            TIMESTAMP,
     CONSTRAINT chk_estudiante_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja'))
 );
@@ -58,6 +61,9 @@ CREATE TABLE tutor (
     hora_fin_atencion           TIME,
     fecha_registro              TIMESTAMP    NOT NULL DEFAULT now(),
     cv_pdf_url                  VARCHAR(500) DEFAULT 'sin_cv_pdf',
+    verification_token          VARCHAR(255) ,
+    is_email_verified           BOOLEAN DEFAULT FALSE,
+    token_created_at            TIMESTAMP,
     CONSTRAINT chk_tutor_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja')),
     CONSTRAINT chk_tutor_anio
