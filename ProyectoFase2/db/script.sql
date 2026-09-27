@@ -30,10 +30,10 @@ CREATE TABLE estudiante (
     aprobado_por      INTEGER      REFERENCES administrador(id_administrador)
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
-    carnet_pdf_url    VARCHAR(255) DEFAULT 'sin_pdf',
+    carnet_pdf_url    VARCHAR(500) DEFAULT 'sin_pdf',
     verification_token          VARCHAR(255) ,
     is_email_verified           BOOLEAN DEFAULT FALSE,
-    token_created_at            TIMESTAMP,
+    token_created_at            TIMESTAMPTZ,
     CONSTRAINT chk_estudiante_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja'))
 );
@@ -47,7 +47,7 @@ CREATE TABLE tutor (
     genero                      VARCHAR(20)  NOT NULL,
     direccion                   VARCHAR(255) NOT NULL,
     telefono                    VARCHAR(20)  NOT NULL,
-    foto_url                    VARCHAR(255),
+    foto_url                    VARCHAR(255) NOT NULL,
     numero_identificacion_tutor VARCHAR(30)  NOT NULL UNIQUE,
     direccion_tutoria           VARCHAR(255) NOT NULL,
     correo                      VARCHAR(150) NOT NULL UNIQUE,
@@ -63,7 +63,7 @@ CREATE TABLE tutor (
     cv_pdf_url                  VARCHAR(500) DEFAULT 'sin_cv_pdf',
     verification_token          VARCHAR(255) ,
     is_email_verified           BOOLEAN DEFAULT FALSE,
-    token_created_at            TIMESTAMP,
+    token_created_at            TIMESTAMPTZ,
     CONSTRAINT chk_tutor_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja')),
     CONSTRAINT chk_tutor_anio
@@ -72,8 +72,6 @@ CREATE TABLE tutor (
         CHECK (hora_fin_atencion IS NULL OR hora_inicio_atencion IS NULL
                OR hora_fin_atencion > hora_inicio_atencion)
 );
-
-ALTER TABLE tutor ALTER COLUMN foto_url DROP NOT NULL;
 
 -- 3) Tabla que depende de estudiante, tutor y administrador
 --    (registra las solicitudes de registro pendientes de aprobación)
@@ -137,6 +135,7 @@ CREATE TABLE sesion (
     CONSTRAINT chk_sesion_resumen
         CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
 );
+
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
