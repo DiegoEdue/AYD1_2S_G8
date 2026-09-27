@@ -23,17 +23,17 @@ CREATE TABLE estudiante (
     direccion         VARCHAR(255) NOT NULL,
     telefono          VARCHAR(20)  NOT NULL,
     fecha_nacimiento  DATE         NOT NULL,
-    foto_url          VARCHAR(255) NOT NULL DEFAULT 'sin_foto',
+    foto_url          VARCHAR(255) NOT NULL,
     correo            VARCHAR(150) NOT NULL UNIQUE,
     password_hash     VARCHAR(255) NOT NULL,
     estado_aprobacion VARCHAR(20)  NOT NULL DEFAULT 'pendiente',
     aprobado_por      INTEGER      REFERENCES administrador(id_administrador)
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
-    carnet_pdf_url    VARCHAR(500) DEFAULT 'sin_pdf',
+    carnet_pdf_url    VARCHAR(500) NOT NULL,
     verification_token          VARCHAR(255) ,
-    is_email_verified           BOOLEAN DEFAULT FALSE,
-    token_created_at            TIMESTAMPTZ,
+    is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    token_created_at            TIMESTAMP DEFAULT now(),
     CONSTRAINT chk_estudiante_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja'))
 );
@@ -60,10 +60,10 @@ CREATE TABLE tutor (
     hora_inicio_atencion        TIME,
     hora_fin_atencion           TIME,
     fecha_registro              TIMESTAMP    NOT NULL DEFAULT now(),
-    cv_pdf_url                  VARCHAR(500) DEFAULT 'sin_cv_pdf',
+    cv_pdf_url                  VARCHAR(500) NOT NULL,
     verification_token          VARCHAR(255) ,
-    is_email_verified           BOOLEAN DEFAULT FALSE,
-    token_created_at            TIMESTAMPTZ,
+    is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    token_created_at            TIMESTAMP DEFAULT now(),
     CONSTRAINT chk_tutor_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja')),
     CONSTRAINT chk_tutor_anio
