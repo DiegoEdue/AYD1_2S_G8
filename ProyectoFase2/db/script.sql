@@ -136,6 +136,38 @@ CREATE TABLE sesion (
         CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
 );
 
+CREATE TABLE study_plans (
+    id_plan int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion int4 NOT NULL UNIQUE,  -- 1 plan por sesión atendida
+    fecha_creacion timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT study_plans_id_sesion_fkey
+        FOREIGN KEY (id_sesion) REFERENCES public.sesion(id_sesion)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+CREATE TABLE identified_difficulties (
+    id_dificultad int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_plan int4 NOT NULL,
+    descripcion text NOT NULL,
+    CONSTRAINT identified_difficulties_id_plan_fkey
+        FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE recommended_resources (
+    id_recurso int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_plan int4 NOT NULL,
+    nombre varchar(150) NOT NULL,
+    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace'
+    descripcion_uso varchar(500) NOT NULL,
+    CONSTRAINT recommended_resources_id_plan_fkey
+        FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT chk_recurso_tipo
+        CHECK (tipo IN ('Texto','Video','PDF','Enlace'))
+);
+
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
