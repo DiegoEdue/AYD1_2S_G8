@@ -23,13 +23,17 @@ CREATE TABLE estudiante (
     direccion         VARCHAR(255) NOT NULL,
     telefono          VARCHAR(20)  NOT NULL,
     fecha_nacimiento  DATE         NOT NULL,
-    foto_url          VARCHAR(255),
+    foto_url          VARCHAR(255) NOT NULL,
     correo            VARCHAR(150) NOT NULL UNIQUE,
     password_hash     VARCHAR(255) NOT NULL,
     estado_aprobacion VARCHAR(20)  NOT NULL DEFAULT 'pendiente',
     aprobado_por      INTEGER      REFERENCES administrador(id_administrador)
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
+    carnet_pdf_url    VARCHAR(500) NOT NULL,
+    verification_token          VARCHAR(255) ,
+    is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    token_created_at            TIMESTAMP DEFAULT now(),
     CONSTRAINT chk_estudiante_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja'))
 );
@@ -43,7 +47,7 @@ CREATE TABLE tutor (
     genero                      VARCHAR(20)  NOT NULL,
     direccion                   VARCHAR(255) NOT NULL,
     telefono                    VARCHAR(20)  NOT NULL,
-    foto_url                    VARCHAR(255),
+    foto_url                    VARCHAR(255) NOT NULL,
     numero_identificacion_tutor VARCHAR(30)  NOT NULL UNIQUE,
     direccion_tutoria           VARCHAR(255) NOT NULL,
     correo                      VARCHAR(150) NOT NULL UNIQUE,
@@ -56,6 +60,10 @@ CREATE TABLE tutor (
     hora_inicio_atencion        TIME,
     hora_fin_atencion           TIME,
     fecha_registro              TIMESTAMP    NOT NULL DEFAULT now(),
+    cv_pdf_url                  VARCHAR(500) NOT NULL,
+    verification_token          VARCHAR(255) ,
+    is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
+    token_created_at            TIMESTAMP DEFAULT now(),
     CONSTRAINT chk_tutor_estado
         CHECK (estado_aprobacion IN ('pendiente','aprobado','rechazado','baja')),
     CONSTRAINT chk_tutor_anio
@@ -64,8 +72,6 @@ CREATE TABLE tutor (
         CHECK (hora_fin_atencion IS NULL OR hora_inicio_atencion IS NULL
                OR hora_fin_atencion > hora_inicio_atencion)
 );
-
-ALTER TABLE tutor ALTER COLUMN foto_url DROP NOT NULL;
 
 -- 3) Tabla que depende de estudiante, tutor y administrador
 --    (registra las solicitudes de registro pendientes de aprobación)
@@ -129,6 +135,39 @@ CREATE TABLE sesion (
     CONSTRAINT chk_sesion_resumen
         CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
 );
+
+CREATE TABLE study_plans (
+    id_plan int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion int4 NOT NULL UNIQUE,  -- 1 plan por sesión atendida
+    fecha_creacion timestamp DEFAULT now() NOT NULL,
+    CONSTRAINT study_plans_id_sesion_fkey
+        FOREIGN KEY (id_sesion) REFERENCES public.sesion(id_sesion)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+
+CREATE TABLE identified_difficulties (
+    id_dificultad int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_plan int4 NOT NULL,
+    descripcion text NOT NULL,
+    CONSTRAINT identified_difficulties_id_plan_fkey
+        FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
+        ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE recommended_resources (
+    id_recurso int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_plan int4 NOT NULL,
+    nombre varchar(150) NOT NULL,
+    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace'
+    descripcion_uso varchar(500) NOT NULL,
+    CONSTRAINT recommended_resources_id_plan_fkey
+        FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
+        ON DELETE CASCADE ON UPDATE CASCADE,
+    CONSTRAINT chk_recurso_tipo
+        CHECK (tipo IN ('Texto','Video','PDF','Enlace'))
+);
+
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
