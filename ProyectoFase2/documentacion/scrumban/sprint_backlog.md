@@ -61,3 +61,59 @@ En este sprint se agregaron nuevas historias de usuario enfocadas en la document
 | 🟨        | [23] | Historial de Tutorías del Estudiante                   |
 | 🟦        | [24] | Consulta y Actualización de Perfil del Estudiante      |
 | 🟨        | [27] | Documentación Técnica, Manuales y Evidencia SCRUM      |
+
+## 3. Sprint 3
+
+### 3.1 Sprint Goal
+
+> [!IMPORTANT]
+> Modificar el registro y autenticación de estudiantes y tutores. A los administradores se les añadió una forma de ver los pdfs envíados por los estudiantes y tutores.
+
+### 3.2 Descripción del Sprint Backlog
+
+En este sprint se seleccionaron todas las historias de usuario con **prioridad alta (rojas)**. Estas incluían las tareas necesarias para establecer la base de esta segunda fase.
+
+### 3.3 Historias de Usuario Abordadas
+
+| Prioridad | ID   | Historia de Usuario                                             |
+| --------- | ---- | --------------------------------------------------------------- |
+| 🟥        | [28] | Registro de Estudiante                                          |
+| 🟥        | [29] | Registro de Tutor                                               |
+| 🟥        | [30] | Autenticación de Estudiante y Tutor                             |
+| 🟥        | [31] | Consulta del Plan de Estudio de Tutorías                        |
+| 🟥        | [35] | Atender Estudiante con Registro de Plan de Estudio Estructurado |
+| 🟥        | [38] | Aprobación de Estudiante con Visor PDF de Carnet Escaneado      |
+| 🟥        | [39] | Aprobación de Tutor con Visor PDF de CV                         |
+| 🟥        | [47] | Cobertura de Pruebas Unitarias Automatizadas                    |
+| 🟥        | [49] | Automatización de Pipeline CI/CD para el Backend                |
+| 🟥        | [51] | Despliegue de Frontend y Backend en Servidores Cloud            |
+
+## 4. Sprint 4
+
+### 4.1 Sprint Goal
+
+> [!IMPORTANT]
+> Completar funcionalidades complementarias del sistema y avanzar en la calidad, documentación y disponibilidad de la solución mediante nuevas historias de usuario, pruebas y despliegue.
+
+### 4.2 Descripción del Sprint Backlog
+
+En este sprint se agregaron nuevas historias de usuario enfocadas en el administrador, documentación, pruebas y deslpliegue del sistema. Se abordaron aquellas etiquetadas como **prioridad media (amarillas)**.
+
+### 4.3 Historias de Usuario Abordadas
+
+| Prioridad | ID   | Historia de Usuario                                                          |
+| --------- | ---- | ---------------------------------------------------------------------------- |
+| 🟨        | [32] | Descarga e Impresión de Constancia del Plan de Estudio en PDF                |
+| 🟨        | [33] | Calificación de Atención de Tutoría por el Estudiante                        |
+| 🟨        | [34] | Reportar Conducta de Tutor                                                   |
+| 🟨        | [36] | Calificar Desempeño del Estudiante                                           |
+| 🟨        | [37] | Reportar Estudiante Problemático                                             |
+| 🟨        | [40] | Gestión y Edición de Estudiantes Activos                                     |
+| 🟨        | [41] | Gestión y Edición de Tutores Activos                                         |
+| 🟨        | [42] | Gestión e Inspección de Reportes contra Tutores                              |
+| 🟨        | [43] | Gestión e Inspección de Reportes contra Estudiantes                          |
+| 🟨        | [44] | Reporte General de Calificaciones de Tutores                                 |
+| 🟨        | [45] | Reporte General de Calificaciones de Estudiantes                             |
+| 🟨        | [46] | Generación de Nuevos Reportes Analíticos                                     |
+| 🟨        | [48] | Pruebas End-to-End (E2E) con Herramientas de Automatización                  |
+| 🟨        | [50] | Actualización de la Documentación Técnica, Manuales y Arquitectura de Fase 2 |
