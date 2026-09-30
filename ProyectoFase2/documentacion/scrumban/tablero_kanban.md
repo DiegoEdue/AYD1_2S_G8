@@ -210,22 +210,56 @@ En este sprint se seleccionaron todas las historias de usuario con **prioridad a
 
 #### 5.1.2.1 Estado Inicial
 
-![Sprint 1 - Tablero Inicial (Parte 1)](./img/IP1.jpeg)  
-![Sprint 1 - Tablero Inicial (Parte 2)](./img/IP2.jpeg)  
-![Sprint 1 - Tablero Inicial (Parte 3)](./img/IP3.jpeg)  
-![Sprint 1 - Tablero Inicial (Parte 4)](./img/IP4.jpeg)
+![Sprint 3 - Tablero Inicial (Parte 1)](./img/IT1.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 2)](./img/IT2.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 3)](./img/IT3.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 4)](./img/IT4.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 5)](./img/IT5.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 6)](./img/IT6.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 7)](./img/IT7.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 8)](./img/IT8.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 9)](./img/IT9.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 10)](./img/IT10.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 11)](./img/IT11.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 12)](./img/IT12.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 13)](./img/IT13.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 14)](./img/IT14.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 15)](./img/IT15.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 16)](./img/IT16.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 17)](./img/IT17.jpeg)  
+![Sprint 3 - Tablero Inicial (Parte 18)](./img/IT18.jpeg)
 
 #### 5.1.2.2 Estado Intermedio
 
-![Sprint 1 - Mitad de Sprint (Parte 1)](./img/MP1.jpeg)  
-![Sprint 1 - Mitad de Sprint (Parte 2)](./img/MP2.jpeg)  
-![Sprint 1 - Mitad de Sprint (Parte 3)](./img/MP3.jpeg)
+![Sprint 3 - Mitad de Sprint (Parte 1)](./img/MT1.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 2)](./img/MT2.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 3)](./img/MT3.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 4)](./img/MT4.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 5)](./img/MT5.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 6)](./img/MT6.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 7)](./img/MT7.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 8)](./img/MT8.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 9)](./img/MT9.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 10)](./img/MT10.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 11)](./img/MT11.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 12)](./img/MT12.jpeg)  
+![Sprint 3 - Mitad de Sprint (Parte 13)](./img/MT13.jpeg)
 
 #### 5.1.2.3 Estado Final
 
-![Sprint 1 - Final de Sprint (Parte 1)](./img/FP1.jpeg)  
-![Sprint 1 - Final de Sprint (Parte 2)](./img/FP2.jpeg)  
-![Sprint 1 - Final de Sprint (Parte 3)](./img/FP3.jpeg)
+![Sprint 3 - Final de Sprint (Parte 1)](./img/FT1.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 2)](./img/FT2.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 3)](./img/FT3.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 4)](./img/FT4.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 5)](./img/FT5.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 6)](./img/FT6.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 7)](./img/FT7.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 8)](./img/FT8.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 9)](./img/FT9.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 10)](./img/FT10.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 11)](./img/FT11.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 12)](./img/FT12.jpeg)  
+![Sprint 3 - Final de Sprint (Parte 13)](./img/FT13.jpeg)
 
 > [!INFO]
 >
