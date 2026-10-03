@@ -731,7 +731,7 @@ La Fase 2 se enfoca en ampliar y complementar el sistema ya construido en la Fas
 - **TAMAÑO:** XS
 - **DEPENDENCIAS:** [HU-008], [HU-039]
 - **TAREAS TÉCNICAS DERIVADAS:**
-  - **Frontend:** Añadir el formulario de edición de datos de estudiante en el panel del Administrador con el input de correo bloqueado.
+  - **Frontend:** Añadir el formulario de edición de datos de tutores en el panel del Administrador con el input de correo bloqueado.
   - **Backend:** Crear endpoint para actualizar información profesional y personal.
   - **BD:** Modificar registros en la base de datos para la entidad tutor.
 
