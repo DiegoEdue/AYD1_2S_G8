@@ -151,17 +151,38 @@ const getHistorySessions = async (req, res) => {
 
 // Registro de Atención y Resumen de Tutoría (HU-013)
 // PATCH /api/tutor/sessions/:id/attend
+// Modificación con Registro de Plan de Estudio Estructurado (HU-035)
+const VALID_RESOURCE_TYPES = ['Texto', 'Video', 'PDF', 'Enlace'];
 const attendSession = async (req, res) => {
     const { id } = req.params;
-    const { resumen } = req.body;
+    const { dificultades, recursos } = req.body;
     const id_Tutor = req.user.id;
 
     if (!id) {
         return res.status(400).json({ message: 'ID de sesión inválido.' });
     }
 
-    if (!resumen || resumen.trim().length === 0 || typeof resumen !== 'string') {
-        return res.status(400).json({ message: 'El resumen es requerido y debe ser una cadena de texto.', status: 'error' });
+    if (!dificultades || dificultades.trim().length === 0 || typeof dificultades !== 'string') {
+        return res.status(400).json({ message: 'La dificultad es requerido y debe ser una cadena de texto.', status: 'error' });
+    }
+
+    if (!Array.isArray(recursos) || recursos.length === 0) {
+        return res.status(400).json({ message: 'Los recursos son requeridos.', status: 'error' });
+    }
+
+    for (const [index, resource] of recursos) {
+        if (!resource || typeof resource.nombre !== 'string' || resource.nombre.trim().length === 0) {
+            return res.status(400).json({ message: `El recurso ${index + 1} se requiere un nombre válido.`, status: 'error' });
+        }
+        if (!VALID_RESOURCE_TYPES.includes(resource.tipo)) {
+            return res.status(400).json({ 
+                message: `El recurso ${index + 1} tiene un tipo inválido. Este debe de ser uno de: ${VALID_RESOURCE_TYPES.join(', ')}`, 
+                status: 'error' 
+            });
+        }
+        if (!resource.descripcion || typeof resource.descripcion !== 'string' || resource.descripcion.trim().length === 0) {
+            return res.status(400).json({ message: `El recurso ${index + 1} se requiere una descripción válida.`, status: 'error' });
+        }
     }
 
     try {
@@ -173,7 +194,10 @@ const attendSession = async (req, res) => {
             return res.status(400).json({ message: 'La sesión no está activa y no puede ser atendida.', status: 'error' });
         }
 
-        const updatedSession = await sessionModel.markAttended(id, id_Tutor, resumen.trim());
+        const updatedSession = await sessionModel.markAttended(id, id_Tutor, {
+            difficulties: dificultades.trim(),
+            resources: recursos,
+        });
         return res.status(200).json({
             message: 'Sesión atendida exitosamente',
             status: 'success',
@@ -182,6 +206,28 @@ const attendSession = async (req, res) => {
     } catch (error) {
         console.error('Error al registrar la atención de la sesión:', error);
         res.status(500).json({ message: 'Error al registrar la atención de la sesión', status: 'error' });
+    }
+}
+
+// Obtener detalles de una sesión del tutor por su ID para HU-035
+// GET /api/tutor/sessions/:id/detail
+const getSessionDetails = async (req, res) => {
+    const { id } = req.params;
+    const id_Tutor = req.user.id;
+
+    try {
+        const sessionDetails = await sessionModel.findSessionDetailByIdAndTutorId(id, id_Tutor);
+        if (!sessionDetails) {
+            return res.status(404).json({ message: 'Sesión no encontrada.', status: 'error' });
+        }
+        res.status(200).json({
+            message: 'Detalles de la sesión obtenidos con exito',
+            status: 'success',
+            data: sessionDetails
+        });
+    } catch (error) {
+        console.error('Error al obtener los detalles de la sesión:', error);
+        res.status(500).json({ message: 'Error al obtener los detalles de la sesión', status: 'error' });
     }
 }
 
@@ -336,6 +382,7 @@ const updateProfile = async (req, res) => {
 
 module.exports = {
     getSchedule,
+    getSessionDetails,
     upsertSchedule,
     getPendingSessions,
     getHistorySessions,
