@@ -93,22 +93,117 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
     return { data, total: result.rows.length }; // devuelve las sess
 }
 
-// Marca la sesión como atendida y actualiza el resumen
-const markAttended = async (sessionId, id_Tutor, resumen) => {
-    const result = await db.query(
-        `UPDATE sesion
-        SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
-        WHERE id_sesion = $2 AND id_tutor = $3
-        RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
-        [resumen, sessionId, id_Tutor]
+// Marca la sesión como atendida guardando el plan de estudio
+const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
+    const client = await db.connect();
+    try {
+        await client.query('BEGIN');
+
+        // resumen ya no es necesario que se retorne ya que ahora esta almacenado en identified_difficulties
+        const sessionResult = await db.query(
+            `UPDATE sesion
+            SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
+            WHERE id_sesion = $2 AND id_tutor = $3
+            RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
+            [difficulties, sessionId, id_Tutor]
+        );
+
+        if (sessionResult.rowCount === 0) {
+            await client.query('ROLLBACK');
+            return null
+        }; 
+
+        // insertar un nuevo plan de estudio para la sesión atendida
+        const planResult = await db.query(
+            `INSERT INTO study_plans (id_sesion)
+            VALUES ($1)
+            RETURNING id_plan`,
+            [sessionId]
+        );
+        const id_plan = planResult.rows[0].id_plan;
+
+        // Insertar las dificultades identificadas
+        const dificultyResult = await db.query(
+            `INSERT INTO identified_difficulties (id_plan, descripcion)
+            VALUES ($1, $2)`,
+            [id_plan, difficulties]
+        );
+
+        // Insertar los recursos recomendados
+        const insertResources = [];
+        for (const resource of resources) {
+            const resourceResult = await db.query(
+                `INSERT INTO recommended_resources (id_plan, nombre, tipo, descripcion_uso)
+                VALUES ($1, $2, $3, $4)
+                RETURNING id_recurso, nombre, tipo, descripcion_uso`,
+                [id_plan, resource.nombre.trim(), resource.tipo, resource.descripcion.trim()]
+            );
+            const r = resourceResult.rows[0];
+            insertResources.push({
+                id: r.id_recurso,
+                name: r.nombre,
+                type: r.tipo,
+                description: r.descripcion_uso
+            });
+        }
+
+        await client.query('COMMIT');
+
+        const row = sessionResult.rows[0];
+        return {
+            id: row.id_sesion,
+            estado: row.estado,
+            // resumen: row.resumen,
+            fechaActualizacion: row.fecha_actualizacion,
+            dificultades: dificultyResult.rows[0].descripcion,
+            recursos: insertResources,
+        };
+    } catch (error) {
+        await client.query('ROLLBACK');
+        throw error;
+    } finally {
+        client.release();
+    }
+}
+
+// Busca una sesión por su ID y el tutor, para obtener detalles de la sesión, reutilizamos la función findSessionByIdAndTutorId para obtener los detalles de la sesión
+const findSessionDetailByIdAndTutorId = async (sessionId, id_Tutor) => {
+    const sesion = await findSessionByIdAndTutorId(sessionId, id_Tutor);
+    if (!sesion) return null;
+
+    const planResult = await db.query(
+        `SELECT id_plan FROM study_plans WHERE id_sesion = $1`,
+        [sessionId]
     );
-    if (result.rowCount === 0) return null; 
-    const row = result.rows[0];
+    if (planResult.rowCount === 0) {
+        return { ...sesion, plan: null };
+    }
+    const id_plan = planResult.rows[0].id_plan;
+
+    const difficultiesResult = await db.query(
+        `SELECT descripcion FROM identified_difficulties WHERE id_plan = $1`,
+        [id_plan]
+    );
+
+    const resourcesResult = await db.query(
+        `SELECT id_recurso, nombre, tipo, descripcion_uso 
+        FROM recommended_resources 
+        WHERE id_plan = $1
+        ORDER BY id_recurso ASC`,
+        [id_plan]
+    );
+
     return {
-        id: row.id_sesion,
-        estado: row.estado,
-        resumen: row.resumen,
-        fechaActualizacion: row.fecha_actualizacion,
+        ...sesion,
+        plan: {
+            dificulties: difficultiesResult.rows[0]?.descripcion || null,
+            resources: resourcesResult.rows.map((r) => ({
+                id: r.id_recurso,
+                name: r.nombre,
+                type: r.tipo,
+                description: r.descripcion_uso
+            })),
+        },
     };
 }
 
@@ -134,6 +229,7 @@ module.exports = {
     getSesionesPendientesByTutorId,
     findHistoryByTutor,
     findSessionByIdAndTutorId,
+    findSessionDetailByIdAndTutorId,
     markAttended,
     markCancelledByTutor
 }
