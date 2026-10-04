@@ -102,7 +102,7 @@ const markAttended = async (sessionId, id_Tutor, resumen) => {
         id: row.id_sesion,
         estado: row.estado,
         resumen: row.resumen,
-        fechaActualizacion: row.fechaActualizacion,
+        fechaActualizacion: row.fecha_actualizacion,
     };
 }
 
