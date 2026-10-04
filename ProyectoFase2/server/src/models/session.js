@@ -67,6 +67,12 @@ const ESTADOS_SESION = {
 // Es offset sera de ayuda para ordenar las sesiones de manera descendente y paginarlas si es necesario
 const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
     const offset = (page - 1) * limit;
+
+    const totalResult = await db.query(
+        `SELECT COUNT(*)::int AS total FROM sesion s WHERE s.id_tutor = $1 AND s.estado <> 'Activa'`,
+        [id_Tutor]
+    );
+
     const result = await db.query(
         `${SELECT_BASE}
         WHERE s.id_tutor = $1 AND s.estado <> 'Activa'
