@@ -72,6 +72,7 @@ export async function registrarEstudiante(datos) {
     telefono: datos.telefono,
     fecha_nacimiento: datos.fechaNacimiento || datos.fecha_nacimiento,
     foto_url: datos.foto || null,
+    carnet_pdf_url: datos.carnetPdf || datos.carnet_pdf_url || "",
     correo: datos.correo,
     password: datos.password,
   };
@@ -89,6 +90,7 @@ export async function registrarTutor(datos) {
     direccion: datos.direccion,
     telefono: datos.telefono,
     foto_url: datos.foto || null,
+    cv_pdf_url: datos.cvPdf || datos.cv_pdf_url || "",
     numero_identificacion_tutor: datos.numeroIdentificacion || datos.numero_identificacion_tutor,
     direccion_tutoria: datos.direccionTutoria || datos.direccion_tutoria,
     correo: datos.correo,
