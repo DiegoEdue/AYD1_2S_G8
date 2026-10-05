@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SessionCard from "@/components/ui/SessionCard";
+import PlanEstudioDetalle from "@/components/ui/PlanEstudioDetalle";
 import { listarHistorialTutor } from "@/lib/api/sesiones";
 
 export default function HistorialTutorPage() {
@@ -60,6 +61,12 @@ export default function HistorialTutorPage() {
               }}
               contraparteLabel="Estudiante"
               contraparteNombre={sesion.estudiante}
+              detalleEtiqueta="Ver plan de estudio"
+              detalle={
+                sesion.plan ? (
+                  <PlanEstudioDetalle dificultades={sesion.plan.dificultades} recursos={sesion.plan.recursos} />
+                ) : undefined
+              }
             />
           ))}
         </div>

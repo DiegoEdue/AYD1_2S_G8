@@ -4,8 +4,9 @@ import { useEffect, useState } from "react";
 import SessionCard from "@/components/ui/SessionCard";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
-import FormField, { inputClass } from "@/components/ui/FormField";
+import FormularioPlanEstudio, { FORM_PLAN_ID } from "@/components/sesiones/FormularioPlanEstudio";
 import { useToast } from "@/components/ui/Toast";
+import { USAR_MOCKS } from "@/lib/api/client";
 import {
   atenderSesion,
   cancelarSesionComoTutor,
@@ -18,8 +19,7 @@ export default function SesionesPendientesTutorPage() {
   const [cargando, setCargando] = useState(true);
 
   const [porAtender, setPorAtender] = useState(null);
-  const [resumen, setResumen] = useState("");
-  const [errorResumen, setErrorResumen] = useState("");
+  const [errorGuardado, setErrorGuardado] = useState("");
   const [guardando, setGuardando] = useState(false);
 
   const [porCancelar, setPorCancelar] = useState(null);
@@ -50,24 +50,28 @@ export default function SesionesPendientesTutorPage() {
 
   function abrirAtender(sesion) {
     setPorAtender(sesion);
-    setResumen("");
-    setErrorResumen("");
+    setErrorGuardado("");
   }
 
-  async function confirmarAtender() {
-    if (!resumen.trim()) {
-      setErrorResumen("Debes escribir un resumen de la sesión antes de continuar.");
-      return;
-    }
+  function cerrarAtender() {
+    if (!guardando) setPorAtender(null);
+  }
 
+  async function guardarPlan(plan) {
     setGuardando(true);
+    setErrorGuardado("");
     try {
-      await atenderSesion(porAtender.id, { resumen: resumen.trim() });
+      await atenderSesion(porAtender.id, plan, porAtender);
       setSesiones((prev) => prev.filter((s) => s.id !== porAtender.id));
-      mostrarToast("Sesión marcada como atendida.", "exito");
+      mostrarToast(
+        USAR_MOCKS
+          ? "Sesión atendida (modo simulado: no se guardó en el servidor)."
+          : "Sesión atendida. El plan de estudio quedó registrado en tu historial.",
+        "exito"
+      );
       setPorAtender(null);
     } catch (err) {
-      setErrorResumen(err.message || "No pudimos guardar el resumen.");
+      setErrorGuardado(err.message || "No pudimos guardar el plan de estudio. Inténtalo de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -89,7 +93,7 @@ export default function SesionesPendientesTutorPage() {
       <div>
         <h2 className="font-display text-xl text-charcoal">Sesiones pendientes</h2>
         <p className="text-sm text-charcoal-light">
-          Ordenadas por fecha más próxima. Márcalas como atendidas al finalizar cada tutoría.
+          Ordenadas por fecha más próxima. Atiéndelas al finalizar cada tutoría registrando el plan de estudio.
         </p>
       </div>
 
@@ -124,34 +128,27 @@ export default function SesionesPendientesTutorPage() {
 
       <Modal
         abierto={!!porAtender}
-        onCerrar={() => setPorAtender(null)}
-        titulo="Resumen de la sesión"
+        ancho="lg"
+        onCerrar={cerrarAtender}
+        titulo="Atender sesión"
         footer={
           <>
-            <Button variante="fantasma" onClick={() => setPorAtender(null)}>
+            <Button variante="fantasma" disabled={guardando} onClick={cerrarAtender}>
               Cancelar
             </Button>
-            <Button onClick={confirmarAtender} cargando={guardando}>
-              Guardar y marcar atendida
+            <Button type="submit" form={FORM_PLAN_ID} cargando={guardando}>
+              Guardar y atender
             </Button>
           </>
         }
       >
-        <FormField
-          label="¿Qué se trabajó en la sesión?"
-          name="resumen"
-          required
-          error={errorResumen}
-          ayuda="Este resumen quedará visible para el estudiante en su historial."
-        >
-          <textarea
-            id="resumen"
-            rows={4}
-            value={resumen}
-            onChange={(e) => setResumen(e.target.value)}
-            className={inputClass(!!errorResumen)}
-          />
-        </FormField>
+        {porAtender && (
+          <p className="mb-5 text-charcoal-light">
+            {porAtender.materia} con {porAtender.estudiante}. Al guardar, la sesión pasa a atendida y el
+            estudiante verá este plan en su Plan de estudio.
+          </p>
+        )}
+        <FormularioPlanEstudio onGuardar={guardarPlan} errorServidor={errorGuardado} />
       </Modal>
 
       <Modal

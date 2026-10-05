@@ -2,7 +2,9 @@
 
 import { useEffect, useRef } from "react";
 
-export default function Modal({ abierto, onCerrar, titulo, children, footer }) {
+const ANCHOS = { md: "max-w-md", lg: "max-w-2xl" };
+
+export default function Modal({ abierto, onCerrar, titulo, children, footer, ancho = "md" }) {
     const dialogRef = useRef(null);
     const onCerrarRef = useRef(onCerrar);
 
@@ -34,7 +36,7 @@ export default function Modal({ abierto, onCerrar, titulo, children, footer }) {
             aria-labelledby="modal-titulo"
             tabIndex={-1}
             onClick={(e) => e.stopPropagation()}
-            className="w-full max-w-md rounded-card bg-white shadow-soft"
+            className={`flex max-h-[90vh] w-full flex-col rounded-card bg-white shadow-soft ${ANCHOS[ancho]}`}
         >
             <div className="flex items-start justify-between px-6 pt-5">
             <h2 id="modal-titulo" className="font-display text-lg text-charcoal">
@@ -48,7 +50,7 @@ export default function Modal({ abierto, onCerrar, titulo, children, footer }) {
                 ✕
             </button>
             </div>
-            <div className="px-6 py-4 text-sm text-charcoal">{children}</div>
+            <div className="overflow-y-auto px-6 py-4 text-sm text-charcoal">{children}</div>
             {footer && <div className="flex justify-end gap-3 border-t border-charcoal/10 px-6 py-4">{footer}</div>}
         </div>
         </div>
