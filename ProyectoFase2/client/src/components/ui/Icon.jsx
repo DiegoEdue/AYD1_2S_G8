@@ -146,6 +146,45 @@ const ICONOS = {
         />
         </>
     ),
+    Plan: (
+        <>
+        <rect x="5" y="3.5" width="14" height="17" rx="2" stroke="currentColor" />
+        <path d="M9 8.5H15M9 12H15M9 15.5H12.5" stroke="currentColor" strokeLinecap="round" />
+        </>
+    ),
+    Texto: (
+        <path d="M5 6.5H19M5 11H19M5 15.5H14" stroke="currentColor" strokeLinecap="round" />
+    ),
+    Video: (
+        <>
+        <rect x="3.5" y="5.5" width="17" height="13" rx="2.5" stroke="currentColor" />
+        <path d="M10.5 9.5L14.5 12L10.5 14.5V9.5Z" fill="currentColor" />
+        </>
+    ),
+    PDF: (
+        <>
+        <path d="M7 3.5H13.5L18 8V19.5C18 20.05 17.55 20.5 17 20.5H7C6.45 20.5 6 20.05 6 19.5V4.5C6 3.95 6.45 3.5 7 3.5Z" stroke="currentColor" strokeLinejoin="round" />
+        <path d="M13.5 3.5V8H18" stroke="currentColor" strokeLinejoin="round" />
+        <path d="M9 14.5H15M9 17H13" stroke="currentColor" strokeLinecap="round" />
+        </>
+    ),
+    Enlace: (
+        <>
+        <path d="M10 14L14 10" stroke="currentColor" strokeLinecap="round" />
+        <path d="M11.5 7.5L12.4 6.6C13.8 5.2 16.1 5.2 17.4 6.6C18.8 7.9 18.8 10.2 17.4 11.6L16.5 12.5" stroke="currentColor" strokeLinecap="round" />
+        <path d="M12.5 16.5L11.6 17.4C10.2 18.8 7.9 18.8 6.6 17.4C5.2 16.1 5.2 13.8 6.6 12.4L7.5 11.5" stroke="currentColor" strokeLinecap="round" />
+        </>
+    ),
+    Imagen: (
+        <>
+        <rect x="3.5" y="5" width="17" height="14" rx="2" stroke="currentColor" />
+        <circle cx="9" cy="10" r="1.5" fill="currentColor" />
+        <path d="M4 17L9.5 12.5L13 15.5L15.5 13.5L20 17.5" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" />
+        </>
+    ),
+    Mas: (
+        <path d="M12 5.5V18.5M5.5 12H18.5" stroke="currentColor" strokeLinecap="round" />
+    ),
     };
 
 export default function Icon({ name, className = "h-5 w-5", ...props }) {
