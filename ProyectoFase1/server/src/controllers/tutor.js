@@ -5,7 +5,7 @@ const { JWT_SECRET } = require('../middlewares/auth');
 
 const loginTutor = async (req, res) => {
   try {
-    const { correo, password } = req.body || {};
+    const { correo, password, token } = req.body || {};
 
     if (!correo || !password) {
       return res.status(400).json({
@@ -67,6 +67,42 @@ const loginTutor = async (req, res) => {
       });
     }
 
+    // Validar token de verificación en primer inicio de sesión
+    if (!tutor.is_email_verified) {
+      if (!token) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Se requiere token de verificación para el primer inicio de sesión',
+          requiresToken: true,
+        });
+      }
+
+      if (tutor.verification_token !== token) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Token de verificación inválido',
+        });
+      }
+
+      // Verificar expiración del token (24 horas)
+      const tokenCreatedAt = new Date(tutor.token_created_at).getTime();
+      const now = Date.now();
+      const hoursDiff = (now - tokenCreatedAt) / (1000 * 60 * 60);
+      
+      if (hoursDiff > 24) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Token de verificación expirado (24 horas)',
+        });
+      }
+
+      // Marcar email como verificado y limpiar token
+      await db.query(
+        'UPDATE tutor SET is_email_verified = TRUE, verification_token = NULL, token_created_at = NULL WHERE id_tutor = $1',
+        [tutor.id_tutor]
+      );
+    }
+
     // Generar token JWT
     const payload = {
       id: tutor.id_tutor,
@@ -76,7 +112,7 @@ const loginTutor = async (req, res) => {
       apellido: tutor.apellido,
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+    const jwtToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
 
     // Excluir password_hash de los datos devueltos
     const { password_hash, ...tutorData } = tutor;
@@ -84,7 +120,7 @@ const loginTutor = async (req, res) => {
     return res.status(200).json({
       status: 'success',
       message: 'Inicio de sesión exitoso',
-      token,
+      token: jwtToken,
       user: {
         ...tutorData,
         rol: 'tutor',
