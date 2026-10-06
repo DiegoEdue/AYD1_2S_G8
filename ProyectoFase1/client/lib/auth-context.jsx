@@ -40,10 +40,14 @@ export function AuthProvider({ children }) {
     else window.localStorage.removeItem("educonnect_user");
   }
 
-  async function login({ email, password }) {
-    const response = await loginApi({ email, password });
+  async function login({ email, password, token }) {
+    const response = await loginApi({ email, password, token });
 
     if (response?.requiereSegundoFactor) {
+      return response;
+    }
+
+    if (response?.requiresToken) {
       return response;
     }
 
