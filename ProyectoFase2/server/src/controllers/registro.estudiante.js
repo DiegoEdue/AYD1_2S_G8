@@ -2,7 +2,7 @@ const sql = require('../config/db');
 
 const bcrypt = require('bcryptjs');
 
-const { subirImagen } = require('../utils/cloudinaryUpload');
+const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
 
 const registerStudent = async (req, res) => {
   try {
@@ -15,6 +15,8 @@ const registerStudent = async (req, res) => {
       telefono,
       fecha_nacimiento,
       foto_url,
+      carnet_pdf_url,
+      carnet_pdf,
       correo,
       password,
     } = req.body;
@@ -75,12 +77,18 @@ const registerStudent = async (req, res) => {
       ? await subirImagen(foto_url, 'educonnect/estudiantes')
       : null;
 
+    // Subimos el carnet PDF si fue proporcionado
+    const pdfRaw = carnet_pdf_url || carnet_pdf || '';
+    const carnetPdfFinal = pdfRaw
+      ? await subirArchivo(pdfRaw, 'educonnect/carnets')
+      : '';
+
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.
     const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
       const [student] = await tx`
-        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, password_hash)
-        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${correo}, ${hashedPassword})
+        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, carnet_pdf_url, correo, password_hash)
+        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${carnetPdfFinal}, ${correo}, ${hashedPassword})
         RETURNING id_estudiante, nombre, apellido, carnet, correo;
       `;
 

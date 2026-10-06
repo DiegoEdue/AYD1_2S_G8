@@ -5,7 +5,7 @@ const { JWT_SECRET } = require('../middlewares/auth');
 
 const loginEstudiante = async (req, res) => {
   try {
-    const { correo, password } = req.body || {};
+    const { correo, password, token } = req.body || {};
 
     if (!correo || !password) {
       return res.status(400).json({
@@ -64,6 +64,42 @@ const loginEstudiante = async (req, res) => {
       });
     }
 
+    // Validar token de verificación en primer inicio de sesión
+    if (!estudiante.is_email_verified) {
+      if (!token) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Se requiere token de verificación para el primer inicio de sesión',
+          requiresToken: true,
+        });
+      }
+
+      if (estudiante.verification_token !== token) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Token de verificación inválido',
+        });
+      }
+
+      // Verificar expiración del token (24 horas)
+      const tokenCreatedAt = new Date(estudiante.token_created_at).getTime();
+      const now = Date.now();
+      const hoursDiff = (now - tokenCreatedAt) / (1000 * 60 * 60);
+      
+      if (hoursDiff > 24) {
+        return res.status(401).json({
+          status: 'error',
+          message: 'Token de verificación expirado (24 horas)',
+        });
+      }
+
+      // Marcar email como verificado y limpiar token
+      await db.query(
+        'UPDATE estudiante SET is_email_verified = TRUE, verification_token = NULL, token_created_at = NULL WHERE id_estudiante = $1',
+        [estudiante.id_estudiante]
+      );
+    }
+
     const payload = {
       id: estudiante.id_estudiante,
       correo: estudiante.correo,
@@ -72,14 +108,14 @@ const loginEstudiante = async (req, res) => {
       apellido: estudiante.apellido,
     };
 
-    const token = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
+    const jwtToken = jwt.sign(payload, JWT_SECRET, { expiresIn: '8h' });
 
     const { password_hash, ...estudianteData } = estudiante;
 
     return res.status(200).json({
       status: 'success',
       message: 'Inicio de sesión exitoso',
-      token,
+      token: jwtToken,
       user: {
         ...estudianteData,
         rol: 'estudiante',

@@ -30,7 +30,7 @@ CREATE TABLE estudiante (
     aprobado_por      INTEGER      REFERENCES administrador(id_administrador)
                        ON DELETE SET NULL ON UPDATE CASCADE,
     fecha_registro    TIMESTAMP    NOT NULL DEFAULT now(),
-    carnet_pdf_url    VARCHAR(500) NOT NULL,
+    carnet_pdf_url    VARCHAR(500) NOT NULL DEFAULT '',
     verification_token          VARCHAR(255) ,
     is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
     token_created_at            TIMESTAMP DEFAULT now(),
@@ -60,7 +60,7 @@ CREATE TABLE tutor (
     hora_inicio_atencion        TIME,
     hora_fin_atencion           TIME,
     fecha_registro              TIMESTAMP    NOT NULL DEFAULT now(),
-    cv_pdf_url                  VARCHAR(500) NOT NULL,
+    cv_pdf_url                  VARCHAR(500) NOT NULL DEFAULT '',
     verification_token          VARCHAR(255) ,
     is_email_verified           BOOLEAN NOT NULL DEFAULT FALSE,
     token_created_at            TIMESTAMP DEFAULT now(),

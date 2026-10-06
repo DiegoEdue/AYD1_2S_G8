@@ -22,14 +22,18 @@ const getPendingStudents = async (req, res) => {
     const result = await db.query(
       `SELECT e.id_estudiante, NULL AS id_tutor, e.nombre, e.apellido, e.carnet,
         NULL AS carnet_id, e.genero, e.correo, e.estado_aprobacion,
-        'estudiante' AS tipo_usuario, NULL AS especialidad, e.fecha_registro
+        'estudiante' AS tipo_usuario, NULL AS especialidad, e.fecha_registro,
+        e.fecha_nacimiento, e.foto_url, e.carnet_pdf_url,
+        NULL AS numero_identificacion_tutor, NULL AS cv_pdf_url
       FROM estudiante e
       JOIN solicitud s ON s.id_estudiante = e.id_estudiante
       WHERE e.estado_aprobacion = 'pendiente' AND s.estado = 'pendiente'
       UNION ALL
       SELECT NULL AS id_estudiante, t.id_tutor, t.nombre, t.apellido, NULL AS carnet,
         t.carnet_id, t.genero, t.correo, t.estado_aprobacion,
-        'tutor' AS tipo_usuario, t.universidad_graduacion AS especialidad, t.fecha_registro
+        'tutor' AS tipo_usuario, t.universidad_graduacion AS especialidad, t.fecha_registro,
+        t.fecha_nacimiento, t.foto_url, NULL AS carnet_pdf_url,
+        t.numero_identificacion_tutor, t.cv_pdf_url
       FROM tutor t
       JOIN solicitud s ON s.id_tutor = t.id_tutor
       WHERE t.estado_aprobacion = 'pendiente' AND s.estado = 'pendiente'
@@ -750,6 +754,89 @@ const getReports = async (req, res) => {
   }
 };
 
+const fs = require('fs');
+const path = require('path');
+
+const streamDocumento = async (req, res) => {
+  try {
+    const { url, id, tipo } = req.query;
+    let targetUrl = url;
+
+    if (id && tipo) {
+      if (tipo === 'estudiante') {
+        const studentRes = await db.query(
+          'SELECT carnet_pdf_url FROM estudiante WHERE id_estudiante = $1',
+          [id]
+        );
+        if (studentRes.rows.length > 0) {
+          targetUrl = targetUrl || studentRes.rows[0].carnet_pdf_url;
+        }
+      } else if (tipo === 'tutor') {
+        const tutorRes = await db.query(
+          'SELECT cv_pdf_url FROM tutor WHERE id_tutor = $1',
+          [id]
+        );
+        if (tutorRes.rows.length > 0) {
+          targetUrl = targetUrl || tutorRes.rows[0].cv_pdf_url;
+        }
+      }
+    }
+
+    if (!targetUrl) {
+      return res.status(404).send('Documento no encontrado.');
+    }
+
+    let buffer = null;
+
+    // 1. Archivo local almacenado en /uploads/
+    if (targetUrl.startsWith('/uploads/') || targetUrl.includes('/uploads/')) {
+      const subPath = targetUrl.substring(targetUrl.indexOf('/uploads/') + '/uploads/'.length);
+      const localFilePath = path.join(__dirname, '../../uploads', subPath);
+      if (fs.existsSync(localFilePath)) {
+        buffer = fs.readFileSync(localFilePath);
+      }
+    }
+
+    // 2. Archivo en formato DataURI base64
+    if (!buffer && targetUrl.startsWith('data:')) {
+      try {
+        const parts = targetUrl.split(',');
+        if (parts[1]) {
+          buffer = Buffer.from(parts[1], 'base64');
+        }
+      } catch (err) {
+        console.error('Error parseando base64 del PDF:', err);
+      }
+    }
+
+    // 3. Archivo remoto HTTP/HTTPS
+    if (!buffer && (targetUrl.startsWith('http://') || targetUrl.startsWith('https://'))) {
+      try {
+        const response = await fetch(targetUrl);
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          buffer = Buffer.from(arrayBuffer);
+        }
+      } catch (fetchErr) {
+        console.error('Error al obtener archivo remoto:', fetchErr.message);
+      }
+    }
+
+    if (!buffer || buffer.length === 0) {
+      return res.status(404).send('No se pudo cargar el archivo PDF original.');
+    }
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'inline; filename="documento.pdf"');
+    res.setHeader('Content-Length', buffer.length);
+    res.setHeader('Cache-Control', 'public, max-age=1800');
+    return res.send(buffer);
+  } catch (error) {
+    console.error('Error en streamDocumento:', error);
+    return res.status(500).send('Error interno al transmitir el documento.');
+  }
+};
+
 module.exports = {
   getPendingStudents,
   approveStudent,
@@ -764,4 +851,5 @@ module.exports = {
   getApprovedTutors,
   deactivateTutor,
   getReports,
+  streamDocumento,
 };

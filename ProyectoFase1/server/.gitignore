@@ -1,2 +1,10 @@
 node_modules
 .env
+
+# Tests (no versionar pruebas locales)
+tests/
+__tests__/
+*.test.js
+*.spec.js
+coverage/
+.nyc_output/

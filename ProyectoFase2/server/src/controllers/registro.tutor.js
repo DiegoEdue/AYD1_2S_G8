@@ -1,7 +1,7 @@
 const bcrypt = require('bcryptjs');
 const sql = require('../config/db');
 
-const { subirImagen } = require('../utils/cloudinaryUpload');
+const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
 
 const registroTutor = async (req, res) => {
   try {
@@ -14,6 +14,8 @@ const registroTutor = async (req, res) => {
       direccion,
       telefono,
       foto_url,
+      cv_pdf_url,
+      cv_pdf,
       numero_identificacion_tutor,
       direccion_tutoria,
       correo,
@@ -89,11 +91,17 @@ const registroTutor = async (req, res) => {
       ? await subirImagen(foto_url, 'educonnect/tutores')
       : null;
 
+    // Subimos el CV PDF si fue proporcionado
+    const pdfRaw = cv_pdf_url || cv_pdf || '';
+    const cvPdfFinal = pdfRaw
+      ? await subirArchivo(pdfRaw, 'educonnect/cvs')
+      : '';
+
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
       const [tutor] = await tx`
-      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion)
-      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion})
+      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, cv_pdf_url)
+      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${cvPdfFinal})
       RETURNING id_tutor, nombre, apellido, carnet_id, correo;
       `;
 

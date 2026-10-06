@@ -21,6 +21,7 @@ const NAV_POR_ROL = {
     administrador: [
         { href: "/admin/solicitudes", etiqueta: "Solicitudes", icono: "Solicitudes" },
         { href: "/admin/usuarios", etiqueta: "Usuarios", icono: "Usuarios" },
+        { href: "/admin/denuncias", etiqueta: "Denuncias", icono: "Historial" },
         { href: "/admin/reportes", etiqueta: "Reportes", icono: "Reportes" },
     ],
     };
