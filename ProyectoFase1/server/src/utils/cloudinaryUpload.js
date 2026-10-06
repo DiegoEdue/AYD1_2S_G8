@@ -8,4 +8,12 @@ const subirImagen = async (dataUri, carpeta = 'educonnect/fotos') => {
   return secure_url;
 };
 
-module.exports = { subirImagen };
+const subirPDF = async (dataUri, carpeta = 'educonnect/documentos') => {
+  const { secure_url } = await cloudinary.uploader.upload(dataUri, {
+    folder: carpeta,
+    resource_type: 'raw',
+  });
+  return secure_url;
+};
+
+module.exports = { subirImagen, subirPDF };

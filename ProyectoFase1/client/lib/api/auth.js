@@ -1,9 +1,12 @@
 import { apiFetch, setToken } from "./client";
 
-export async function login({ email, password }) {
+export async function login({ email, password, token }) {
+  const body = { correo: email, password };
+  if (token) body.token = token;
+
   const data = await apiFetch("/auth/login", {
     method: "POST",
-    body: { correo: email, password },
+    body,
   });
 
   if (data.status === "pending_2fa_setup" || data.status === "pending_2fa_verify") {
@@ -14,6 +17,10 @@ export async function login({ email, password }) {
       qr_code: data.qr_code,
       status: data.status,
     };
+  }
+
+  if (data.requiresToken) {
+    return { requiresToken: true, message: data.message };
   }
 
   if (data.token) {
