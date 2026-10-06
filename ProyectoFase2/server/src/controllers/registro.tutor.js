@@ -86,16 +86,29 @@ const registroTutor = async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está registrado' });
     }
 
-    // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = foto_url
-      ? await subirImagen(foto_url, 'educonnect/tutores')
-      : null;
-
-    // Subimos el CV PDF si fue proporcionado
+    // Validar campos obligatorios de archivos (HU-029)
+    if (!foto_url) {
+      return res.status(400).json({ message: 'La fotografía es obligatoria' });
+    }
     const pdfRaw = cv_pdf_url || cv_pdf || '';
-    const cvPdfFinal = pdfRaw
-      ? await subirArchivo(pdfRaw, 'educonnect/cvs')
-      : '';
+    if (!pdfRaw) {
+      return res.status(400).json({ message: 'El CV en PDF es obligatorio' });
+    }
+    // Validar que sea PDF (data URI debe empezar con data:application/pdf;base64,)
+    if (!/^data:application\/pdf;base64,/.test(pdfRaw)) {
+      return res.status(400).json({ message: 'El archivo de CV debe ser un PDF válido' });
+    }
+    // Validar tamaño máximo 5MB (base64 es ~33% más grande que binario)
+    const pdfSizeBytes = Math.round((pdfRaw.split(',')[1]?.length || 0) * 0.75);
+    if (pdfSizeBytes > 5 * 1024 * 1024) {
+      return res.status(400).json({ message: 'El CV PDF no debe exceder 5MB' });
+    }
+
+    // Subimos la foto a Cloudinary y guardamos solo la URL
+    const fotoFinal = await subirImagen(foto_url, 'educonnect/tutores');
+
+    // Subimos el CV PDF
+    const cvPdfFinal = await subirArchivo(pdfRaw, 'educonnect/cvs');
 
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
