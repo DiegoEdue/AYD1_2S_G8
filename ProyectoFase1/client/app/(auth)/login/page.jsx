@@ -15,9 +15,11 @@ export default function LoginPage() {
 
     const [identificador, setIdentificador] = useState("");
     const [password, setPassword] = useState("");
+    const [token, setToken] = useState("");
     const [errores, setErrores] = useState({});
     const [cargando, setCargando] = useState(false);
     const [errorGeneral, setErrorGeneral] = useState("");
+    const [requiereToken, setRequiereToken] = useState(false);
 
     function validar() {
         const e = {};
@@ -26,6 +28,9 @@ export default function LoginPage() {
         }
         if (!password) {
             e.password = "Ingresa tu contraseña.";
+        }
+        if (requiereToken && !token.trim()) {
+            e.token = "Ingresa el token de verificación enviado a tu correo.";
         }
         setErrores(e);
         return Object.keys(e).length === 0;
@@ -45,7 +50,7 @@ export default function LoginPage() {
             if (tieneArroba) {
                 // Si contiene '@', intentamos primero como Estudiante/Tutor y fallback a Admin
                 try {
-                    resultado = await login({ email: inputLimpio, password });
+                    resultado = await login({ email: inputLimpio, password, token: requiereToken ? token : undefined });
                 } catch (errEst) {
                     try {
                         resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
@@ -59,7 +64,7 @@ export default function LoginPage() {
                     resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
                 } catch (errAdmin) {
                     try {
-                        resultado = await login({ email: inputLimpio, password });
+                        resultado = await login({ email: inputLimpio, password, token: requiereToken ? token : undefined });
                     } catch {
                         throw errAdmin;
                     }
@@ -76,6 +81,12 @@ export default function LoginPage() {
                     })
                 );
                 router.push("/login/segundo-factor");
+                return;
+            }
+
+            if (resultado?.requiresToken) {
+                setRequiereToken(true);
+                setErrorGeneral(resultado.message || "Se requiere token de verificación para el primer inicio de sesión.");
                 return;
             }
 
@@ -135,8 +146,22 @@ export default function LoginPage() {
                             />
                         </FormField>
 
+                        {requiereToken && (
+                            <FormField label="Token de verificación" name="token" required error={errores.token} ayuda="Revisa tu correo electrónico. El token expira en 24 horas.">
+                                <input
+                                    id="token"
+                                    type="text"
+                                    autoComplete="one-time-code"
+                                    value={token}
+                                    onChange={(e) => setToken(e.target.value)}
+                                    className={inputClass(!!errores.token)}
+                                    placeholder="Ingresa el token recibido"
+                                />
+                            </FormField>
+                        )}
+
                         <Button type="submit" cargando={cargando} className="mt-2 w-full">
-                            Iniciar sesión
+                            {requiereToken ? "Verificar e iniciar sesión" : "Iniciar sesión"}
                         </Button>
                     </form>
 
