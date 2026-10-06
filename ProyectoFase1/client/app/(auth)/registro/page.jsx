@@ -123,7 +123,7 @@ const VACIO_ESTUDIANTE = {
         else await registrarTutor(form);
 
         mostrarToast(
-            "Registro exitoso. Se ha enviado un token de verificación a tu correo electrónico. Úsalo en tu primer inicio de sesión.",
+            "Registro enviado. Tu cuenta será revisada por un administrador antes de poder iniciar sesión.",
             "exito"
         );
         router.push("/login");
