@@ -1,7 +1,9 @@
 const bcrypt = require('bcryptjs');
 const sql = require('../config/db');
+const crypto = require('crypto');
 
 const { subirImagen } = require('../utils/cloudinaryUpload');
+const { sendVerificationEmail } = require('../services/email');
 
 const registroTutor = async (req, res) => {
   try {
@@ -89,11 +91,14 @@ const registroTutor = async (req, res) => {
       ? await subirImagen(foto_url, 'educonnect/tutores')
       : null;
 
+    // Generar token de verificación único
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
       const [tutor] = await tx`
-      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion)
-      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion})
+      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, verification_token, is_email_verified, token_created_at)
+      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${verificationToken}, FALSE, NOW())
       RETURNING id_tutor, nombre, apellido, carnet_id, correo;
       `;
 
@@ -128,8 +133,18 @@ const registroTutor = async (req, res) => {
       return { newTutor: tutor, newRequest: solicitud };
     });
 
+    // Enviar correo de verificación
+    const fullName = `${nombre} ${apellido}`;
+    await sendVerificationEmail({
+      to: correo,
+      name: fullName,
+      token: verificationToken,
+    }).catch((err) =>
+      console.error('Error al enviar correo de verificación:', err),
+    );
+
     res.status(201).json({
-      message: 'Tutor registrado exitosamente',
+      message: 'Tutor registrado exitosamente. Se ha enviado un token de verificación a su correo electrónico.',
       tutor: newTutor,
       solicitud: newRequest,
     });
