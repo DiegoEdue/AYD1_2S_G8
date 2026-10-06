@@ -2,7 +2,7 @@ const bcrypt = require('bcryptjs');
 const sql = require('../config/db');
 const crypto = require('crypto');
 
-const { subirImagen } = require('../utils/cloudinaryUpload');
+const { subirImagen, subirPDF } = require('../utils/cloudinaryUpload');
 const { sendVerificationEmail } = require('../services/email');
 
 const registroTutor = async (req, res) => {
@@ -15,7 +15,6 @@ const registroTutor = async (req, res) => {
       genero,
       direccion,
       telefono,
-      foto_url,
       numero_identificacion_tutor,
       direccion_tutoria,
       correo,
@@ -24,6 +23,27 @@ const registroTutor = async (req, res) => {
       universidad_graduacion,
       especialidad,
     } = req.body;
+
+    // Validar archivos requeridos
+    const fotoFile = req.files?.foto?.[0];
+    const cvPdfFile = req.files?.cv_pdf?.[0];
+
+    if (!fotoFile) {
+      return res.status(400).json({ message: 'La fotografía es obligatoria' });
+    }
+    if (!cvPdfFile) {
+      return res.status(400).json({ message: 'El Currículum Vitae en PDF es obligatorio' });
+    }
+
+    // Validar tipo de archivo de la foto
+    if (!fotoFile.mimetype.startsWith('image/')) {
+      return res.status(400).json({ message: 'La fotografía debe ser una imagen' });
+    }
+
+    // Validar tipo de archivo del CV (PDF)
+    if (cvPdfFile.mimetype !== 'application/pdf') {
+      return res.status(400).json({ message: 'El CV debe ser un archivo PDF' });
+    }
 
     // Validar que todos los campos requeridos estén presentes
     if (
@@ -86,10 +106,13 @@ const registroTutor = async (req, res) => {
       return res.status(400).json({ message: 'El correo ya está registrado' });
     }
 
-    // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = foto_url
-      ? await subirImagen(foto_url, 'educonnect/tutores')
-      : null;
+    // Subimos la foto a Cloudinary (base64 data URI)
+    const fotoBase64 = `data:${fotoFile.mimetype};base64,${fotoFile.buffer.toString('base64')}`;
+    const fotoFinal = await subirImagen(fotoBase64, 'educonnect/tutores');
+
+    // Subimos el CV PDF a Cloudinary
+    const cvPdfBase64 = `data:${cvPdfFile.mimetype};base64,${cvPdfFile.buffer.toString('base64')}`;
+    const cvPdfUrl = await subirPDF(cvPdfBase64, 'educonnect/tutores');
 
     // Generar token de verificación único
     const verificationToken = crypto.randomBytes(32).toString('hex');
@@ -97,8 +120,8 @@ const registroTutor = async (req, res) => {
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
       const [tutor] = await tx`
-      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, verification_token, is_email_verified, token_created_at)
-      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${verificationToken}, FALSE, NOW())
+      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, cv_pdf_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, verification_token, is_email_verified, token_created_at)
+      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${cvPdfUrl}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${verificationToken}, FALSE, NOW())
       RETURNING id_tutor, nombre, apellido, carnet_id, correo;
       `;
 
