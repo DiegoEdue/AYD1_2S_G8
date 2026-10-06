@@ -142,5 +142,6 @@ vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
 .vite/
 Conocimiento.md
+# Página HTML local para probar la API (no es la suite automatizada server/test/)
 server/tests/
-Sprint2.md 
+Sprint2.md
