@@ -1,8 +1,10 @@
 const sql = require('../config/db');
 
 const bcrypt = require('bcryptjs');
+const crypto = require('crypto');
 
 const { subirImagen } = require('../utils/cloudinaryUpload');
+const { sendVerificationEmail } = require('../services/email');
 
 const registerStudent = async (req, res) => {
   try {
@@ -75,12 +77,15 @@ const registerStudent = async (req, res) => {
       ? await subirImagen(foto_url, 'educonnect/estudiantes')
       : null;
 
+    // Generar token de verificación único
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.
     const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
       const [student] = await tx`
-        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, password_hash)
-        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${correo}, ${hashedPassword})
+        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, password_hash, verification_token, is_email_verified, token_created_at)
+        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${correo}, ${hashedPassword}, ${verificationToken}, FALSE, NOW())
         RETURNING id_estudiante, nombre, apellido, carnet, correo;
       `;
 
@@ -93,9 +98,19 @@ const registerStudent = async (req, res) => {
       return { newStudent: student, newSolicitud: solicitud };
     });
 
+    // Enviar correo de verificación
+    const fullName = `${nombre} ${apellido}`;
+    await sendVerificationEmail({
+      to: correo,
+      name: fullName,
+      token: verificationToken,
+    }).catch((err) =>
+      console.error('Error al enviar correo de verificación:', err),
+    );
+
     // Retornamos la respuesta con el nuevo estudiante registrado (sin password_hash)
     res.status(201).json({
-      message: 'Estudiante registrado exitosamente',
+      message: 'Estudiante registrado exitosamente. Se ha enviado un token de verificación a su correo electrónico.',
       student: newStudent,
       solicitud: newSolicitud,
     });
