@@ -95,12 +95,12 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
 
 // Marca la sesión como atendida guardando el plan de estudio
 const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
-    const client = await db.connect();
+    const client = await db.pool.connect();
     try {
         await client.query('BEGIN');
 
         // resumen ya no es necesario que se retorne ya que ahora esta almacenado en identified_difficulties
-        const sessionResult = await db.query(
+        const sessionResult = await client.query(
             `UPDATE sesion
             SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
             WHERE id_sesion = $2 AND id_tutor = $3
@@ -114,7 +114,7 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
         }; 
 
         // insertar un nuevo plan de estudio para la sesión atendida
-        const planResult = await db.query(
+        const planResult = await client.query(
             `INSERT INTO study_plans (id_sesion)
             VALUES ($1)
             RETURNING id_plan`,
@@ -123,16 +123,17 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
         const id_plan = planResult.rows[0].id_plan;
 
         // Insertar las dificultades identificadas
-        const dificultyResult = await db.query(
+        const dificultyResult = await client.query(
             `INSERT INTO identified_difficulties (id_plan, descripcion)
-            VALUES ($1, $2)`,
+            VALUES ($1, $2)
+            RETURNING descripcion`,
             [id_plan, difficulties]
         );
 
         // Insertar los recursos recomendados
         const insertResources = [];
         for (const resource of resources) {
-            const resourceResult = await db.query(
+            const resourceResult = await client.query(
                 `INSERT INTO recommended_resources (id_plan, nombre, tipo, descripcion_uso)
                 VALUES ($1, $2, $3, $4)
                 RETURNING id_recurso, nombre, tipo, descripcion_uso`,
@@ -153,7 +154,6 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
         return {
             id: row.id_sesion,
             estado: row.estado,
-            // resumen: row.resumen,
             fechaActualizacion: row.fecha_actualizacion,
             dificultades: dificultyResult.rows[0].descripcion,
             recursos: insertResources,

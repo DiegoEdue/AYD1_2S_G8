@@ -22,7 +22,7 @@ router.get('/sessions/pending', tutorController.getPendingSessions);
 
 // Registro de Atención y Resumen de Tutoría
 router.patch('/sessions/:id/attend', tutorController.attendSession);
-router.get('/sessions/:id/detail', tutorController.getSessionDetail);
+router.get('/sessions/:id/detail', tutorController.getSessionDetails);
 
 // Cancelación de Sesión por Parte del Tutor con Notificación por Correo
 router.patch('/sessions/:id/cancel', tutorController.cancelSession);

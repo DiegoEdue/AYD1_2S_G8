@@ -170,7 +170,7 @@ const attendSession = async (req, res) => {
         return res.status(400).json({ message: 'Los recursos son requeridos.', status: 'error' });
     }
 
-    for (const [index, resource] of recursos) {
+    for (const [index, resource] of recursos.entries()) {
         if (!resource || typeof resource.nombre !== 'string' || resource.nombre.trim().length === 0) {
             return res.status(400).json({ message: `El recurso ${index + 1} se requiere un nombre válido.`, status: 'error' });
         }
