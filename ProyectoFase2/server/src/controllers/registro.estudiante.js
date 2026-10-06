@@ -37,6 +37,15 @@ const registerStudent = async (req, res) => {
         .json({ message: 'Todos los campos son obligatorios' });
     }
 
+    // Validar campos obligatorios de archivos (HU-028)
+    if (!foto_url) {
+      return res.status(400).json({ message: 'La fotografía es obligatoria' });
+    }
+    const pdfRaw = carnet_pdf_url || carnet_pdf || '';
+    if (!pdfRaw) {
+      return res.status(400).json({ message: 'El carnet escaneado en PDF es obligatorio' });
+    }
+
     // Validar el formato del correo electrónico
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(correo)) {
       return res.status(400).json({ message: 'Correo electrónico inválido' });
@@ -73,15 +82,10 @@ const registerStudent = async (req, res) => {
     }
 
     // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = foto_url
-      ? await subirImagen(foto_url, 'educonnect/estudiantes')
-      : null;
+    const fotoFinal = await subirImagen(foto_url, 'educonnect/estudiantes');
 
-    // Subimos el carnet PDF si fue proporcionado
-    const pdfRaw = carnet_pdf_url || carnet_pdf || '';
-    const carnetPdfFinal = pdfRaw
-      ? await subirArchivo(pdfRaw, 'educonnect/carnets')
-      : '';
+    // Subimos el carnet PDF
+    const carnetPdfFinal = await subirArchivo(pdfRaw, 'educonnect/carnets');
 
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.
