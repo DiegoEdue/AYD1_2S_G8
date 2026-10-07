@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { login as loginApi, loginAdmin, verificarSegundoFactorAdmin, cerrarSesion } from "@/lib/api/auth";
+import { login as loginApi, loginAdmin, verificarSegundoFactorAdmin, cerrarSesion, resendVerificationToken } from "@/lib/api/auth";
 import { setToken } from "@/lib/api/client";
 
 const AuthContext = createContext(null);
@@ -40,10 +40,14 @@ export function AuthProvider({ children }) {
     else window.localStorage.removeItem("educonnect_user");
   }
 
-  async function login({ email, password }) {
-    const response = await loginApi({ email, password });
+  async function login({ email, password, verification_token }) {
+    const response = await loginApi({ email, password, verification_token });
 
     if (response?.requiereSegundoFactor) {
+      return response;
+    }
+
+    if (response?.requiresVerification) {
       return response;
     }
 
@@ -52,6 +56,11 @@ export function AuthProvider({ children }) {
       router.push(rutasPorRol[response.usuario.rol] || "/");
     }
 
+    return response;
+  }
+
+  async function resendVerification({ email }) {
+    const response = await resendVerificationToken({ email });
     return response;
   }
 
@@ -88,7 +97,7 @@ export function AuthProvider({ children }) {
     cerrarSesion();
   }
 
-  const value = { usuario, cargando, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario };
+  const value = { usuario, cargando, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario, resendVerification };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }
