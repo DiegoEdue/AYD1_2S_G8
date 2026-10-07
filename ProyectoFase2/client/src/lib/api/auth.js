@@ -1,27 +1,43 @@
-import { apiFetch, setToken } from "./client";
+import { apiFetch, setToken, ApiError } from "./client";
 
-export async function login({ email, password }) {
-  const data = await apiFetch("/auth/login", {
-    method: "POST",
-    body: { correo: email, password },
-  });
-
-  if (data.status === "pending_2fa_setup" || data.status === "pending_2fa_verify") {
-    return {
-      requiereSegundoFactor: true,
-      adminId: data.adminId,
-      secret: data.secret,
-      qr_code: data.qr_code,
-      status: data.status,
-    };
+export async function login({ email, password, verification_token }) {
+  const body = { correo: email, password };
+  if (verification_token) {
+    body.verification_token = verification_token;
   }
 
-  if (data.token) {
-    setToken(data.token);
-    return { usuario: data.user, token: data.token };
-  }
+  try {
+    const data = await apiFetch("/auth/login", {
+      method: "POST",
+      body,
+    });
 
-  return data;
+    if (data.status === "pending_2fa_setup" || data.status === "pending_2fa_verify") {
+      return {
+        requiereSegundoFactor: true,
+        adminId: data.adminId,
+        secret: data.secret,
+        qr_code: data.qr_code,
+        status: data.status,
+      };
+    }
+
+    if (data.token) {
+      setToken(data.token);
+      return { usuario: data.user, token: data.token };
+    }
+
+    return data;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 400 && error.details?.requiresVerification) {
+      return {
+        requiresVerification: true,
+        tokenExpired: error.details.tokenExpired,
+        message: error.message,
+      };
+    }
+    throw error;
+  }
 }
 
 export async function loginAdmin({ nombre_usuario, password }) {
@@ -105,4 +121,12 @@ export async function registrarTutor(datos) {
 
 export function cerrarSesion() {
   setToken(null);
+}
+
+export async function resendVerificationToken({ email }) {
+  const data = await apiFetch("/auth/resend-verification", {
+    method: "POST",
+    body: { correo: email },
+  });
+  return data;
 }
