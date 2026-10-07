@@ -7,12 +7,15 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import StatusPill from "@/components/ui/StatusPill";
 import Avatar from "@/components/ui/Avatar";
+import FormField, { inputClass } from "@/components/ui/FormField";
 import { useToast } from "@/components/ui/Toast";
 import {
   listarEstudiantesAprobados,
   darDeBajaEstudiante,
   listarTutoresAprobados,
   darDeBajaTutor,
+  actualizarEstudianteAdmin,
+  actualizarTutorAdmin,
 } from "@/lib/api/admin";
 
 export default function UsuariosPage() {
@@ -25,6 +28,11 @@ export default function UsuariosPage() {
   const [usuarioBaja, setUsuarioBaja] = useState(null);
   const [motivoBaja, setMotivoBaja] = useState("");
   const [procesando, setProcesando] = useState(false);
+
+  // Estado para el modal de edición de perfil (HU-040 y HU-041)
+  const [usuarioEdicion, setUsuarioEdicion] = useState(null);
+  const [formEdicion, setFormEdicion] = useState({});
+  const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
   useEffect(() => {
     async function cargarUsuarios() {
@@ -50,6 +58,72 @@ export default function UsuariosPage() {
 
     cargarUsuarios();
   }, [rol, mostrarToast]);
+
+  function abrirModalEdicion(u) {
+    setUsuarioEdicion(u);
+    if (rol === "estudiante") {
+      setFormEdicion({
+        nombre: u.nombre || "",
+        apellido: u.apellido || "",
+        carnet: u.carnet || "",
+        genero: u.genero || "M",
+        telefono: u.telefono || "",
+        direccion: u.direccion || "",
+        fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.substring(0, 10) : "",
+        correo: u.correo || "", // Bloqueado
+      });
+    } else {
+      setFormEdicion({
+        nombre: u.nombre || "",
+        apellido: u.apellido || "",
+        carnet_id: u.carnet_id || "",
+        numero_identificacion_tutor: u.numero_identificacion_tutor || "",
+        genero: u.genero || "M",
+        telefono: u.telefono || "",
+        direccion: u.direccion || "",
+        fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.substring(0, 10) : "",
+        universidad_graduacion: u.universidad_graduacion || "",
+        especialidad: u.especialidad || "",
+        direccion_tutoria: u.direccion_tutoria || "Online",
+        anio_inicio_tutorias: u.anio_inicio_tutorias || "",
+        correo: u.correo || "", // Bloqueado
+      });
+    }
+  }
+
+  async function guardarCambiosPerfil() {
+    if (!usuarioEdicion) return;
+
+    setGuardandoEdicion(true);
+    try {
+      if (rol === "estudiante") {
+        await actualizarEstudianteAdmin(usuarioEdicion.id_estudiante, formEdicion);
+        setUsuarios((prev) =>
+          prev.map((item) =>
+            item.id_estudiante === usuarioEdicion.id_estudiante
+              ? { ...item, ...formEdicion }
+              : item
+          )
+        );
+      } else {
+        await actualizarTutorAdmin(usuarioEdicion.id_tutor, formEdicion);
+        setUsuarios((prev) =>
+          prev.map((item) =>
+            item.id_tutor === usuarioEdicion.id_tutor
+              ? { ...item, ...formEdicion }
+              : item
+          )
+        );
+      }
+
+      mostrarToast("Datos del usuario actualizados correctamente.", "exito");
+      setUsuarioEdicion(null);
+    } catch (err) {
+      mostrarToast(err.message || "No se pudieron guardar los cambios.", "error");
+    } finally {
+      setGuardandoEdicion(false);
+    }
+  }
 
   async function confirmarDarDeBaja() {
     if (!usuarioBaja) return;
@@ -96,7 +170,7 @@ export default function UsuariosPage() {
           Gestión de Usuarios Aprobados
         </h2>
         <p className="text-sm text-charcoal-light">
-          Consulta los estudiantes y tutores activos en la plataforma y gestiona sus bajas administrativas.
+          Consulta, edita perfiles y gestiona las bajas administrativas de estudiantes y tutores activos.
         </p>
       </div>
 
@@ -117,7 +191,7 @@ export default function UsuariosPage() {
             "Usuario",
             "Carnet / ID",
             "Correo Electrónico",
-            rol === "estudiante" ? "Género" : "Especialidad / Universidad",
+            rol === "estudiante" ? "Género / Teléfono" : "Especialidad / Universidad",
             "Estado",
             "Acciones",
           ]}
@@ -127,8 +201,8 @@ export default function UsuariosPage() {
             const isEstudiante = rol === "estudiante";
             const carnet = isEstudiante ? u.carnet : u.carnet_id;
             const detalle = isEstudiante
-              ? u.genero
-              : u.universidad_graduacion || u.direccion_tutoria || "-";
+              ? `${u.genero || "-"} ${u.telefono ? `· Tel: ${u.telefono}` : ""}`
+              : u.universidad_graduacion || u.especialidad || "-";
             const estaDadoDeBaja = u.estado_aprobacion === "baja";
 
             return (
@@ -145,9 +219,6 @@ export default function UsuariosPage() {
                       <p className="font-semibold text-charcoal">
                         {u.nombre} {u.apellido}
                       </p>
-                      {isEstudiante && u.telefono && (
-                        <p className="text-xs text-charcoal-light">Tel: {u.telefono}</p>
-                      )}
                     </div>
                   </div>
                 </td>
@@ -160,23 +231,245 @@ export default function UsuariosPage() {
                   <StatusPill estado={u.estado_aprobacion || "aprobado"} />
                 </td>
                 <td className="px-4 py-3">
-                  <Button
-                    variante="peligro"
-                    tamanio="sm"
-                    disabled={estaDadoDeBaja}
-                    onClick={() => {
-                      setUsuarioBaja(u);
-                      setMotivoBaja("");
-                    }}
-                  >
-                    {estaDadoDeBaja ? "Dado de baja" : "Dar de baja"}
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      variante="fantasma"
+                      tamanio="sm"
+                      className="border border-charcoal/20"
+                      disabled={estaDadoDeBaja}
+                      onClick={() => abrirModalEdicion(u)}
+                    >
+                      Editar
+                    </Button>
+                    <Button
+                      variante="peligro"
+                      tamanio="sm"
+                      disabled={estaDadoDeBaja}
+                      onClick={() => {
+                        setUsuarioBaja(u);
+                        setMotivoBaja("");
+                      }}
+                    >
+                      {estaDadoDeBaja ? "Dado de baja" : "Dar de baja"}
+                    </Button>
+                  </div>
                 </td>
               </>
             );
           }}
         />
       )}
+
+      {/* Modal de Edición de Usuario (HU-040 y HU-041) */}
+      <Modal
+        abierto={!!usuarioEdicion}
+        onCerrar={() => !guardandoEdicion && setUsuarioEdicion(null)}
+        titulo={`Editar perfil de ${rol === "estudiante" ? "Estudiante" : "Tutor"}`}
+        footer={
+          <>
+            <Button
+              variante="fantasma"
+              disabled={guardandoEdicion}
+              onClick={() => setUsuarioEdicion(null)}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variante="secundario"
+              disabled={guardandoEdicion}
+              onClick={guardarCambiosPerfil}
+            >
+              {guardandoEdicion ? "Guardando…" : "Guardar cambios"}
+            </Button>
+          </>
+        }
+      >
+        {usuarioEdicion && (
+          <div className="grid max-h-[65vh] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 text-left">
+            <FormField label="Nombre" name="nombre" required>
+              <input
+                value={formEdicion.nombre || ""}
+                onChange={(e) =>
+                  setFormEdicion({ ...formEdicion, nombre: e.target.value })
+                }
+                className={inputClass()}
+              />
+            </FormField>
+
+            <FormField label="Apellido" name="apellido" required>
+              <input
+                value={formEdicion.apellido || ""}
+                onChange={(e) =>
+                  setFormEdicion({ ...formEdicion, apellido: e.target.value })
+                }
+                className={inputClass()}
+              />
+            </FormField>
+
+            <FormField
+              label={rol === "estudiante" ? "Carnet" : "Carnet / ID"}
+              name="carnet"
+              required
+            >
+              <input
+                value={
+                  rol === "estudiante"
+                    ? formEdicion.carnet || ""
+                    : formEdicion.carnet_id || ""
+                }
+                onChange={(e) =>
+                  setFormEdicion({
+                    ...formEdicion,
+                    [rol === "estudiante" ? "carnet" : "carnet_id"]: e.target.value,
+                  })
+                }
+                className={inputClass()}
+              />
+            </FormField>
+
+            {rol === "tutor" && (
+              <FormField
+                label="No. Identificación (DPI)"
+                name="numero_identificacion_tutor"
+              >
+                <input
+                  value={formEdicion.numero_identificacion_tutor || ""}
+                  onChange={(e) =>
+                    setFormEdicion({
+                      ...formEdicion,
+                      numero_identificacion_tutor: e.target.value,
+                    })
+                  }
+                  className={inputClass()}
+                />
+              </FormField>
+            )}
+
+            <FormField label="Género" name="genero">
+              <select
+                value={formEdicion.genero || "M"}
+                onChange={(e) =>
+                  setFormEdicion({ ...formEdicion, genero: e.target.value })
+                }
+                className={inputClass()}
+              >
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+              </select>
+            </FormField>
+
+            <FormField label="Teléfono" name="telefono">
+              <input
+                value={formEdicion.telefono || ""}
+                onChange={(e) =>
+                  setFormEdicion({ ...formEdicion, telefono: e.target.value })
+                }
+                className={inputClass()}
+              />
+            </FormField>
+
+            <FormField label="Fecha de nacimiento" name="fecha_nacimiento">
+              <input
+                type="date"
+                value={formEdicion.fecha_nacimiento || ""}
+                onChange={(e) =>
+                  setFormEdicion({
+                    ...formEdicion,
+                    fecha_nacimiento: e.target.value,
+                  })
+                }
+                className={inputClass()}
+              />
+            </FormField>
+
+            {/* Correo Electrónico Bloqueado (Requerimiento Criterio 2) */}
+            <FormField
+              label="Correo electrónico (Bloqueado)"
+              name="correo"
+              ayuda="El correo no puede ser modificado por normativa de seguridad."
+            >
+              <input
+                value={formEdicion.correo || ""}
+                disabled
+                readOnly
+                className="w-full rounded-md border border-charcoal/20 bg-charcoal/5 px-3 py-2 text-sm text-charcoal-light cursor-not-allowed"
+              />
+            </FormField>
+
+            {rol === "tutor" && (
+              <>
+                <FormField label="Universidad de graduación" name="universidad">
+                  <input
+                    value={formEdicion.universidad_graduacion || ""}
+                    onChange={(e) =>
+                      setFormEdicion({
+                        ...formEdicion,
+                        universidad_graduacion: e.target.value,
+                      })
+                    }
+                    className={inputClass()}
+                  />
+                </FormField>
+
+                <FormField label="Especialidad / Materias" name="especialidad">
+                  <input
+                    value={formEdicion.especialidad || ""}
+                    onChange={(e) =>
+                      setFormEdicion({
+                        ...formEdicion,
+                        especialidad: e.target.value,
+                      })
+                    }
+                    className={inputClass()}
+                  />
+                </FormField>
+
+                <FormField label="Dirección de tutoría" name="direccion_tutoria">
+                  <select
+                    value={formEdicion.direccion_tutoria || "Online"}
+                    onChange={(e) =>
+                      setFormEdicion({
+                        ...formEdicion,
+                        direccion_tutoria: e.target.value,
+                      })
+                    }
+                    className={inputClass()}
+                  >
+                    <option value="Online">Online</option>
+                    <option value="Física">Física</option>
+                  </select>
+                </FormField>
+
+                <FormField label="Año de inicio" name="anio_inicio">
+                  <input
+                    type="number"
+                    value={formEdicion.anio_inicio_tutorias || ""}
+                    onChange={(e) =>
+                      setFormEdicion({
+                        ...formEdicion,
+                        anio_inicio_tutorias: e.target.value,
+                      })
+                    }
+                    className={inputClass()}
+                  />
+                </FormField>
+              </>
+            )}
+
+            <div className="sm:col-span-2">
+              <FormField label="Dirección residencial" name="direccion">
+                <input
+                  value={formEdicion.direccion || ""}
+                  onChange={(e) =>
+                    setFormEdicion({ ...formEdicion, direccion: e.target.value })
+                  }
+                  className={inputClass()}
+                />
+              </FormField>
+            </div>
+          </div>
+        )}
+      </Modal>
 
       {/* Modal de confirmación para dar de baja */}
       <Modal
@@ -203,7 +496,7 @@ export default function UsuariosPage() {
         }
       >
         {usuarioBaja && (
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 text-left">
             <p className="text-sm text-charcoal">
               Estás a punto de dar de baja a{" "}
               <strong className="font-semibold">

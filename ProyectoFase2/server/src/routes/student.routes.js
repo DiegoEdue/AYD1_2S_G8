@@ -9,6 +9,8 @@ const {
     getActiveSessions,
     cancelSession,
     getSessionHistory,
+    getStudyPlans,
+    downloadStudyPlanPdf,
     getStudentProfile,
     updateStudentProfile,
 } = require("../controllers/student.controller");
@@ -18,6 +20,8 @@ router.get("/catalog/search", verifyToken, isEstudiante, searchTutors);
 router.get("/tutor/:idTutor/availability", verifyToken, isEstudiante, getTutorAvailability);
 router.get("/sessions/active", verifyToken, isEstudiante, getActiveSessions);
 router.get("/sessions/history", verifyToken, isEstudiante, getSessionHistory);
+router.get("/study-plans", verifyToken, isEstudiante, getStudyPlans);
+router.get("/study-plans/:id/pdf", verifyToken, isEstudiante, downloadStudyPlanPdf);
 router.post("/sessions", verifyToken, isEstudiante, createSession);
 router.patch("/sessions/:id/cancel", verifyToken, isEstudiante, cancelSession);
 router.get("/profile", verifyToken, isEstudiante, getStudentProfile);

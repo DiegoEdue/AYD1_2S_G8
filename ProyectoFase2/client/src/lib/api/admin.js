@@ -63,6 +63,39 @@ export async function darDeBaja(id, rol, motivo) {
   });
 }
 
+export async function actualizarEstudianteAdmin(id, datos) {
+  return apiFetch(`/admin/students/${id}`, {
+    method: "PUT",
+    body: datos,
+  });
+}
+
+export async function actualizarTutorAdmin(id, datos) {
+  return apiFetch(`/admin/tutors/${id}`, {
+    method: "PUT",
+    body: datos,
+  });
+}
+
+export async function listarDenuncias(tipo = "tutores") {
+  return apiFetch(`/admin/denuncias?tipo=${tipo}`);
+}
+
+export async function resolverDenuncia(id, accion, motivo = "") {
+  return apiFetch(`/admin/denuncias/${id}/resolver`, {
+    method: "PATCH",
+    body: { accion, motivo },
+  });
+}
+
+export async function obtenerCalificacionesTutores() {
+  return apiFetch("/admin/ratings/tutors");
+}
+
+export async function obtenerCalificacionesEstudiantes() {
+  return apiFetch("/admin/ratings/students");
+}
+
 export async function obtenerReportes() {
   return apiFetch("/admin/reportes");
 }

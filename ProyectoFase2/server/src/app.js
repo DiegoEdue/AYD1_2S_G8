@@ -16,6 +16,7 @@ const adminRoutes = require('./routes/admin.routes');
 // Rutas de estudiantes (HU-017, HU-019, HU-020)
 const studentRoutes = require('./routes/student.routes');
 
+const path = require('path');
 const db = require('./config/db');
 
 const app = express();
@@ -24,6 +25,9 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: '15mb' }));
 app.use(express.urlencoded({ extended: true, limit: '15mb' }));
+
+// Servir archivos estáticos locales de uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Ruta base de prueba y diagnóstico de base de datos
 app.get('/api/health', async (req, res) => {

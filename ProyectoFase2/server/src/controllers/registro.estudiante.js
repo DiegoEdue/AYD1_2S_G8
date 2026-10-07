@@ -2,7 +2,7 @@ const sql = require('../config/db');
 
 const bcrypt = require('bcryptjs');
 
-const { subirImagen } = require('../utils/cloudinaryUpload');
+const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
 
 const registerStudent = async (req, res) => {
   try {
@@ -15,6 +15,8 @@ const registerStudent = async (req, res) => {
       telefono,
       fecha_nacimiento,
       foto_url,
+      carnet_pdf_url,
+      carnet_pdf,
       correo,
       password,
     } = req.body;
@@ -33,6 +35,15 @@ const registerStudent = async (req, res) => {
       return res
         .status(400)
         .json({ message: 'Todos los campos son obligatorios' });
+    }
+
+    // Validar campos obligatorios de archivos (HU-028)
+    if (!foto_url) {
+      return res.status(400).json({ message: 'La fotografía es obligatoria' });
+    }
+    const pdfRaw = carnet_pdf_url || carnet_pdf || '';
+    if (!pdfRaw) {
+      return res.status(400).json({ message: 'El carnet escaneado en PDF es obligatorio' });
     }
 
     // Validar el formato del correo electrónico
@@ -71,16 +82,17 @@ const registerStudent = async (req, res) => {
     }
 
     // Subimos la foto a Cloudinary y guardamos solo la URL
-    const fotoFinal = foto_url
-      ? await subirImagen(foto_url, 'educonnect/estudiantes')
-      : null;
+    const fotoFinal = await subirImagen(foto_url, 'educonnect/estudiantes');
+
+    // Subimos el carnet PDF
+    const carnetPdfFinal = await subirArchivo(pdfRaw, 'educonnect/carnets');
 
     // Insertamos el estudiante y su solicitud en una transacción:
     // si uno falla, se revierte todo y no quedan registros huérfanos.
     const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
       const [student] = await tx`
-        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, correo, password_hash)
-        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${correo}, ${hashedPassword})
+        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, carnet_pdf_url, correo, password_hash)
+        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${carnetPdfFinal}, ${correo}, ${hashedPassword})
         RETURNING id_estudiante, nombre, apellido, carnet, correo;
       `;
 

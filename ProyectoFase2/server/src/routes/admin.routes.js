@@ -14,6 +14,7 @@ const {
   deactivateStudent,
   getApprovedTutors,
   deactivateTutor,
+  streamDocumento,
 } = require('../controllers/admin');
 const { verifyToken, isAdmin } = require('../middlewares/auth');
 
@@ -22,6 +23,9 @@ router.post('/login', loginAdmin);
 
 // Ruta pública para validar el código TOTP y emitir el token
 router.post('/verify-2fa', verify2fa);
+
+// Ruta para transmisión de documento PDF en línea
+router.get('/documento/stream', streamDocumento);
 
 router.use(verifyToken, isAdmin);
 
