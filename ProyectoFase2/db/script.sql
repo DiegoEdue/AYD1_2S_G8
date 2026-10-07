@@ -126,14 +126,11 @@ CREATE TABLE sesion (
     fecha_sesion        DATE         NOT NULL,
     hora_sesion         TIME         NOT NULL,
     motivo              VARCHAR(500) NOT NULL,
-    resumen             TEXT,
     estado              VARCHAR(25)  NOT NULL DEFAULT 'Activa',
     fecha_creacion      TIMESTAMP    NOT NULL DEFAULT now(),
     fecha_actualizacion TIMESTAMP,
     CONSTRAINT chk_sesion_estado
         CHECK (estado IN ('Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor')),
-    CONSTRAINT chk_sesion_resumen
-        CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
 );
 
 CREATE TABLE study_plans (
