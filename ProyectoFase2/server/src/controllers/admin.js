@@ -69,7 +69,7 @@ const approveStudent = async (req, res) => {
 
     if (rol === 'tutor') {
       const tutorRes = await db.query(
-        'SELECT id_tutor, nombre, apellido, correo FROM tutor WHERE id_tutor = $1 AND estado_aprobacion = $2',
+        'SELECT id_tutor, nombre, apellido, correo, verification_token FROM tutor WHERE id_tutor = $1 AND estado_aprobacion = $2',
         [id, 'pendiente'],
       );
       if (tutorRes.rows.length === 0) {
@@ -91,6 +91,7 @@ const approveStudent = async (req, res) => {
         to: tutor.correo,
         name: `${tutor.nombre} ${tutor.apellido}`,
         approved: true,
+        verificationToken: tutor.verification_token,
       }).catch((err) =>
         console.error('Error al enviar correo de aprobación:', err),
       );
@@ -104,7 +105,7 @@ const approveStudent = async (req, res) => {
     }
 
     const studentRes = await db.query(
-      'SELECT id_estudiante, nombre, apellido, correo, estado_aprobacion FROM estudiante WHERE id_estudiante = $1 AND estado_aprobacion = $2',
+      'SELECT id_estudiante, nombre, apellido, correo, estado_aprobacion, verification_token FROM estudiante WHERE id_estudiante = $1 AND estado_aprobacion = $2',
       [id, 'pendiente'],
     );
 
@@ -137,6 +138,7 @@ const approveStudent = async (req, res) => {
       to: student.correo,
       name: fullName,
       approved: true,
+      verificationToken: student.verification_token,
     }).catch((err) =>
       console.error('Error al enviar correo de aprobación:', err),
     );

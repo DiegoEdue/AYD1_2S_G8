@@ -2,10 +2,11 @@ const db = require('../config/db');
 const { comparePassword } = require('../utils/bcrypt');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../middlewares/auth');
+const { sendVerificationEmail } = require('../services/email');
 
 const loginTutor = async (req, res) => {
   try {
-    const { correo, password } = req.body || {};
+    const { correo, password, verification_token } = req.body || {};
 
     if (!correo || !password) {
       return res.status(400).json({
@@ -67,6 +68,44 @@ const loginTutor = async (req, res) => {
       });
     }
 
+    // Validar verificación de email (HU-030)
+    if (!tutor.is_email_verified) {
+      // Primer login: requerir token
+      if (!verification_token) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Se requiere código de verificación para el primer inicio de sesión',
+          requiresVerification: true,
+        });
+      }
+
+      // Validar token
+      if (tutor.verification_token !== verification_token) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'Código de verificación incorrecto',
+        });
+      }
+
+      // Validar expiración (24 horas)
+      const tokenCreated = new Date(tutor.token_created_at);
+      const now = new Date();
+      const hoursDiff = (now - tokenCreated) / (1000 * 60 * 60);
+      if (hoursDiff > 24) {
+        return res.status(400).json({
+          status: 'error',
+          message: 'El código de verificación ha expirado (24h). Solicite uno nuevo.',
+          tokenExpired: true,
+        });
+      }
+
+      // Token válido: marcar como verificado
+      await db.query(
+        `UPDATE tutor SET is_email_verified = TRUE WHERE id_tutor = $1`,
+        [tutor.id_tutor]
+      );
+    }
+
     // Generar token JWT
     const payload = {
       id: tutor.id_tutor,
@@ -88,6 +127,7 @@ const loginTutor = async (req, res) => {
       user: {
         ...tutorData,
         rol: 'tutor',
+        is_email_verified: true, // Ya verificado en este punto
       },
     });
   } catch (error) {
