@@ -3,6 +3,12 @@ const sql = require('../config/db');
 const bcrypt = require('bcryptjs');
 
 const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
+const { sendVerificationEmail } = require('../services/email');
+
+const generateVerificationToken = () => {
+  // Generar token alfanumérico de 6 dígitos (más amigable para el usuario)
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 const registerStudent = async (req, res) => {
   try {
@@ -87,12 +93,14 @@ const registerStudent = async (req, res) => {
     // Subimos el carnet PDF
     const carnetPdfFinal = await subirArchivo(pdfRaw, 'educonnect/carnets');
 
+    // Generar token de verificación
+    const verificationToken = generateVerificationToken();
+
     // Insertamos el estudiante y su solicitud en una transacción:
-    // si uno falla, se revierte todo y no quedan registros huérfanos.
     const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
       const [student] = await tx`
-        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, carnet_pdf_url, correo, password_hash)
-        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${carnetPdfFinal}, ${correo}, ${hashedPassword})
+        INSERT INTO estudiante (nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, foto_url, carnet_pdf_url, correo, password_hash, verification_token, is_email_verified, token_created_at)
+        VALUES (${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono}, ${fecha_nacimiento}, ${fotoFinal}, ${carnetPdfFinal}, ${correo}, ${hashedPassword}, ${verificationToken}, FALSE, NOW())
         RETURNING id_estudiante, nombre, apellido, carnet, correo;
       `;
 
@@ -105,9 +113,19 @@ const registerStudent = async (req, res) => {
       return { newStudent: student, newSolicitud: solicitud };
     });
 
+    // Enviar email de verificación (no bloquear respuesta si falla)
+    const fullName = `${newStudent.nombre} ${newStudent.apellido}`;
+    sendVerificationEmail({
+      to: correo,
+      name: fullName,
+      token: verificationToken,
+    }).catch((err) =>
+      console.error('Error al enviar correo de verificación:', err)
+    );
+
     // Retornamos la respuesta con el nuevo estudiante registrado (sin password_hash)
     res.status(201).json({
-      message: 'Estudiante registrado exitosamente',
+      message: 'Estudiante registrado exitosamente. Se ha enviado un código de verificación a su correo.',
       student: newStudent,
       solicitud: newSolicitud,
     });
