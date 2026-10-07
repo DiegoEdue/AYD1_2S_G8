@@ -131,6 +131,7 @@ CREATE TABLE sesion (
     fecha_actualizacion TIMESTAMP,
     CONSTRAINT chk_sesion_estado
         CHECK (estado IN ('Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor')),
+    CONSTRAINT uq_sesion_id_est_tutor UNIQUE (id_sesion, id_estudiante, id_tutor)
 );
 
 CREATE TABLE study_plans (
@@ -164,6 +165,23 @@ CREATE TABLE recommended_resources (
     CONSTRAINT chk_recurso_tipo
         CHECK (tipo IN ('Texto','Video','PDF','Enlace'))
 );
+
+-- Tabla de calificaciones de tutores
+CREATE TABLE tutor_ratings (
+    id_rating          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- una sola calificación por sesión
+    id_estudiante      INTEGER      NOT NULL,
+    id_tutor           INTEGER      NOT NULL,
+    estrellas          SMALLINT     NOT NULL,
+    comentario         VARCHAR(500),
+    fecha_calificacion TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_tutor_rating_estrellas CHECK (estrellas BETWEEN 0 AND 5),
+    CONSTRAINT tutor_ratings_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
 
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
