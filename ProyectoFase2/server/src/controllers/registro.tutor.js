@@ -2,6 +2,12 @@ const bcrypt = require('bcryptjs');
 const sql = require('../config/db');
 
 const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
+const { sendVerificationEmail } = require('../services/email');
+
+const generateVerificationToken = () => {
+  // Generar token alfanumérico de 6 dígitos (más amigable para el usuario)
+  return Math.floor(100000 + Math.random() * 900000).toString();
+};
 
 const registroTutor = async (req, res) => {
   try {
@@ -110,11 +116,14 @@ const registroTutor = async (req, res) => {
     // Subimos el CV PDF
     const cvPdfFinal = await subirArchivo(pdfRaw, 'educonnect/cvs');
 
+    // Generar token de verificación
+    const verificationToken = generateVerificationToken();
+
     // Insertar el nuevo tutor en la base de datos
     const { newTutor, newRequest } = await sql.begin(async (tx) => {
       const [tutor] = await tx`
-      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, cv_pdf_url)
-      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${cvPdfFinal})
+      INSERT INTO tutor (nombre, apellido, carnet_id, fecha_nacimiento, genero, direccion, telefono, foto_url, numero_identificacion_tutor, direccion_tutoria, correo, password_hash, anio_inicio_tutorias, universidad_graduacion, cv_pdf_url, verification_token, is_email_verified, token_created_at)
+      VALUES (${nombre}, ${apellido}, ${carnet_id}, ${fecha_nacimiento}, ${genero}, ${direccion}, ${telefono}, ${fotoFinal}, ${numero_identificacion_tutor}, ${direccion_tutoria}, ${correo}, ${hashedPassword}, ${anio_inicio_tutorias}, ${universidad_graduacion}, ${cvPdfFinal}, ${verificationToken}, FALSE, NOW())
       RETURNING id_tutor, nombre, apellido, carnet_id, correo;
       `;
 
@@ -149,8 +158,18 @@ const registroTutor = async (req, res) => {
       return { newTutor: tutor, newRequest: solicitud };
     });
 
+    // Enviar email de verificación (no bloquear respuesta si falla)
+    const fullName = `${newTutor.nombre} ${newTutor.apellido}`;
+    sendVerificationEmail({
+      to: correo,
+      name: fullName,
+      token: verificationToken,
+    }).catch((err) =>
+      console.error('Error al enviar correo de verificación:', err)
+    );
+
     res.status(201).json({
-      message: 'Tutor registrado exitosamente',
+      message: 'Tutor registrado exitosamente. Se ha enviado un código de verificación a su correo.',
       tutor: newTutor,
       solicitud: newRequest,
     });
