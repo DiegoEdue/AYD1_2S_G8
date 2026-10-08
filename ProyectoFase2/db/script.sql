@@ -183,6 +183,31 @@ CREATE TABLE tutor_ratings (
 );
 
 
+-- Tabla de reportes de tutores
+CREATE TABLE tutor_reports (
+    id_reporte         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- un solo reporte por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- denunciante
+    id_tutor           INTEGER      NOT NULL,          -- tutor reportado
+    categoria          VARCHAR(50)  NOT NULL,
+    descripcion        TEXT         NOT NULL,
+    estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
+    fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_tutor_report_categoria CHECK (categoria IN (
+        'Ética y profesionalismo',
+        'Negligencia académica',
+        'Abuso o conducta inapropiada',
+        'Falsificación de información',
+        'Otro'
+    )),
+    CONSTRAINT chk_tutor_report_estado CHECK (estado IN ('Pendiente','Resuelto')),
+    CONSTRAINT tutor_reports_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
