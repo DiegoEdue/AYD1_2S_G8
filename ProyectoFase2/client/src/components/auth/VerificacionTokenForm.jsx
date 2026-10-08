@@ -3,11 +3,12 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
-import { normalizarToken, validarToken } from "@/lib/token";
 
 export default function VerificacionTokenForm({
   correo,
+  tokenExpirado = false,
   onVerificar,
+  onReenviar,
   onVolver,
   cargando = false,
   errorServidor = "",
@@ -17,10 +18,20 @@ export default function VerificacionTokenForm({
 
   function onSubmit(ev) {
     ev.preventDefault();
-    const mensaje = validarToken(token);
-    setError(mensaje);
-    if (mensaje) return;
-    onVerificar(normalizarToken(token));
+    const tokenLimpio = token.trim();
+
+    if (!tokenLimpio) {
+      setError("Ingresa el código de verificación.");
+      return;
+    }
+
+    if (tokenLimpio.length < 6) {
+      setError("El código debe ser de 6 dígitos.");
+      return;
+    }
+
+    setError("");
+    onVerificar(tokenLimpio);
   }
 
   return (
@@ -47,7 +58,11 @@ export default function VerificacionTokenForm({
           name="token"
           required
           error={error}
-          ayuda="Lo encuentras en el correo de bienvenida de EduConnect."
+          ayuda={
+            tokenExpirado
+              ? "El código anterior ha expirado (24h). Solicita uno nuevo."
+              : "Ingresa el código de 6 dígitos enviado a tu correo."
+          }
         >
           <input
             id="token"
@@ -55,20 +70,34 @@ export default function VerificacionTokenForm({
             autoComplete="one-time-code"
             autoCapitalize="none"
             spellCheck={false}
+            inputMode="numeric"
             value={token}
-            onChange={(e) => setToken(e.target.value)}
+            onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
             className={`${inputClass(!!error)} font-mono tracking-wide`}
+            placeholder="123456"
           />
         </FormField>
 
         <div className="flex gap-3">
-          <Button variante="fantasma" className="flex-1" onClick={onVolver} disabled={cargando}>
+          <Button type="button" variante="fantasma" className="flex-1" onClick={onVolver} disabled={cargando}>
             Atrás
           </Button>
           <Button type="submit" cargando={cargando} className="flex-1">
             Verificar e ingresar
           </Button>
         </div>
+
+        {onReenviar && (
+          <Button
+            type="button"
+            variante="fantasma"
+            className="mt-1 w-full text-xs"
+            onClick={onReenviar}
+            disabled={cargando}
+          >
+            {tokenExpirado ? "Reenviar código" : "No recibí el código, reenviar"}
+          </Button>
+        )}
       </form>
     </>
   );
