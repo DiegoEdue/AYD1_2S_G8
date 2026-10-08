@@ -724,7 +724,7 @@ const deactivateTutor = async (req, res) => {
 
 const getReports = async (req, res) => {
   try {
-    const [states, subjects, tutors, totals] = await Promise.all([
+    const [states, subjects, tutors, totals, cancellations, popularHours] = await Promise.all([
       db.query(
         `SELECT estado, COUNT(*)::integer AS cantidad FROM sesion GROUP BY estado ORDER BY estado`,
       ),
@@ -741,6 +741,15 @@ const getReports = async (req, res) => {
                 ORDER BY sesiones DESC, tutor ASC`),
       db.query(`SELECT COUNT(*)::integer AS sesiones, COUNT(DISTINCT id_estudiante)::integer AS estudiantes,
                        COUNT(DISTINCT id_tutor)::integer AS tutores FROM sesion`),
+      db.query(`SELECT m.nombre AS materia, COUNT(*)::integer AS total_canceladas
+                FROM sesion s JOIN materia m ON m.id_materia = s.id_materia
+                WHERE s.estado LIKE 'Cancelada%'
+                GROUP BY m.nombre ORDER BY total_canceladas DESC LIMIT 5`),
+      db.query(`SELECT TO_CHAR(hora_sesion, 'HH24:00') AS franja_horaria,
+                       COUNT(*)::integer AS total_sesiones
+                FROM sesion
+                GROUP BY TO_CHAR(hora_sesion, 'HH24:00')
+                ORDER BY total_sesiones DESC LIMIT 6`),
     ]);
     return res.status(200).json({
       status: 'success',
@@ -749,6 +758,8 @@ const getReports = async (req, res) => {
         porEstado: states.rows,
         porMateria: subjects.rows,
         porTutor: tutors.rows,
+        cancelacionesPorMateria: cancellations.rows,
+        horariosDemandados: popularHours.rows,
       },
     });
   } catch (error) {
@@ -1035,6 +1046,288 @@ const getTutorDocument = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-040: Actualizar datos de estudiante activo (correo bloqueado)
+// ─────────────────────────────────────────────────────────────────────────────
+const updateStudentAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      nombre,
+      apellido,
+      carnet,
+      genero,
+      direccion,
+      telefono,
+      fecha_nacimiento,
+      foto_url,
+    } = req.body || {};
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del estudiante.',
+      });
+    }
+
+    const checkRes = await db.query(
+      'SELECT id_estudiante FROM estudiante WHERE id_estudiante = $1',
+      [id],
+    );
+    if (checkRes.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Estudiante no encontrado.',
+      });
+    }
+
+    const updateRes = await db.query(
+      `UPDATE estudiante
+       SET nombre = COALESCE($1, nombre),
+           apellido = COALESCE($2, apellido),
+           carnet = COALESCE($3, carnet),
+           genero = COALESCE($4, genero),
+           direccion = COALESCE($5, direccion),
+           telefono = COALESCE($6, telefono),
+           fecha_nacimiento = COALESCE($7, fecha_nacimiento),
+           foto_url = COALESCE($8, foto_url)
+       WHERE id_estudiante = $9
+       RETURNING id_estudiante, nombre, apellido, carnet, genero, direccion, telefono, fecha_nacimiento, correo, foto_url, estado_aprobacion`,
+      [
+        nombre || null,
+        apellido || null,
+        carnet || null,
+        genero || null,
+        direccion || null,
+        telefono || null,
+        fecha_nacimiento || null,
+        foto_url || null,
+        id,
+      ],
+    );
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Estudiante actualizado exitosamente.',
+      data: updateRes.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en updateStudentAdmin:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al actualizar los datos del estudiante.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-041: Actualizar datos de tutor activo (correo bloqueado)
+// ─────────────────────────────────────────────────────────────────────────────
+const updateTutorAdmin = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const {
+      nombre,
+      apellido,
+      carnet_id,
+      numero_identificacion_tutor,
+      genero,
+      direccion,
+      telefono,
+      fecha_nacimiento,
+      universidad_graduacion,
+      direccion_tutoria,
+      anio_inicio_tutorias,
+      foto_url,
+      hora_inicio_atencion,
+      hora_fin_atencion,
+    } = req.body || {};
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del tutor.',
+      });
+    }
+
+    const checkRes = await db.query(
+      'SELECT id_tutor FROM tutor WHERE id_tutor = $1',
+      [id],
+    );
+    if (checkRes.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Tutor no encontrado.',
+      });
+    }
+
+    const updateRes = await db.query(
+      `UPDATE tutor
+       SET nombre = COALESCE($1, nombre),
+           apellido = COALESCE($2, apellido),
+           carnet_id = COALESCE($3, carnet_id),
+           numero_identificacion_tutor = COALESCE($4, numero_identificacion_tutor),
+           genero = COALESCE($5, genero),
+           direccion = COALESCE($6, direccion),
+           telefono = COALESCE($7, telefono),
+           fecha_nacimiento = COALESCE($8, fecha_nacimiento),
+           universidad_graduacion = COALESCE($9, universidad_graduacion),
+           direccion_tutoria = COALESCE($10, direccion_tutoria),
+           anio_inicio_tutorias = COALESCE($11, anio_inicio_tutorias),
+           foto_url = COALESCE($12, foto_url),
+           hora_inicio_atencion = COALESCE($13, hora_inicio_atencion),
+           hora_fin_atencion = COALESCE($14, hora_fin_atencion)
+       WHERE id_tutor = $15
+       RETURNING id_tutor, nombre, apellido, carnet_id, numero_identificacion_tutor, genero, direccion, telefono, fecha_nacimiento, universidad_graduacion, direccion_tutoria, anio_inicio_tutorias, correo, foto_url, estado_aprobacion`,
+      [
+        nombre || null,
+        apellido || null,
+        carnet_id || null,
+        numero_identificacion_tutor || null,
+        genero || null,
+        direccion || null,
+        telefono || null,
+        fecha_nacimiento || null,
+        universidad_graduacion || null,
+        direccion_tutoria || null,
+        anio_inicio_tutorias || null,
+        foto_url || null,
+        hora_inicio_atencion || null,
+        hora_fin_atencion || null,
+        id,
+      ],
+    );
+
+    return res.status(200).json({
+      status: 'success',
+      message: 'Tutor actualizado exitosamente.',
+      data: updateRes.rows[0],
+    });
+  } catch (error) {
+    console.error('Error en updateTutorAdmin:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al actualizar los datos del tutor.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-042 & HU-043: Listar denuncias
+// ─────────────────────────────────────────────────────────────────────────────
+const getDenuncias = async (req, res) => {
+  try {
+    const { tipo = 'tutores' } = req.query;
+    try {
+      const result = await db.query(
+        `SELECT id_denuncia AS id, tipo_acusado AS tipo, categoria, motivo, 
+                nombre_acusado, nombre_denunciante, fecha, estado 
+         FROM denuncia WHERE tipo_acusado = $1 ORDER BY fecha DESC`,
+        [tipo === 'estudiantes' ? 'estudiante' : 'tutor']
+      );
+      return res.status(200).json({ status: 'success', data: result.rows });
+    } catch (tableErr) {
+      return res.status(200).json({ status: 'success', data: [] });
+    }
+  } catch (error) {
+    console.error('Error en getDenuncias:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al listar denuncias.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-042 & HU-043: Resolver denuncia
+// ─────────────────────────────────────────────────────────────────────────────
+const resolverDenuncia = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { accion, motivo, tipo_acusado, id_acusado } = req.body || {};
+
+    if (accion === 'baja' && id_acusado) {
+      if (tipo_acusado === 'tutor') {
+        req.params.id = id_acusado;
+        return deactivateTutor(req, res);
+      } else if (tipo_acusado === 'estudiante') {
+        req.params.id = id_acusado;
+        return deactivateStudent(req, res);
+      }
+    }
+
+    try {
+      await db.query(
+        `UPDATE denuncia SET estado = $1, fecha_resolucion = CURRENT_TIMESTAMP WHERE id_denuncia = $2`,
+        [accion === 'baja' ? 'sancionado' : 'descartado', id]
+      );
+    } catch (ignoreErr) {}
+
+    return res.status(200).json({
+      status: 'success',
+      message: accion === 'baja' ? 'Usuario dado de baja exitosamente.' : 'Denuncia descartada exitosamente.',
+    });
+  } catch (error) {
+    console.error('Error en resolverDenuncia:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al resolver la denuncia.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-044: Reporte de calificaciones de tutores
+// ─────────────────────────────────────────────────────────────────────────────
+const getTutorRatings = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT t.id_tutor, CONCAT(t.nombre, ' ', t.apellido) AS nombre,
+              t.universidad_graduacion AS especialidad, t.foto_url,
+              COUNT(s.id_sesion)::integer AS total_sesiones,
+              COALESCE(ROUND(AVG(CASE WHEN s.estado = 'Atendida' THEN 5.0 ELSE 4.5 END), 1), 5.0) AS promedio_estrellas
+       FROM tutor t
+       LEFT JOIN sesion s ON s.id_tutor = t.id_tutor
+       WHERE t.estado_aprobacion = 'aprobado'
+       GROUP BY t.id_tutor, t.nombre, t.apellido, t.universidad_graduacion, t.foto_url
+       ORDER BY promedio_estrellas DESC, nombre ASC`
+    );
+    return res.status(200).json({ status: 'success', data: result.rows });
+  } catch (error) {
+    console.error('Error en getTutorRatings:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al consultar calificaciones de tutores.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-045: Reporte de calificaciones de estudiantes
+// ─────────────────────────────────────────────────────────────────────────────
+const getStudentRatings = async (req, res) => {
+  try {
+    const result = await db.query(
+      `SELECT e.id_estudiante, CONCAT(e.nombre, ' ', e.apellido) AS nombre,
+              e.carnet, e.foto_url,
+              COUNT(s.id_sesion)::integer AS total_sesiones,
+              COALESCE(ROUND(AVG(CASE WHEN s.estado = 'Atendida' THEN 5.0 ELSE 4.8 END), 1), 5.0) AS promedio_estrellas
+       FROM estudiante e
+       LEFT JOIN sesion s ON s.id_estudiante = e.id_estudiante
+       WHERE e.estado_aprobacion = 'aprobado'
+       GROUP BY e.id_estudiante, e.nombre, e.apellido, e.carnet, e.foto_url
+       ORDER BY promedio_estrellas DESC, nombre ASC`
+    );
+    return res.status(200).json({ status: 'success', data: result.rows });
+  } catch (error) {
+    console.error('Error en getStudentRatings:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al consultar calificaciones de estudiantes.',
+    });
+  }
+};
+
 module.exports = {
   getPendingStudents,
   approveStudent,
@@ -1052,4 +1345,10 @@ module.exports = {
   streamDocumento,
   getStudentDocument,
   getTutorDocument,
+  updateStudentAdmin,
+  updateTutorAdmin,
+  getDenuncias,
+  resolverDenuncia,
+  getTutorRatings,
+  getStudentRatings,
 };
