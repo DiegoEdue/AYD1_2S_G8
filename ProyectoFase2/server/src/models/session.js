@@ -7,7 +7,6 @@ const SELECT_BASE = `
         s.fecha_sesion AS fecha,
         s.hora_sesion AS hora,
         s.motivo,
-        s.resumen,
         s.estado,
         e.id_estudiante,
         CONCAT(e.nombre, ' ', e.apellido) AS nombre_estudiante,
@@ -31,7 +30,6 @@ function mapSessionRow(row) {
         tutor: row.nombre_tutor,
         materia: row.materia,
         motivo: row.motivo,
-        resumen: row.resumen,
         estado: row.estado // 'Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor'
     }
 }
@@ -99,13 +97,13 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
     try {
         await client.query('BEGIN');
 
-        // resumen ya no es necesario que se retorne ya que ahora esta almacenado en identified_difficulties
+        // Las dificultades ya no se guardan en sesion: viven en identified_difficulties (más abajo).
         const sessionResult = await client.query(
             `UPDATE sesion
-            SET resumen = $1, estado = 'Atendida', fecha_actualizacion = NOW()
-            WHERE id_sesion = $2 AND id_tutor = $3
-            RETURNING id_sesion, estado, resumen, fecha_actualizacion`,
-            [difficulties, sessionId, id_Tutor]
+            SET estado = 'Atendida', fecha_actualizacion = NOW()
+            WHERE id_sesion = $1 AND id_tutor = $2
+            RETURNING id_sesion, estado, fecha_actualizacion`,
+            [sessionId, id_Tutor]
         );
 
         if (sessionResult.rowCount === 0) {
