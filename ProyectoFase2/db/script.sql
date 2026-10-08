@@ -159,6 +159,7 @@ CREATE TABLE recommended_resources (
     nombre varchar(150) NOT NULL,
     tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace'
     descripcion_uso varchar(500) NOT NULL,
+    url_recurso varchar(500) NOT NULL DEFAULT '',
     CONSTRAINT recommended_resources_id_plan_fkey
         FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
         ON DELETE CASCADE ON UPDATE CASCADE,
