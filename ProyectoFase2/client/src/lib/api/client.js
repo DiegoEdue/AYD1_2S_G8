@@ -20,7 +20,19 @@ export function setToken(token) {
   else window.localStorage.removeItem("educonnect_token");
 }
 
-export async function apiFetch(path, { method = "GET", body, headers, ...rest } = {}) {
+// Rutas donde un 401 significa "credenciales incorrectas", no "sesión vencida".
+const RUTAS_SIN_REDIRECCION = ["/auth/", "/admin/login", "/admin/verify-2fa", "/student/register", "/tutor/registro"];
+
+function manejarSesionVencida(path, token) {
+  if (!token || typeof window === "undefined") return;
+  if (RUTAS_SIN_REDIRECCION.some((ruta) => path.startsWith(ruta))) return;
+  // El JWT del backend dura 8 h: pasado ese tiempo hay que volver a iniciar sesión.
+  setToken(null);
+  window.localStorage.removeItem("educonnect_user");
+  if (!window.location.pathname.startsWith("/login")) window.location.assign("/login");
+}
+
+async function enviar(path, { method = "GET", body, headers, ...rest } = {}) {
   const token = getToken();
 
   let response;
@@ -43,6 +55,32 @@ export async function apiFetch(path, { method = "GET", body, headers, ...rest } 
     );
   }
 
+  if (!response.ok) {
+    if (response.status === 401) manejarSesionVencida(path, token);
+
+    let data = null;
+    const text = await response.text();
+    if (text) {
+      try {
+        data = JSON.parse(text);
+      } catch {
+        data = { message: text };
+      }
+    }
+    const message =
+      data?.message ||
+      data?.error ||
+      MENSAJES_POR_ESTADO[response.status] ||
+      "Ocurrió un error inesperado. Inténtalo de nuevo.";
+    throw new ApiError(message, response.status, data);
+  }
+
+  return response;
+}
+
+export async function apiFetch(path, opciones) {
+  const response = await enviar(path, opciones);
+
   let data = null;
   const text = await response.text();
   if (text) {
@@ -52,17 +90,13 @@ export async function apiFetch(path, { method = "GET", body, headers, ...rest } 
       data = { message: text };
     }
   }
-
-  if (!response.ok) {
-    const message =
-      data?.message ||
-      data?.error ||
-      MENSAJES_POR_ESTADO[response.status] ||
-      "Ocurrió un error inesperado. Inténtalo de nuevo.";
-    throw new ApiError(message, response.status, data);
-  }
-
   return data;
+}
+
+// Para respuestas binarias que requieren el token (p. ej. la constancia PDF del plan de estudio).
+export async function apiFetchBlob(path, opciones) {
+  const response = await enviar(path, opciones);
+  return response.blob();
 }
 
 const MENSAJES_POR_ESTADO = {

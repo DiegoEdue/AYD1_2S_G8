@@ -45,7 +45,7 @@ const normalizeTime = timeValue => {
 
 const getStudentSessionsByState = async (studentId, estados) => {
     const result = await sql`
-        SELECT s.id_sesion, s.fecha_sesion AS fecha, s.hora_sesion AS hora, s.motivo, s.resumen, s.estado,
+        SELECT s.id_sesion, s.fecha_sesion AS fecha, s.hora_sesion AS hora, s.motivo, s.estado,
                m.nombre AS materia,
                CONCAT(t.nombre, ' ', t.apellido) AS tutor,
                t.correo AS correo_tutor
@@ -62,7 +62,6 @@ const getStudentSessionsByState = async (studentId, estados) => {
         fecha: normalizeDate(row.fecha),
         hora: normalizeTime(row.hora),
         motivo: row.motivo,
-        resumen: row.resumen,
         estado: row.estado,
         materia: row.materia,
         tutor: row.tutor,

@@ -152,7 +152,7 @@ const getHistorySessions = async (req, res) => {
 // Registro de Atención y Resumen de Tutoría (HU-013)
 // PATCH /api/tutor/sessions/:id/attend
 // Modificación con Registro de Plan de Estudio Estructurado (HU-035)
-const VALID_RESOURCE_TYPES = ['Texto', 'Video', 'PDF', 'Enlace'];
+const VALID_RESOURCE_TYPES = ['Texto', 'Video', 'PDF', 'Enlace', 'Imagen'];
 const attendSession = async (req, res) => {
     const { id } = req.params;
     const { dificultades, recursos } = req.body;

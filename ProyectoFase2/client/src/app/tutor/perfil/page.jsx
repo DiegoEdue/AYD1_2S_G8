@@ -150,7 +150,7 @@ export default function PerfilTutorPage() {
         <FormField label="Fecha de nacimiento" name="fecha_nacimiento"><input id="fecha_nacimiento" type="date" value={form.fecha_nacimiento?.slice(0, 10) || ""} onChange={(e) => cambiar("fecha_nacimiento", e.target.value)} className={inputClass(false)} /></FormField>
         <FormField label="Teléfono" name="telefono" required error={errores.telefono}><input id="telefono" value={form.telefono} onChange={(e) => cambiar("telefono", e.target.value)} className={inputClass(!!errores.telefono)} /></FormField>
         <FormField label="Dirección personal" name="direccion" required error={errores.direccion}><input id="direccion" value={form.direccion} onChange={(e) => cambiar("direccion", e.target.value)} className={inputClass(!!errores.direccion)} /></FormField>
-        <FormField label="Número de identificación de tutor" name="numero_identificacion_tutor"><input id="numero_identificacion_tutor" value={form.numero_identificacion_tutor} onChange={(e) => cambiar("numero_identificacion_tutor", e.target.value)} className={inputClass(false)} /></FormField>
+        <FormField label="Número de identificación de tutor" name="numero_identificacion_tutor"><input id="numero_identificacion_tutor" value={form.numero_identificacion_tutor} disabled className={`${inputClass(false)} bg-paper`} /></FormField>
           <FormField label="Especialidades actuales" name="especialidad" ayuda="Añade o quita materias y guarda los cambios.">
             <div className="flex min-h-10 flex-wrap gap-2 rounded-lg border border-charcoal/20 px-3 py-2">
               {form.especialidad.split(",").map((materia) => materia.trim()).filter(Boolean).map((materia) => (

@@ -9,6 +9,7 @@ const NAV_POR_ROL = {
     estudiante: [
         { href: "/estudiante/tutores", etiqueta: "Buscar tutores", icono: "Buscar" },
         { href: "/estudiante/sesiones/activas", etiqueta: "Mis sesiones", icono: "Calendario" },
+        { href: "/estudiante/plan-estudio", etiqueta: "Plan de estudio", icono: "Plan" },
         { href: "/estudiante/sesiones/historial", etiqueta: "Historial", icono: "Historial" },
         { href: "/estudiante/perfil", etiqueta: "Mi perfil", icono: "Perfil" },
     ],

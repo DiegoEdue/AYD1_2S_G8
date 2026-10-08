@@ -1,10 +1,18 @@
 import StatusPill from "./StatusPill";
 import Icon from "./Icon";
 
-export default function SessionCard({ sesion, contraparteLabel, contraparteNombre, acciones }) {
+export default function SessionCard({
+    sesion,
+    contraparteLabel,
+    contraparteNombre,
+    acciones,
+    detalle,
+    detalleEtiqueta = "Ver detalle",
+}) {
     const cancelada = sesion.estado === "cancelada-tutor" || sesion.estado === "cancelada-estudiante";
     return (
-        <div className="flex flex-col gap-3 rounded-card border border-charcoal/10 bg-white p-5 shadow-soft sm:flex-row sm:items-center sm:justify-between">
+        <div className="rounded-card border border-charcoal/10 bg-white shadow-soft">
+        <div className="flex flex-col gap-3 p-5 sm:flex-row sm:items-center sm:justify-between">
         <div>
             <div className="flex items-center gap-2">
             <span className="font-display text-base text-charcoal">
@@ -29,7 +37,7 @@ export default function SessionCard({ sesion, contraparteLabel, contraparteNombr
             </span>
             </p>
             {sesion.motivo && (
-            <p className="mt-1 text-sm text-charcoal-light">Motivo: {sesion.motivo}</p>
+            <p className="mt-1 rounded-lg bg-cream-light/60 px-3 py-2 text-sm text-charcoal">Motivo: {sesion.motivo}</p>
             )}
             {sesion.resumen && (
             <p className={`mt-1 rounded-lg px-3 py-2 text-sm ${cancelada ? "bg-crimson-light/40 text-crimson-dark" : "bg-cream-light/60 text-charcoal"}`}>
@@ -38,6 +46,13 @@ export default function SessionCard({ sesion, contraparteLabel, contraparteNombr
             )}
         </div>
         {acciones && <div className="flex shrink-0 gap-2">{acciones}</div>}
+        </div>
+        {detalle && (
+            <details className="border-t border-charcoal/10 px-5 py-3">
+            <summary className="cursor-pointer text-sm font-semibold text-crimson">{detalleEtiqueta}</summary>
+            <div className="pb-1 pt-4">{detalle}</div>
+            </details>
+        )}
         </div>
     );
 }
