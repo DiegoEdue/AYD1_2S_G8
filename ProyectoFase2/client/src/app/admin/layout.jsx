@@ -20,7 +20,7 @@ export default function AdminLayout({ children }) {
   }
 
   return (
-    <div className="flex h-screen overflow-hidden bg-paper">
+    <div data-app-shell className="fixed inset-0 flex overflow-clip bg-paper">
       <Sidebar rol="administrador" />
       <div className="flex flex-1 flex-col">
         <Topbar titulo="Panel de administración" />
