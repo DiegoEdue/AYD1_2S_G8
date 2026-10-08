@@ -157,14 +157,14 @@ CREATE TABLE recommended_resources (
     id_recurso int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_plan int4 NOT NULL,
     nombre varchar(150) NOT NULL,
-    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace'
+    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace','Imagen'
     descripcion_uso varchar(500) NOT NULL,
     url_recurso varchar(500) NOT NULL DEFAULT '',
     CONSTRAINT recommended_resources_id_plan_fkey
         FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_recurso_tipo
-        CHECK (tipo IN ('Texto','Video','PDF','Enlace'))
+        CHECK (tipo IN ('Texto','Video','PDF','Enlace','Imagen'))
 );
 
 -- Tabla de calificaciones de tutores
