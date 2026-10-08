@@ -225,6 +225,30 @@ CREATE TABLE student_ratings (
         ON DELETE RESTRICT ON UPDATE CASCADE
 );
 
+-- Tabla de reportes de estudiantes
+CREATE TABLE student_reports (
+    id_reporte         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- un solo reporte por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- estudiante reportado
+    id_tutor           INTEGER      NOT NULL,          -- denunciante
+    categoria          VARCHAR(50)  NOT NULL,
+    descripcion        TEXT         NOT NULL,
+    estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
+    fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_student_report_categoria CHECK (categoria IN (
+        'Conducta inapropiada',
+        'Falsificación de documentos',
+        'Agresión verbal o física',
+        'Robo o daño a instalaciones',
+        'Otro'
+    )),
+    CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto')),
+    CONSTRAINT student_reports_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
 -- Un estudiante no puede tener dos sesiones activas con el mismo tutor
