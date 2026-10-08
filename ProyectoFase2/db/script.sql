@@ -174,7 +174,7 @@ CREATE TABLE tutor_ratings (
     id_estudiante      INTEGER      NOT NULL,
     id_tutor           INTEGER      NOT NULL,
     estrellas          SMALLINT     NOT NULL,
-    comentario         VARCHAR(500),
+    comentario         VARCHAR(500) NOT NULL,
     fecha_calificacion TIMESTAMP    NOT NULL DEFAULT now(),
     CONSTRAINT chk_tutor_rating_estrellas CHECK (estrellas BETWEEN 0 AND 5),
     CONSTRAINT tutor_ratings_sesion_fkey
@@ -209,6 +209,21 @@ CREATE TABLE tutor_reports (
 );
 
 
+-- Tabla de calificaciones de estudiantes
+CREATE TABLE student_ratings (
+    id_rating          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- una sola calificación por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- estudiante calificado
+    id_tutor           INTEGER      NOT NULL,          -- tutor que califica
+    estrellas          SMALLINT     NOT NULL,
+    comentario         VARCHAR(500) NOT NULL,
+    fecha_calificacion TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_student_rating_estrellas CHECK (estrellas BETWEEN 0 AND 5),
+    CONSTRAINT student_ratings_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
