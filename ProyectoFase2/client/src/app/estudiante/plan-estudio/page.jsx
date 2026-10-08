@@ -3,9 +3,10 @@
 import { useCallback, useEffect, useState } from "react";
 import Avatar from "@/components/ui/Avatar";
 import Button from "@/components/ui/Button";
+import Icon from "@/components/ui/Icon";
 import PlanEstudioDetalle from "@/components/ui/PlanEstudioDetalle";
-import { listarPlanesEstudio } from "@/lib/api/plan-estudio";
-import { USAR_MOCKS } from "@/lib/api/client";
+import { useToast } from "@/components/ui/Toast";
+import { descargarPlanPdf, listarPlanesEstudio } from "@/lib/api/plan-estudio";
 
 function formatearFecha(iso) {
   const [y, m, d] = String(iso).slice(0, 10).split("-").map(Number);
@@ -27,9 +28,11 @@ function Dato({ etiqueta, valor }) {
 }
 
 export default function PlanEstudioPage() {
+  const { mostrarToast } = useToast();
   const [planes, setPlanes] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [error, setError] = useState("");
+  const [descargando, setDescargando] = useState(null);
 
   const cargar = useCallback(async () => {
     setCargando(true);
@@ -51,20 +54,25 @@ export default function PlanEstudioPage() {
     cargar();
   }, [cargar]);
 
+  async function descargar(idPlan) {
+    setDescargando(idPlan);
+    try {
+      await descargarPlanPdf(idPlan);
+    } catch (err) {
+      mostrarToast(err.message || "No pudimos descargar la constancia.", "error");
+    } finally {
+      setDescargando(null);
+    }
+  }
+
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex min-h-screen flex-col gap-6 pb-12">
       <div>
         <h2 className="font-display text-xl text-charcoal">Mi plan de estudio</h2>
         <p className="text-sm text-charcoal-light">
           Las dificultades y los recursos que tus tutores registraron al terminar cada tutoría.
         </p>
       </div>
-
-      {USAR_MOCKS && (
-        <p role="status" className="rounded-lg bg-cream-light px-4 py-2 text-xs text-charcoal">
-          Modo simulado: estos planes no vienen del servidor. Incluye un ejemplo y los planes que registres como tutor en este navegador.
-        </p>
-      )}
 
       {cargando ? (
         <p className="text-sm text-charcoal-light">Cargando tu plan de estudio…</p>
@@ -103,6 +111,16 @@ export default function PlanEstudioPage() {
                     {plan.materia && <Dato etiqueta="Materia" valor={plan.materia} />}
                   </dl>
                 </div>
+                <Button
+                  variante="suave"
+                  tamanio="sm"
+                  className="sm:self-start"
+                  cargando={descargando === plan.id}
+                  onClick={() => descargar(plan.id)}
+                >
+                  <Icon name="Descargar" className="h-4 w-4" />
+                  Descargar constancia (PDF)
+                </Button>
               </header>
               <div className="pt-5">
                 <PlanEstudioDetalle dificultades={plan.dificultades} recursos={plan.recursos} />

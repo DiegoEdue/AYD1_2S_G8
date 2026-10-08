@@ -1,26 +1,59 @@
+import { useState } from "react";
 import Icon from "./Icon";
+import Button from "@/components/ui/Button";
+import PdfViewerModal from "@/components/ui/PdfViewerModal";
 import { tipoRecurso } from "@/lib/api/tipos-recurso";
 import { normalizarDificultades, normalizarRecurso } from "@/lib/api/plan-estudio";
 
-const ETIQUETA_ENLACE = { video: "Ver video", pdf: "Abrir PDF", imagen: "Ver imagen completa", enlace: "Abrir enlace" };
+const ETIQUETA_ENLACE = { 
+  video: "Ver video", 
+  imagen: "Ver imagen completa", 
+  enlace: "Abrir enlace" 
+};
 
-function Contenido({ recurso, tipo }) {
-  if (tipo.entrada === "texto" && recurso.contenido) {
+function Contenido({ recurso, tipo, onAbrirPdf }) {
+  const valor = recurso.url_recurso || recurso.recursoUrl || recurso.url || recurso.contenido;
+
+  if (!valor) return null;
+
+  const tipoNormalizado = tipo.valor.toLowerCase();
+
+  // Mostrar Texto directamente en pantalla
+  if (tipo.entrada === "texto" || tipoNormalizado === "texto") {
     return (
       <p className="mt-2 whitespace-pre-line rounded-lg bg-cream-light/60 px-3 py-2 text-sm text-charcoal">
-        {recurso.contenido}
+        {valor}
       </p>
     );
   }
-  if (!recurso.url) return null;
+
+  // Si es PDF: Botón para abrir el Visor Embebido (PdfViewerModal)
+  if (tipoNormalizado === "pdf") {
+    return (
+      <div className="mt-2">
+        <Button
+          variante="fantasma"
+          tamanio="sm"
+          className="border border-charcoal/20 hover:border-charcoal/40 text-crimson"
+          onClick={() => onAbrirPdf(recurso, valor)}
+        >
+          <Icon name="Documento" className="h-4 w-4 text-crimson" />
+          <span>Ver PDF</span>
+        </Button>
+      </div>
+    );
+  }
+
+  // Garantizar URL completa para Imagen, Video o Enlace
+  const urlFinal = valor.startsWith("http") ? valor : `https://${valor}`;
 
   return (
     <div className="mt-2 flex flex-col items-start gap-2">
-      {tipo.valor === "imagen" && (
-        <a href={recurso.url} target="_blank" rel="noopener noreferrer">
+      {tipoNormalizado === "imagen" && (
+        <a href={urlFinal} target="_blank" rel="noopener noreferrer">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
-            src={recurso.url}
+            src={urlFinal}
             alt={recurso.nombre}
             loading="lazy"
             className="max-h-40 rounded-lg border border-charcoal/10 object-cover"
@@ -28,22 +61,29 @@ function Contenido({ recurso, tipo }) {
         </a>
       )}
       <a
-        href={recurso.url}
+        href={urlFinal}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-sm font-semibold text-crimson hover:underline"
+        className="text-sm font-semibold text-crimson hover:underline inline-flex items-center gap-1"
       >
-        {ETIQUETA_ENLACE[tipo.valor] || "Abrir recurso"}
+        {ETIQUETA_ENLACE[tipoNormalizado] || "Abrir recurso"}
         <span className="sr-only"> (se abre en una pestaña nueva)</span>
       </a>
     </div>
   );
 }
 
-// Dificultades + recursos de una tutoría. Lo usan "Mi plan de estudio" (estudiante)
-// y el historial del tutor, para que ambos vean exactamente lo mismo.
 export default function PlanEstudioDetalle({ dificultades = [], recursos = [] }) {
   const items = normalizarDificultades(dificultades);
+  const [documentoVisor, setDocumentoVisor] = useState(null);
+
+  const abrirVisorPdf = (recurso, url) => {
+    setDocumentoVisor({
+      titulo: recurso.nombre || "Recurso PDF",
+      subTitulo: recurso.descripcion || "Plan de estudio",
+      documentoUrl: url,
+    });
+  };
 
   return (
     <div className="flex flex-col gap-5">
@@ -90,7 +130,7 @@ export default function PlanEstudioDetalle({ dificultades = [], recursos = [] })
                       {tipo.etiqueta}
                     </span>
                     <p className="mt-1 text-sm text-charcoal-light">{r.descripcion}</p>
-                    <Contenido recurso={r} tipo={tipo} />
+                    <Contenido recurso={r} tipo={tipo} onAbrirPdf={abrirVisorPdf} />
                   </div>
                 </li>
               );
@@ -98,6 +138,16 @@ export default function PlanEstudioDetalle({ dificultades = [], recursos = [] })
           </ul>
         )}
       </section>
+
+      {/* Visor Embebido de PDF (Reutilizado del Admin) */}
+      <PdfViewerModal
+        abierto={!!documentoVisor}
+        onCerrar={() => setDocumentoVisor(null)}
+        titulo={documentoVisor?.titulo}
+        subTitulo={documentoVisor?.subTitulo}
+        documentoUrl={documentoVisor?.documentoUrl}
+        tipoDocumento="pdf"
+      />
     </div>
   );
 }

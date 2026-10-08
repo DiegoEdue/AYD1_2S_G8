@@ -24,7 +24,6 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
   const idParaEnfocar = useRef(null);
   const botonAgregar = useRef(null);
 
-  // Tras agregar una fila, el cursor va a su campo "Nombre".
   useEffect(() => {
     if (idParaEnfocar.current) {
       document.getElementById(idParaEnfocar.current)?.focus();
@@ -53,7 +52,6 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
     setRecursos((prev) => prev.map((r) => (r.id === id ? { ...r, [campo]: valor } : r)));
   }
 
-  // Al cambiar de tipo se descarta lo que se había puesto para el tipo anterior.
   function cambiarTipo(id, tipo) {
     setRecursos((prev) =>
       prev.map((r) => (r.id === id ? { ...r, tipo, url: "", contenido: "", archivo: null } : r))
@@ -75,7 +73,7 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
     return null;
   }
 
-  function onSubmit(ev) {
+  async function onSubmit(ev) {
     ev.preventDefault();
     const { valido, errores: e } = validarPlanEstudio({ dificultades, recursos });
     setErrores(e);
@@ -84,7 +82,8 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
       if (destino) requestAnimationFrame(() => document.getElementById(destino)?.focus());
       return;
     }
-    onGuardar(armarPayloadPlan({ dificultades, recursos }));
+    const payload = await armarPayloadPlan({ dificultades, recursos });
+    onGuardar(payload);
   }
 
   function campoValor(r, tipo, base, error) {
@@ -95,7 +94,7 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
           <textarea
             id={id}
             rows={4}
-            value={r.contenido}
+            value={r.contenido || ""}
             onChange={(ev) => cambiarRecurso(r.id, "contenido", ev.target.value)}
             className={inputClass(!!error)}
           />
@@ -105,7 +104,7 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
     if (tipo.entrada === "url") {
       return (
         <FormField
-          label={tipo.valor === "video" ? "Enlace del video" : "Enlace (URL)"}
+          label={tipo.valor.toLowerCase() === "video" ? "Enlace del video" : "Enlace (URL)"}
           name={id}
           required
           error={error}
@@ -115,7 +114,7 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
             id={id}
             type="url"
             inputMode="url"
-            value={r.url}
+            value={r.url || ""}
             onChange={(ev) => cambiarRecurso(r.id, "url", ev.target.value)}
             className={inputClass(!!error)}
             placeholder="https://"
@@ -125,14 +124,14 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
     }
     return (
       <FormField
-        label={tipo.valor === "pdf" ? "Archivo PDF" : "Archivo de imagen"}
+        label={tipo.valor.toLowerCase() === "pdf" ? "Archivo PDF" : "Archivo de imagen"}
         name={id}
         required
         error={error}
         ayuda={
           r.archivo
             ? `${r.archivo.name} · ${formatearTamanio(r.archivo.size)}`
-            : `Tamaño máximo: ${tipo.maxMB} MB.`
+            : `Tamaño máximo: ${tipo.maxMB || 10} MB.`
         }
       >
         <input
@@ -233,7 +232,7 @@ export default function FormularioPlanEstudio({ onGuardar, errorServidor = "" })
                   </FormField>
                 </div>
 
-                {tipo.entrada && <div key={r.tipo}>{campoValor(r, tipo, base, e.valor)}</div>}
+                {tipo.entrada && <div key={`${r.id}-${r.tipo}`}>{campoValor(r, tipo, base, e.valor)}</div>}
 
                 <FormField
                   label="Descripción de uso"
