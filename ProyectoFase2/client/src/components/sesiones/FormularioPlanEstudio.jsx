@@ -4,8 +4,8 @@ import { useEffect, useRef, useState } from "react";
 import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
 import Icon from "@/components/ui/Icon";
-import { TIPOS_RECURSO, tipoRecurso } from "@/lib/tipos-recurso";
-import { armarPayloadPlan, recursoVacio, validarPlanEstudio } from "@/lib/plan-estudio";
+import { TIPOS_RECURSO, tipoRecurso } from "@/lib/api/tipos-recurso";
+import { armarPayloadPlan, recursoVacio, validarPlanEstudio } from "@/lib/api/plan-estudio";
 
 // El botón de enviar vive en el footer del Modal y apunta a este id con el atributo `form`.
 export const FORM_PLAN_ID = "form-plan-estudio";

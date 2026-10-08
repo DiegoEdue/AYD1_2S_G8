@@ -37,7 +37,7 @@ export default function SessionCard({
             </span>
             </p>
             {sesion.motivo && (
-            <p className="mt-1 text-sm text-charcoal-light">Motivo: {sesion.motivo}</p>
+            <p className="mt-1 rounded-lg bg-cream-light/60 px-3 py-2 text-sm text-charcoal">Motivo: {sesion.motivo}</p>
             )}
             {sesion.resumen && (
             <p className={`mt-1 rounded-lg px-3 py-2 text-sm ${cancelada ? "bg-crimson-light/40 text-crimson-dark" : "bg-cream-light/60 text-charcoal"}`}>

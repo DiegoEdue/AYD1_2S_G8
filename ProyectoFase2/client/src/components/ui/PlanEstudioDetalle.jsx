@@ -1,6 +1,6 @@
 import Icon from "./Icon";
-import { tipoRecurso } from "@/lib/tipos-recurso";
-import { normalizarDificultades, normalizarRecurso } from "@/lib/plan-estudio";
+import { tipoRecurso } from "@/lib/api/tipos-recurso";
+import { normalizarDificultades, normalizarRecurso } from "@/lib/api/plan-estudio";
 
 const ETIQUETA_ENLACE = { video: "Ver video", pdf: "Abrir PDF", imagen: "Ver imagen completa", enlace: "Abrir enlace" };
 
