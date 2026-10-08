@@ -15,6 +15,8 @@ const {
   getApprovedTutors,
   deactivateTutor,
   streamDocumento,
+  getStudentDocument,
+  getTutorDocument,
 } = require('../controllers/admin');
 const { verifyToken, isAdmin } = require('../middlewares/auth');
 
@@ -24,7 +26,7 @@ router.post('/login', loginAdmin);
 // Ruta pública para validar el código TOTP y emitir el token
 router.post('/verify-2fa', verify2fa);
 
-// Ruta para transmisión de documento PDF en línea
+// Ruta para transmisión de documento PDF en línea (acceso con token en query opcionalmente)
 router.get('/documento/stream', streamDocumento);
 
 router.use(verifyToken, isAdmin);
@@ -36,6 +38,12 @@ router.put('/students/:id/approve', approveStudent);
 router.put('/students/:id/reject', rejectStudent);
 router.patch('/solicitudes/:id/aprobar', approveStudent);
 router.patch('/solicitudes/:id/rechazar', rejectStudent);
+
+// HU-038: URL segura del PDF del carnet del estudiante (visor embebido)
+router.get('/students/:id/documento', getStudentDocument);
+
+// HU-039: URL segura del PDF del CV del tutor (visor embebido)
+router.get('/tutors/:id/documento', getTutorDocument);
 
 // HU: Gestión y Baja de Estudiantes Aprobados
 router.get('/students/approved', getApprovedStudents);
