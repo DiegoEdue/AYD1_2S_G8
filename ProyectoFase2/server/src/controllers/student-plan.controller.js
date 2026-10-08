@@ -27,8 +27,11 @@ const getStudyPlans = async (req, res) => {
                    COALESCE((
                        SELECT JSONB_AGG(
                            JSONB_BUILD_OBJECT(
-                               'id', r.id_recurso, 'nombre', r.nombre,
-                               'tipo', r.tipo, 'descripcionUso', r.descripcion_uso
+                               'id', r.id_recurso,
+                               'nombre', r.nombre,
+                               'tipo', r.tipo,
+                               'descripcionUso', r.descripcion_uso,
+                               'recursoUrl', r.url_recurso
                            ) ORDER BY r.id_recurso
                        )
                        FROM recommended_resources r
@@ -62,7 +65,7 @@ const getStudyPlans = async (req, res) => {
     }
 };
 
-// HU-032: Descarga de constancia PDF solo para planes del estudiante autenticado.
+// HU-032: Descarga de constancia PDF
 const downloadStudyPlanPdf = async (req, res) => {
     const { id } = req.params;
     if (!/^[1-9]\d*$/.test(id)) {
@@ -87,8 +90,10 @@ const downloadStudyPlanPdf = async (req, res) => {
                    ), ARRAY[]::text[]) AS dificultades,
                    COALESCE((
                        SELECT JSONB_AGG(JSONB_BUILD_OBJECT(
-                           'nombre', r.nombre, 'tipo', r.tipo,
-                           'descripcionUso', r.descripcion_uso
+                           'nombre', r.nombre,
+                           'tipo', r.tipo,
+                           'descripcionUso', r.descripcion_uso,
+                           'recursoUrl', r.url_recurso
                        ) ORDER BY r.id_recurso)
                        FROM recommended_resources r WHERE r.id_plan = p.id_plan
                    ), '[]'::jsonb) AS recursos

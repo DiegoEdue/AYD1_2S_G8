@@ -1,4 +1,5 @@
-const db = require('../config/db')
+const db = require('../config/db');
+const { subirImagen, subirArchivo } = require('../utils/cloudinaryUpload');
 
 const SELECT_BASE = `
     SELECT 
@@ -40,7 +41,7 @@ const getSesionesPendientesByTutorId = async (id_Tutor) => {
         `${SELECT_BASE}
         WHERE s.id_tutor = $1 AND s.estado = 'Activa'
         ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC;
-        `, 
+        `,
         [id_Tutor]
     );
     return result.rows.map(mapSessionRow);
@@ -85,19 +86,19 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
         hora: row.hora.slice(0, 5), // Formatear a "HH:MM"
         estudiante: row.nombre_estudiante,
         estado: row.estado, // 'Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor'
-        estadoDescripcion: ESTADOS_SESION[row.estado] || row.estado, 
+        estadoDescripcion: ESTADOS_SESION[row.estado] || row.estado,
     }));
 
     return { data, total: result.rows.length }; // devuelve las sess
 }
 
 // Marca la sesión como atendida guardando el plan de estudio
-const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
+const markAttended = async (sessionId, id_Tutor, { difficulties, resources }) => {
     const client = await db.pool.connect();
     try {
         await client.query('BEGIN');
 
-        // Las dificultades ya no se guardan en sesion: viven en identified_difficulties (más abajo).
+        // Las dificultades ya no se guardan en sesion: viven en identified_difficulties.
         const sessionResult = await client.query(
             `UPDATE sesion
             SET estado = 'Atendida', fecha_actualizacion = NOW()
@@ -108,10 +109,10 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
 
         if (sessionResult.rowCount === 0) {
             await client.query('ROLLBACK');
-            return null
-        }; 
+            return null;
+        }
 
-        // insertar un nuevo plan de estudio para la sesión atendida
+        // Insertar un nuevo plan de estudio para la sesión atendida
         const planResult = await client.query(
             `INSERT INTO study_plans (id_sesion)
             VALUES ($1)
@@ -128,21 +129,45 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
             [id_plan, difficulties]
         );
 
-        // Insertar los recursos recomendados
+        // Insertar los recursos recomendados procesando Cloudinary si aplica
         const insertResources = [];
-        for (const resource of resources) {
+        for (const recurso of resources) {
+            let urlFinal = '';
+            const tipoLwr = String(recurso.tipo).toLowerCase();
+
+            if (tipoLwr === 'pdf' && recurso.archivo) {
+                // Subir PDF a Cloudinary
+                urlFinal = await subirArchivo(recurso.archivo, 'educonnect/recursos');
+            } else if (tipoLwr === 'imagen' && recurso.archivo) {
+                // Subir Imagen a Cloudinary
+                urlFinal = await subirImagen(recurso.archivo, 'educonnect/recursos');
+            } else if (tipoLwr === 'video' || tipoLwr === 'enlace') {
+                urlFinal = recurso.url || '';
+            } else if (tipoLwr === 'texto') {
+                urlFinal = recurso.contenido || '';
+            } else {
+                urlFinal = recurso.url || recurso.contenido || '';
+            }
+
             const resourceResult = await client.query(
-                `INSERT INTO recommended_resources (id_plan, nombre, tipo, descripcion_uso)
-                VALUES ($1, $2, $3, $4)
-                RETURNING id_recurso, nombre, tipo, descripcion_uso`,
-                [id_plan, resource.nombre.trim(), resource.tipo, resource.descripcion.trim()]
+                `INSERT INTO recommended_resources (id_plan, nombre, tipo, descripcion_uso, url_recurso)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING id_recurso, nombre, tipo, descripcion_uso, url_recurso`,
+                [
+                    id_plan,
+                    recurso.nombre ? recurso.nombre.trim() : '',
+                    recurso.tipo,
+                    recurso.descripcion ? recurso.descripcion.trim() : '',
+                    urlFinal
+                ]
             );
             const r = resourceResult.rows[0];
             insertResources.push({
                 id: r.id_recurso,
                 name: r.nombre,
                 type: r.tipo,
-                description: r.descripcion_uso
+                description: r.descripcion_uso,
+                recursoUrl: r.url_recurso
             });
         }
 
@@ -162,7 +187,7 @@ const markAttended = async (sessionId, id_Tutor, {difficulties, resources}) => {
     } finally {
         client.release();
     }
-}
+};
 
 // Busca una sesión por su ID y el tutor, para obtener detalles de la sesión, reutilizamos la función findSessionByIdAndTutorId para obtener los detalles de la sesión
 const findSessionDetailByIdAndTutorId = async (sessionId, id_Tutor) => {
@@ -184,7 +209,7 @@ const findSessionDetailByIdAndTutorId = async (sessionId, id_Tutor) => {
     );
 
     const resourcesResult = await db.query(
-        `SELECT id_recurso, nombre, tipo, descripcion_uso 
+        `SELECT id_recurso, nombre, tipo, descripcion_uso, url_recurso
         FROM recommended_resources 
         WHERE id_plan = $1
         ORDER BY id_recurso ASC`,
@@ -199,7 +224,8 @@ const findSessionDetailByIdAndTutorId = async (sessionId, id_Tutor) => {
                 id: r.id_recurso,
                 name: r.nombre,
                 type: r.tipo,
-                description: r.descripcion_uso
+                description: r.descripcion_uso,
+                recursoUrl: r.url_recurso
             })),
         },
     };
