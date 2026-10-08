@@ -18,6 +18,14 @@ export async function rechazarSolicitud(id, rol) {
   });
 }
 
+export async function obtenerDocumentoEstudiante(id) {
+  return apiFetch(`/admin/students/${id}/documento`);
+}
+
+export async function obtenerDocumentoTutor(id) {
+  return apiFetch(`/admin/tutors/${id}/documento`);
+}
+
 export async function listarUsuarios(rol) {
   if (rol === "estudiante") {
     return apiFetch("/admin/students/approved");

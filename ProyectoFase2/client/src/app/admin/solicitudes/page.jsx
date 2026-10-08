@@ -9,7 +9,13 @@ import Avatar from "@/components/ui/Avatar";
 import Icon from "@/components/ui/Icon";
 import PdfViewerModal from "@/components/ui/PdfViewerModal";
 import { useToast } from "@/components/ui/Toast";
-import { aprobarSolicitud, listarSolicitudes, rechazarSolicitud } from "@/lib/api/admin";
+import {
+  aprobarSolicitud,
+  listarSolicitudes,
+  rechazarSolicitud,
+  obtenerDocumentoEstudiante,
+  obtenerDocumentoTutor,
+} from "@/lib/api/admin";
 
 export default function SolicitudesPage() {
   const { mostrarToast } = useToast();
@@ -98,8 +104,24 @@ export default function SolicitudesPage() {
     }
   }
 
-  function abrirVisorDocumento(s, tipo) {
-    const urlDoc = tipo === "carnet" ? s.carnetPdfUrl : s.cvPdfUrl;
+  async function abrirVisorDocumento(s, tipo) {
+    let urlDoc = tipo === "carnet" ? s.carnetPdfUrl : s.cvPdfUrl;
+    try {
+      if (tipo === "carnet") {
+        const docRes = await obtenerDocumentoEstudiante(s.id);
+        if (docRes?.data?.carnet_pdf_url) {
+          urlDoc = docRes.data.carnet_pdf_url;
+        }
+      } else {
+        const docRes = await obtenerDocumentoTutor(s.id);
+        if (docRes?.data?.cv_pdf_url) {
+          urlDoc = docRes.data.cv_pdf_url;
+        }
+      }
+    } catch (err) {
+      console.warn("No se pudo obtener URL firmada del documento, usando fallback:", err);
+    }
+
     setDocumentoVisor({
       solicitud: s,
       tipoDocumento: tipo,
