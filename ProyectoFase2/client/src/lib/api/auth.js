@@ -1,5 +1,15 @@
 import { apiFetch, setToken, ApiError } from "./client";
 
+// El servidor devuelve la fila completa del estudiante/tutor, incluido el código de verificación.
+// Es de un solo uso y no tiene por qué quedar guardado en el navegador (localStorage).
+function sanitizarUsuario(usuario) {
+  if (!usuario) return usuario;
+  const copia = { ...usuario };
+  delete copia.verification_token;
+  delete copia.token_created_at;
+  return copia;
+}
+
 export async function login({ email, password, verification_token }) {
   const body = { correo: email, password };
   if (verification_token) {
@@ -24,15 +34,22 @@ export async function login({ email, password, verification_token }) {
 
     if (data.token) {
       setToken(data.token);
-      return { usuario: data.user, token: data.token };
+      return { usuario: sanitizarUsuario(data.user), token: data.token };
     }
 
     return data;
   } catch (error) {
-    if (error instanceof ApiError && error.status === 400 && error.details?.requiresVerification) {
+    // El servidor responde 400 con { requiresVerification } cuando falta el código (primer inicio de
+    // sesión) y 400 con { tokenExpired } cuando el código pasó las 24 h; en ambos casos hay que pedir
+    // (o reenviar) el código en lugar de tratarlo como un error de credenciales.
+    if (
+      error instanceof ApiError &&
+      error.status === 400 &&
+      (error.details?.requiresVerification || error.details?.tokenExpired)
+    ) {
       return {
         requiresVerification: true,
-        tokenExpired: error.details.tokenExpired,
+        tokenExpired: !!error.details.tokenExpired,
         message: error.message,
       };
     }

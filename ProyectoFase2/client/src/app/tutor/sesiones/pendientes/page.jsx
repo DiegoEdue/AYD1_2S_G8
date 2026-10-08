@@ -6,7 +6,6 @@ import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import FormularioPlanEstudio, { FORM_PLAN_ID } from "@/components/sesiones/FormularioPlanEstudio";
 import { useToast } from "@/components/ui/Toast";
-import { USAR_MOCKS } from "@/lib/api/client";
 import {
   atenderSesion,
   cancelarSesionComoTutor,
@@ -61,14 +60,9 @@ export default function SesionesPendientesTutorPage() {
     setGuardando(true);
     setErrorGuardado("");
     try {
-      await atenderSesion(porAtender.id, plan, porAtender);
+      await atenderSesion(porAtender.id, plan);
       setSesiones((prev) => prev.filter((s) => s.id !== porAtender.id));
-      mostrarToast(
-        USAR_MOCKS
-          ? "Sesión atendida (modo simulado: no se guardó en el servidor)."
-          : "Sesión atendida. El plan de estudio quedó registrado en tu historial.",
-        "exito"
-      );
+      mostrarToast("Sesión atendida. El plan de estudio quedó registrado en tu historial.", "exito");
       setPorAtender(null);
     } catch (err) {
       setErrorGuardado(err.message || "No pudimos guardar el plan de estudio. Inténtalo de nuevo.");
@@ -79,9 +73,16 @@ export default function SesionesPendientesTutorPage() {
 
   async function confirmarCancelar() {
     try {
-      await cancelarSesionComoTutor(porCancelar.id);
+      const respuesta = await cancelarSesionComoTutor(porCancelar.id);
       setSesiones((prev) => prev.filter((s) => s.id !== porCancelar.id));
-      mostrarToast(`Sesión cancelada. Se notificó por correo a ${porCancelar.estudiante}.`, "info");
+      if (respuesta?.emailSent === false) {
+        mostrarToast(
+          `Sesión cancelada, pero no pudimos enviar el correo a ${porCancelar.estudiante}. Avísale por otro medio.`,
+          "advertencia"
+        );
+      } else {
+        mostrarToast(`Sesión cancelada. Se notificó por correo a ${porCancelar.estudiante}.`, "info");
+      }
       setPorCancelar(null);
     } catch (error) {
       mostrarToast(error.message || "No pudimos cancelar la sesión.", "error");
