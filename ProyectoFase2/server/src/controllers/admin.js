@@ -14,6 +14,7 @@ const {
   generateQrDataUrl,
   verifyTotp,
 } = require('../utils/twoFactor');
+const cloudinary = require('../config/cloudinary');
 
 // Controlador para aprobar, rechazar y listar estudiantes pendientes de aprobación por el administrador.
 
@@ -92,6 +93,7 @@ const approveStudent = async (req, res) => {
         name: `${tutor.nombre} ${tutor.apellido}`,
         approved: true,
         verificationToken: tutor.verification_token,
+        role: 'tutor',
       }).catch((err) =>
         console.error('Error al enviar correo de aprobación:', err),
       );
@@ -199,6 +201,7 @@ const rejectStudent = async (req, res) => {
         name: `${tutor.nombre} ${tutor.apellido}`,
         approved: false,
         reason: motivo,
+        role: 'tutor',
       }).catch((err) =>
         console.error('Error al enviar correo de rechazo:', err),
       );
@@ -839,6 +842,199 @@ const streamDocumento = async (req, res) => {
   }
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-038: Obtener URL segura del PDF del carnet escaneado del estudiante
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Genera una URL de acceso seguro (firmada por Cloudinary o directa) al PDF
+ * del carnet escaneado de un estudiante pendiente de aprobación.
+ *
+ * GET /admin/students/:id/documento
+ *
+ * Respuesta:
+ *  { status, data: { id_estudiante, nombre, apellido, carnet_pdf_url } }
+ */
+const getStudentDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del estudiante.',
+      });
+    }
+
+    const result = await db.query(
+      `SELECT id_estudiante, nombre, apellido, carnet_pdf_url
+       FROM estudiante
+       WHERE id_estudiante = $1`,
+      [id],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Estudiante no encontrado.',
+      });
+    }
+
+    const student = result.rows[0];
+
+    if (!student.carnet_pdf_url) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'El estudiante no tiene un carnet PDF registrado.',
+      });
+    }
+
+    // Si la URL apunta a Cloudinary, generamos una URL firmada de corta duración
+    // para que no sea accesible públicamente sin autenticación.
+    let pdfUrl = student.carnet_pdf_url;
+    if (pdfUrl.includes('cloudinary.com')) {
+      try {
+        // Extraemos el public_id del recurso desde la URL de Cloudinary
+        // Formato esperado: https://res.cloudinary.com/<cloud>/raw/upload/v<ver>/<public_id>.pdf
+        const urlObj = new URL(pdfUrl);
+        const pathParts = urlObj.pathname.split('/');
+        // El public_id está después de /upload/ o /raw/upload/
+        const uploadIdx = pathParts.findIndex((p) => p === 'upload');
+        if (uploadIdx !== -1) {
+          // Saltar la versión (vXXXXXX) si existe
+          const afterUpload = pathParts.slice(uploadIdx + 1);
+          const withoutVersion = afterUpload[0] && /^v\d+$/.test(afterUpload[0])
+            ? afterUpload.slice(1)
+            : afterUpload;
+          const publicId = withoutVersion.join('/').replace(/\.pdf$/i, '');
+
+          // URL firmada válida por 15 minutos (900 segundos)
+          pdfUrl = cloudinary.url(publicId, {
+            resource_type: 'raw',
+            type: 'upload',
+            sign_url: true,
+            expires_at: Math.floor(Date.now() / 1000) + 900,
+          });
+        }
+      } catch (signErr) {
+        console.warn(
+          'No se pudo firmar la URL de Cloudinary, se devuelve la URL original:',
+          signErr.message,
+        );
+        // Fallback: devolver la URL original si falla la firma
+      }
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id_estudiante: student.id_estudiante,
+        nombre: `${student.nombre} ${student.apellido}`,
+        carnet_pdf_url: pdfUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Error en getStudentDocument:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al obtener el documento del estudiante.',
+    });
+  }
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// HU-039: Obtener URL segura del PDF del CV del tutor
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Genera una URL de acceso seguro (firmada por Cloudinary o directa) al PDF
+ * del CV de un tutor pendiente de aprobación.
+ *
+ * GET /admin/tutors/:id/documento
+ *
+ * Respuesta:
+ *  { status, data: { id_tutor, nombre, apellido, cv_pdf_url } }
+ */
+const getTutorDocument = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Por favor proporcione el ID del tutor.',
+      });
+    }
+
+    const result = await db.query(
+      `SELECT id_tutor, nombre, apellido, cv_pdf_url
+       FROM tutor
+       WHERE id_tutor = $1`,
+      [id],
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Tutor no encontrado.',
+      });
+    }
+
+    const tutor = result.rows[0];
+
+    if (!tutor.cv_pdf_url) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'El tutor no tiene un CV en PDF registrado.',
+      });
+    }
+
+    // Misma lógica de URL firmada para Cloudinary
+    let pdfUrl = tutor.cv_pdf_url;
+    if (pdfUrl.includes('cloudinary.com')) {
+      try {
+        const urlObj = new URL(pdfUrl);
+        const pathParts = urlObj.pathname.split('/');
+        const uploadIdx = pathParts.findIndex((p) => p === 'upload');
+        if (uploadIdx !== -1) {
+          const afterUpload = pathParts.slice(uploadIdx + 1);
+          const withoutVersion = afterUpload[0] && /^v\d+$/.test(afterUpload[0])
+            ? afterUpload.slice(1)
+            : afterUpload;
+          const publicId = withoutVersion.join('/').replace(/\.pdf$/i, '');
+
+          pdfUrl = cloudinary.url(publicId, {
+            resource_type: 'raw',
+            type: 'upload',
+            sign_url: true,
+            expires_at: Math.floor(Date.now() / 1000) + 900,
+          });
+        }
+      } catch (signErr) {
+        console.warn(
+          'No se pudo firmar la URL de Cloudinary, se devuelve la URL original:',
+          signErr.message,
+        );
+      }
+    }
+
+    return res.status(200).json({
+      status: 'success',
+      data: {
+        id_tutor: tutor.id_tutor,
+        nombre: `${tutor.nombre} ${tutor.apellido}`,
+        cv_pdf_url: pdfUrl,
+      },
+    });
+  } catch (error) {
+    console.error('Error en getTutorDocument:', error);
+    return res.status(500).json({
+      status: 'error',
+      message: 'Error interno al obtener el CV del tutor.',
+    });
+  }
+};
+
 module.exports = {
   getPendingStudents,
   approveStudent,
@@ -854,4 +1050,6 @@ module.exports = {
   deactivateTutor,
   getReports,
   streamDocumento,
+  getStudentDocument,
+  getTutorDocument,
 };
