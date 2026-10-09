@@ -3,11 +3,11 @@
 > [!INFO]
 > Este documento contiene los enlaces a las grabaciones de todas las reuniones realizadas durante el desarrollo del proyecto EduConnect, siguiendo la metodología Scrum.
 >
-> Cada reunión fue grabada y organizada por tipo de evento Sprint Planning, Daily Scrum y Sprint Retrospective, llevandose a cabo 6 reuniones del tipo Daily Scrum por Sprint y 2 Sprints.
+> Cada reunión fue grabada y organizada por tipo de evento Sprint Planning, Daily Scrum y Sprint Retrospective, llevandose a cabo 6 reuniones del tipo Daily Scrum por Sprint y 4 Sprints.
 
 Durante el proyecto se realizaron:
 
-- **2 sprints**
+- **4 sprints** 2 por cada fase del proyecto.
 - **6 reuniones de Daily Scrum** por sprint.
 
 ---
@@ -111,6 +111,106 @@ Duración del Sprint: `17:38 minutos`
 - Enlace: [Daily 6](https://drive.google.com/file/d/1yxYEOrm-FnOls-0Jo00FYK82hwk23LNi/view?usp=drive_link)
 
 ### 2.3 Sprint Retrospective
+
+- Fecha `01/09/2026`  
+- Duración: `21:08 minutos`
+- Enlace: [Sprint Retrospective](https://drive.google.com/file/d/1Qxbf60Y9z4ivG_jM7tmCR2zN1AFENVex/view?usp=drive_link)
+
+---
+
+## 3 Sprint 3
+
+### 3.1 Sprint Planning 3
+
+Fecha `21/09/2026`  
+Duración del Sprint: `42:39 minutos`
+**Grabaciones:**
+
+- [Sprint Planning](https://drive.google.com/file/d/1buBZiRPtf0ZTe9RYG-xt3m8ttqGLqOpB/view?usp=drive_link)
+
+### 3.2 Daily Scrum  
+
+#### 3.2.1 Daily 1
+
+- Duración: `8:21 minutos`  
+- Enlace: [Daily 1](https://drive.google.com/file/d/16ZHT7M6HAWkIbwyyDik8D6TSORCssJs9/view?usp=drive_link)
+
+#### 3.2.2 Daily 2
+
+- Duración: `8:16 minutos`  
+- Enlace: [Daily 2](https://drive.google.com/file/d/17wh0rBvvoZC9XPyWFbptqql_RXKCvYg2/view?usp=drive_link)
+
+#### 3.2.3 Daily 3
+
+- Duración: `8:58 minutos`
+- Enlace: [Daily 3](https://drive.google.com/file/d/1AnNLWjBcKyrGeRWcsaUXrg9VgKBW8aM_/view?usp=drive_link)
+
+#### 3.2.4 Daily 4
+
+- Duración: `8:11 minutos`  
+- Enlace: [Daily 4](https://drive.google.com/file/d/1phNVtrWpq-bai2zAv1e4GSkYEPyRNZLt/view?usp=drive_link)
+
+#### 3.2.5 Daily 5
+
+- Duración: `9:50 minutos`
+- Enlace: [Daily 5](https://drive.google.com/file/d/1G98eWqAeFLlsk-eMcX0FQ0XDN7oDszeE/view?usp=drive_link)
+
+#### 3.2.6 Daily 6
+
+- Duración: `8:25 minutos`
+- Enlace: [Daily 6](https://drive.google.com/file/d/1EnuzxVPpdXQO9joFMoTXrevtFfLIEiI4/view?usp=drive_link)
+
+### 3.3 Sprint Retrospective
+
+- Fecha `29/09/2026`  
+- Duración: `31:35 minutos`
+- Enlace: [Sprint Retrospective](https://drive.google.com/file/d/1-hOVYuowDunH44UYBY-15C5ek51ZedUc/view?usp=drive_link)
+
+---
+
+## 4 Sprint 4  
+
+### 4.1 Sprint Planning 4
+
+Fecha `24/08/2026`  
+Duración del Sprint: `17:38 minutos`
+**Grabaciones:**
+
+- [Sprint Planning](https://drive.google.com/file/d/18F_hiD1wqGPuwVtZo3DGNiah3e9-lmmN/view?usp=drive_link)
+
+### 4.2 Daily Scrum  
+
+#### 4.2.1 Daily 1
+
+- Duración: `6:29 minutos`  
+- Enlace: [Daily 1](https://drive.google.com/file/d/1o3HP9X_bro9ykAGz_jCPubwFNIEAbB-R/view?usp=drive_link)
+
+#### 4.2.2 Daily 2
+
+- Duración: `6:58 minutos`  
+- Enlace: [Daily 2](https://drive.google.com/file/d/14kCPHVE5tuGOm6eXcAESIk26q4f9Yadv/view?usp=drive_link)
+
+#### 4.2.3 Daily 3
+
+- Duración: `6:54 minutos`
+- Enlace: [Daily 3](https://drive.google.com/file/d/1MFU_74S5Qd__oPYh_XA3B_E7zfnGMTmW/view?usp=drive_link)
+
+#### 4.2.4 Daily 4
+
+- Duración: `5:39 minutos`  
+- Enlace: [Daily 4](https://drive.google.com/file/d/1HHZomNgzBASHns-N-noK5we3XyHpe_V0/view?usp=drive_link)
+
+#### 4.2.5 Daily 5
+
+- Duración: `6:23 minutos`
+- Enlace: [Daily 5](https://drive.google.com/file/d/15qj0GP0Y6UXNBUoJ4ujHNBIxooliIi1D/view?usp=drive_link)
+
+#### .2.6 Daily 6
+
+- Duración: `5:10 minutos`
+- Enlace: [Daily 6](https://drive.google.com/file/d/1yxYEOrm-FnOls-0Jo00FYK82hwk23LNi/view?usp=drive_link)
+
+### 4.3 Sprint Retrospective
 
 - Fecha `01/09/2026`  
 - Duración: `21:08 minutos`
