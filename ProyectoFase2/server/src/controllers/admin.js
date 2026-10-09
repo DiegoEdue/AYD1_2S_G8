@@ -631,13 +631,28 @@ const deactivateStudent = async (req, res) => {
 const getApprovedTutors = async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT id_tutor, nombre, apellido, carnet_id, numero_identificacion_tutor, genero, 
-              direccion, telefono, fecha_nacimiento, foto_url, correo, direccion_tutoria, 
-              anio_inicio_tutorias, universidad_graduacion, estado_aprobacion, 
-              hora_inicio_atencion, hora_fin_atencion, fecha_registro 
-       FROM tutor 
-       WHERE estado_aprobacion = 'aprobado' 
-       ORDER BY nombre ASC, apellido ASC`,
+      `SELECT t.id_tutor, t.nombre, t.apellido, t.carnet_id, t.numero_identificacion_tutor, t.genero, 
+              t.direccion, t.telefono, t.fecha_nacimiento, t.foto_url, t.correo, t.direccion_tutoria, 
+              t.anio_inicio_tutorias, t.universidad_graduacion, t.estado_aprobacion, 
+              t.hora_inicio_atencion, t.hora_fin_atencion, t.fecha_registro,
+              COALESCE(
+                (SELECT string_agg(m.nombre, ', ') 
+                 FROM tutor_materia tm 
+                 JOIN materia m ON tm.id_materia = m.id_materia 
+                 WHERE tm.id_tutor = t.id_tutor),
+                t.universidad_graduacion,
+                ''
+              ) AS especialidad,
+              COALESCE(
+                (SELECT json_agg(json_build_object('id_materia', m.id_materia, 'nombre', m.nombre))
+                 FROM tutor_materia tm 
+                 JOIN materia m ON tm.id_materia = m.id_materia 
+                 WHERE tm.id_tutor = t.id_tutor),
+                '[]'::json
+              ) AS materias
+       FROM tutor t 
+       WHERE t.estado_aprobacion = 'aprobado' 
+       ORDER BY t.nombre ASC, t.apellido ASC`,
     );
 
     return res.status(200).json({
@@ -1141,6 +1156,7 @@ const updateTutorAdmin = async (req, res) => {
       foto_url,
       hora_inicio_atencion,
       hora_fin_atencion,
+      materias,
     } = req.body || {};
 
     if (!id) {
@@ -1197,6 +1213,27 @@ const updateTutorAdmin = async (req, res) => {
         id,
       ],
     );
+
+    // Sincronizar materias en tutor_materia si se enviaron
+    if (Array.isArray(materias)) {
+      await db.query('DELETE FROM tutor_materia WHERE id_tutor = $1', [id]);
+      for (const mat of materias) {
+        const matNombre = typeof mat === 'string' ? mat.trim() : mat?.nombre?.trim();
+        if (matNombre) {
+          const matRes = await db.query(
+            `INSERT INTO materia (nombre) VALUES ($1)
+             ON CONFLICT (nombre) DO UPDATE SET nombre = EXCLUDED.nombre
+             RETURNING id_materia`,
+            [matNombre]
+          );
+          await db.query(
+            `INSERT INTO tutor_materia (id_tutor, id_materia)
+             VALUES ($1, $2) ON CONFLICT DO NOTHING`,
+            [id, matRes.rows[0].id_materia]
+          );
+        }
+      }
+    }
 
     return res.status(200).json({
       status: 'success',
