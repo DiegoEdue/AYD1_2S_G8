@@ -32,6 +32,7 @@ export default function UsuariosPage() {
   // Estado para el modal de edición de perfil (HU-040 y HU-041)
   const [usuarioEdicion, setUsuarioEdicion] = useState(null);
   const [formEdicion, setFormEdicion] = useState({});
+  const [nuevaMateria, setNuevaMateria] = useState("");
   const [guardandoEdicion, setGuardandoEdicion] = useState(false);
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export default function UsuariosPage() {
 
   function abrirModalEdicion(u) {
     setUsuarioEdicion(u);
+    setNuevaMateria("");
     if (rol === "estudiante") {
       setFormEdicion({
         nombre: u.nombre || "",
@@ -73,6 +75,18 @@ export default function UsuariosPage() {
         correo: u.correo || "", // Bloqueado
       });
     } else {
+      let materiasList = [];
+      if (Array.isArray(u.materias) && u.materias.length > 0) {
+        materiasList = u.materias
+          .map((m) => (typeof m === "string" ? m : m.nombre))
+          .filter(Boolean);
+      } else if (typeof u.especialidad === "string" && u.especialidad.trim().length > 0) {
+        materiasList = u.especialidad
+          .split(",")
+          .map((s) => s.trim())
+          .filter(Boolean);
+      }
+
       setFormEdicion({
         nombre: u.nombre || "",
         apellido: u.apellido || "",
@@ -83,12 +97,38 @@ export default function UsuariosPage() {
         direccion: u.direccion || "",
         fecha_nacimiento: u.fecha_nacimiento ? u.fecha_nacimiento.substring(0, 10) : "",
         universidad_graduacion: u.universidad_graduacion || "",
-        especialidad: u.especialidad || "",
+        especialidad: u.especialidad || materiasList.join(", ") || "",
+        materias: materiasList,
         direccion_tutoria: u.direccion_tutoria || "Online",
         anio_inicio_tutorias: u.anio_inicio_tutorias || "",
         correo: u.correo || "", // Bloqueado
       });
     }
+  }
+
+  function agregarMateria() {
+    const mat = (nuevaMateria || "").trim();
+    if (!mat) return;
+    const actuales = formEdicion.materias || [];
+    if (!actuales.some((m) => m.toLowerCase() === mat.toLowerCase())) {
+      const actualizadas = [...actuales, mat];
+      setFormEdicion({
+        ...formEdicion,
+        materias: actualizadas,
+        especialidad: actualizadas.join(", "),
+      });
+    }
+    setNuevaMateria("");
+  }
+
+  function eliminarMateria(indexAEliminar) {
+    const actuales = formEdicion.materias || [];
+    const actualizadas = actuales.filter((_, idx) => idx !== indexAEliminar);
+    setFormEdicion({
+      ...formEdicion,
+      materias: actualizadas,
+      especialidad: actualizadas.join(", "),
+    });
   }
 
   async function guardarCambiosPerfil() {
@@ -411,18 +451,65 @@ export default function UsuariosPage() {
                   />
                 </FormField>
 
-                <FormField label="Especialidad / Materias" name="especialidad">
-                  <input
-                    value={formEdicion.especialidad || ""}
-                    onChange={(e) =>
-                      setFormEdicion({
-                        ...formEdicion,
-                        especialidad: e.target.value,
-                      })
-                    }
-                    className={inputClass()}
-                  />
-                </FormField>
+                <div className="sm:col-span-2 flex flex-col gap-2 rounded-xl border border-charcoal/15 bg-paper/40 p-4">
+                  <div className="flex items-center justify-between">
+                    <label className="text-xs font-semibold uppercase tracking-wider text-charcoal">
+                      Materias Asignadas ({(formEdicion.materias || []).length})
+                    </label>
+                    <span className="text-[11px] text-charcoal-light">
+                      Cursos que imparte el tutor actualmente
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-2 min-h-[38px] items-center p-2.5 rounded-lg bg-white border border-charcoal/10">
+                    {(formEdicion.materias || []).length > 0 ? (
+                      (formEdicion.materias || []).map((materia, idx) => (
+                        <span
+                          key={`${materia}-${idx}`}
+                          className="inline-flex items-center gap-1.5 rounded-full bg-crimson/10 border border-crimson/20 px-3 py-1 text-xs font-medium text-crimson shadow-xs"
+                        >
+                          <span>{materia}</span>
+                          <button
+                            type="button"
+                            onClick={() => eliminarMateria(idx)}
+                            className="h-4 w-4 rounded-full flex items-center justify-center text-crimson hover:bg-crimson/20 transition-colors font-bold text-sm leading-none cursor-pointer"
+                            title={`Quitar ${materia}`}
+                          >
+                            ×
+                          </button>
+                        </span>
+                      ))
+                    ) : (
+                      <p className="text-xs text-charcoal-light italic py-0.5">
+                        No hay materias registradas. Agrega materias a continuación.
+                      </p>
+                    )}
+                  </div>
+
+                  <div className="flex gap-2 mt-1">
+                    <input
+                      type="text"
+                      placeholder="Escribe el nombre del curso (ej. Matemática, Física)..."
+                      value={nuevaMateria}
+                      onChange={(e) => setNuevaMateria(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          agregarMateria();
+                        }
+                      }}
+                      className={inputClass()}
+                    />
+                    <Button
+                      type="button"
+                      variante="secundario"
+                      onClick={agregarMateria}
+                      disabled={!nuevaMateria.trim()}
+                    >
+                      Añadir
+                    </Button>
+                  </div>
+                </div>
 
                 <FormField label="Dirección de tutoría" name="direccion_tutoria">
                   <select
