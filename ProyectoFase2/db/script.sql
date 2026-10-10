@@ -126,14 +126,12 @@ CREATE TABLE sesion (
     fecha_sesion        DATE         NOT NULL,
     hora_sesion         TIME         NOT NULL,
     motivo              VARCHAR(500) NOT NULL,
-    resumen             TEXT,
     estado              VARCHAR(25)  NOT NULL DEFAULT 'Activa',
     fecha_creacion      TIMESTAMP    NOT NULL DEFAULT now(),
     fecha_actualizacion TIMESTAMP,
     CONSTRAINT chk_sesion_estado
         CHECK (estado IN ('Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor')),
-    CONSTRAINT chk_sesion_resumen
-        CHECK (estado <> 'Atendida' OR resumen IS NOT NULL)
+    CONSTRAINT uq_sesion_id_est_tutor UNIQUE (id_sesion, id_estudiante, id_tutor)
 );
 
 CREATE TABLE study_plans (
@@ -159,15 +157,97 @@ CREATE TABLE recommended_resources (
     id_recurso int4 GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     id_plan int4 NOT NULL,
     nombre varchar(150) NOT NULL,
-    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace'
+    tipo varchar(20) NOT NULL,  -- 'Texto','Video','PDF','Enlace','Imagen'
     descripcion_uso varchar(500) NOT NULL,
+    url_recurso varchar(500) NOT NULL DEFAULT '',
     CONSTRAINT recommended_resources_id_plan_fkey
         FOREIGN KEY (id_plan) REFERENCES public.study_plans(id_plan)
         ON DELETE CASCADE ON UPDATE CASCADE,
     CONSTRAINT chk_recurso_tipo
-        CHECK (tipo IN ('Texto','Video','PDF','Enlace'))
+        CHECK (tipo IN ('Texto','Video','PDF','Enlace','Imagen'))
 );
 
+-- Tabla de calificaciones de tutores
+CREATE TABLE tutor_ratings (
+    id_rating          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- una sola calificación por sesión
+    id_estudiante      INTEGER      NOT NULL,
+    id_tutor           INTEGER      NOT NULL,
+    estrellas          SMALLINT     NOT NULL,
+    comentario         VARCHAR(500) NOT NULL,
+    fecha_calificacion TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_tutor_rating_estrellas CHECK (estrellas BETWEEN 0 AND 5),
+    CONSTRAINT tutor_ratings_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+-- Tabla de reportes de tutores
+CREATE TABLE tutor_reports (
+    id_reporte         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- un solo reporte por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- denunciante
+    id_tutor           INTEGER      NOT NULL,          -- tutor reportado
+    categoria          VARCHAR(50)  NOT NULL,
+    descripcion        TEXT         NOT NULL,
+    estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
+    fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_tutor_report_categoria CHECK (categoria IN (
+        'Ética y profesionalismo',
+        'Negligencia académica',
+        'Abuso o conducta inapropiada',
+        'Falsificación de información',
+        'Otro'
+    )),
+    CONSTRAINT chk_tutor_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
+    CONSTRAINT tutor_reports_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+
+-- Tabla de calificaciones de estudiantes
+CREATE TABLE student_ratings (
+    id_rating          INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- una sola calificación por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- estudiante calificado
+    id_tutor           INTEGER      NOT NULL,          -- tutor que califica
+    estrellas          SMALLINT     NOT NULL,
+    comentario         VARCHAR(500) NOT NULL,
+    fecha_calificacion TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_student_rating_estrellas CHECK (estrellas BETWEEN 0 AND 5),
+    CONSTRAINT student_ratings_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
+
+-- Tabla de reportes de estudiantes
+CREATE TABLE student_reports (
+    id_reporte         INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    id_sesion          INTEGER      NOT NULL UNIQUE,   -- un solo reporte por sesión
+    id_estudiante      INTEGER      NOT NULL,          -- estudiante reportado
+    id_tutor           INTEGER      NOT NULL,          -- denunciante
+    categoria          VARCHAR(50)  NOT NULL,
+    descripcion        TEXT         NOT NULL,
+    estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
+    fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    CONSTRAINT chk_student_report_categoria CHECK (categoria IN (
+        'Conducta inapropiada',
+        'Falsificación de documentos',
+        'Agresión verbal o física',
+        'Robo o daño a instalaciones',
+        'Otro'
+    )),
+    CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
+    CONSTRAINT student_reports_sesion_fkey
+        FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
+        REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
+        ON DELETE RESTRICT ON UPDATE CASCADE
+);
 
 -- 6) Restricciones adicionales sobre sesion (evitan duplicados/traslapes)
 
