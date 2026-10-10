@@ -201,7 +201,7 @@ CREATE TABLE tutor_reports (
         'Falsificación de información',
         'Otro'
     )),
-    CONSTRAINT chk_tutor_report_estado CHECK (estado IN ('Pendiente','Resuelto')),
+    CONSTRAINT chk_tutor_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
     CONSTRAINT tutor_reports_sesion_fkey
         FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
         REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
@@ -242,7 +242,7 @@ CREATE TABLE student_reports (
         'Robo o daño a instalaciones',
         'Otro'
     )),
-    CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto')),
+    CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
     CONSTRAINT student_reports_sesion_fkey
         FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
         REFERENCES sesion (id_sesion, id_estudiante, id_tutor)
