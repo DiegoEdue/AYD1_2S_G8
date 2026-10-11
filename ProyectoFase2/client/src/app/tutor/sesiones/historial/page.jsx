@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import SessionCard from "@/components/ui/SessionCard";
 import Button from "@/components/ui/Button";
 import PlanEstudioDetalle from "@/components/ui/PlanEstudioDetalle";
+import EvaluacionSesion from "@/components/sesiones/EvaluacionSesion";
 import { listarHistorialTutor, obtenerDetalleSesionTutor } from "@/lib/api/sesiones";
 
 const TAMANIO_PAGINA = 20;
@@ -121,6 +122,11 @@ export default function HistorialTutorPage() {
     }
   }
 
+  // Refleja en la lista la calificación o el reporte recién enviados.
+  function actualizarSesion(id, cambios) {
+    setSesiones((actuales) => actuales.map((s) => (s.id === id ? { ...s, ...cambios } : s)));
+  }
+
   async function cargarDetalle(id, { forzar = false } = {}) {
     if (!forzar && iniciados.current.has(id)) return;
     iniciados.current.add(id);
@@ -145,7 +151,7 @@ export default function HistorialTutorPage() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-xl text-charcoal">Historial de tutorías</h2>
-        <p className="text-sm text-charcoal-light">Consulta las sesiones atendidas y canceladas.</p>
+        <p className="text-sm text-charcoal-light">Consulta tus sesiones atendidas y canceladas. En las atendidas puedes calificar o reportar al estudiante.</p>
       </div>
 
       {cargando ? (
@@ -182,6 +188,16 @@ export default function HistorialTutorPage() {
                 }}
                 contraparteLabel="Estudiante"
                 contraparteNombre={sesion.estudiante}
+                acciones={
+                  atendida ? (
+                    <EvaluacionSesion
+                      rol="tutor"
+                      sesion={{ ...sesion, estado }}
+                      contraparte={sesion.estudiante}
+                      onActualizar={actualizarSesion}
+                    />
+                  ) : undefined
+                }
                 detalleEtiqueta="Ver plan de estudio"
                 detalle={
                   atendida ? (
