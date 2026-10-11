@@ -33,4 +33,7 @@ router.get('/sessions/history', tutorController.getHistorySessions);
 // Actualización de Perfil del Tutor
 router.patch('/profile', tutorController.updateProfile);
 
+// Calificar Desempeño del Estudiante
+router.put('/sessions/:id/rating', tutorController.rateStudent);
+
 module.exports = router;
