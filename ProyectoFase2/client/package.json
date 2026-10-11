@@ -6,7 +6,11 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "vitest run",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "e2e": "start-server-and-test dev http://localhost:3000 cy:run"
   },
   "dependencies": {
     "clsx": "^2.1.1",
@@ -20,8 +24,11 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "cypress": "^16.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
-    "tailwindcss": "^4"
+    "start-server-and-test": "^3.0.13",
+    "tailwindcss": "^4",
+    "vitest": "^5.0.3"
   }
 }
