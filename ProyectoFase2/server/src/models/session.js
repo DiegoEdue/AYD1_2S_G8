@@ -28,6 +28,7 @@ function mapSessionRow(row) {
         estudiante: row.nombre_estudiante,
         correoEstudiante: row.correo_estudiante,
         id_tutor: row.id_tutor,
+        id_estudiante: row.id_estudiante,
         tutor: row.nombre_tutor,
         materia: row.materia,
         motivo: row.motivo,
