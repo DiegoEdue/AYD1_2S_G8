@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.0424649">
+    <testsuite name="tests/unit/unitarias.test.js" timestamp="2026-10-10T05:30:58.754Z" hostname="Diego" tests="5" failures="0" errors="0" skipped="0" time="0.0424649">
+        <testcase classname="tests/unit/unitarias.test.js" name="Pruebas unitarias del front - Estudiante y Tutor &gt; 1. calificación: acepta de 0 a 5 estrellas y rechaza vacío, decimales o fuera de rango" time="0.0034179">
+        </testcase>
+        <testcase classname="tests/unit/unitarias.test.js" name="Pruebas unitarias del front - Estudiante y Tutor &gt; 2. reporte: exige categoría válida y una descripción con longitud mínima" time="0.0002556">
+        </testcase>
+        <testcase classname="tests/unit/unitarias.test.js" name="Pruebas unitarias del front - Estudiante y Tutor &gt; 3. reglas de negocio: solo se califica/reporta una sesión atendida y una única vez" time="0.0003257">
+        </testcase>
+        <testcase classname="tests/unit/unitarias.test.js" name="Pruebas unitarias del front - Estudiante y Tutor &gt; 4. plan de estudio: requiere dificultades y al menos un recurso completo" time="0.0006188">
+        </testcase>
+        <testcase classname="tests/unit/unitarias.test.js" name="Pruebas unitarias del front - Estudiante y Tutor &gt; 5. constancia PDF: genera un PDF válido con encabezado, tabla de recursos y firma del tutor" time="0.0367282">
+        </testcase>
+    </testsuite>
+</testsuites>
