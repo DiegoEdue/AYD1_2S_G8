@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import SessionCard from "@/components/ui/SessionCard";
+import EvaluacionSesion from "@/components/sesiones/EvaluacionSesion";
 import { listarHistorialEstudiante } from "@/lib/api/sesiones";
 
 export default function HistorialEstudiantePage() {
@@ -10,6 +11,11 @@ export default function HistorialEstudiantePage() {
 
   function normalizarEstado(estado = "") {
     return estado.toLowerCase().replaceAll("_", "-");
+  }
+
+  // Refleja en la lista la calificación o el reporte recién enviados.
+  function actualizarSesion(id, cambios) {
+    setSesiones((actuales) => actuales.map((s) => (s.id === id ? { ...s, ...cambios } : s)));
   }
 
   useEffect(() => {
@@ -31,7 +37,7 @@ export default function HistorialEstudiantePage() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-xl text-charcoal">Historial de tutorías</h2>
-        <p className="text-sm text-charcoal-light">Revisa las sesiones atendidas o canceladas.</p>
+        <p className="text-sm text-charcoal-light">Revisa tus sesiones atendidas o canceladas. En las atendidas puedes calificar o reportar al tutor.</p>
       </div>
 
       {cargando ? (
@@ -59,6 +65,14 @@ export default function HistorialEstudiantePage() {
               }}
               contraparteLabel="Tutor"
               contraparteNombre={sesion.tutor}
+              acciones={
+                <EvaluacionSesion
+                  rol="estudiante"
+                  sesion={sesion}
+                  contraparte={sesion.tutor}
+                  onActualizar={actualizarSesion}
+                />
+              }
             />
           ))}
         </div>
