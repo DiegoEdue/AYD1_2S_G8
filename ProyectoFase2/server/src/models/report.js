@@ -5,7 +5,7 @@ const createStudentReport = async (id_sesion, id_tutor, id_estudiante, { categor
         const result = await db.query(
             `INSERT INTO student_reports (id_sesion, id_estudiante, id_tutor, categoria, descripcion) 
             VALUES ($1, $2, $3, $4, $5)
-            RETURNING id_reporte, id_sesion, id_estudiante, id_tutor, categoria, descripcion, fecha_reporte`,
+            RETURNING id_reporte, id_sesion, id_estudiante, id_tutor, categoria, descripcion, estado, fecha_reporte`,
             [id_sesion, id_estudiante, id_tutor, categoria, motivo]
         );
         if (result.rowCount === 0) return null;
@@ -17,6 +17,7 @@ const createStudentReport = async (id_sesion, id_tutor, id_estudiante, { categor
             id_tutor: row.id_tutor,
             categoria: row.categoria,
             descripcion: row.descripcion,
+            estado: row.estado,
             fecha_reporte: row.fecha_reporte
         };
     } catch (error) {

@@ -450,7 +450,7 @@ const rateStudent = async (req, res) => {
 
 // Reportar Estudiante Problemático, HU-037
 // POST /api/tutor/sessions/:id/report
-const CATEGORIAS_REPORTE_VALIDAS = ['Conducta_Inapropiada', 'Falsificacion_Documentos','Agresion_Verbal_Fisica', 'Robo_Dano_Instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion_Objetos_Peligrosos'];
+const CATEGORIAS_REPORTE_VALIDAS = ['Conducta inapropiada', 'Falsificación de documentos','Agresión verbal o física', 'Robo o dano a instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion_Objetos_Peligrosos', 'Uso_Indebido_Tecnologia', 'Otro'];
 const reportStudent = async (req, res) => {
     const { id } = req.params;
     const { categoria, motivo } = req.body;
@@ -490,7 +490,7 @@ const reportStudent = async (req, res) => {
             sesioninfo.id_tutor,
             sesioninfo.id_estudiante,
             {
-                categoria,
+                categoria: categoria.trim(),
                 motivo: motivo.trim(),
             }
         );
