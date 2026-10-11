@@ -3,6 +3,7 @@ const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
 const tutorModel = require('../models/tutor')
 const ratingModel = require('../models/rating')
+const reportModel = require('../models/report')
 const { sendCancellationEmail } = require('../services/email')
 const { subirImagen } = require('../utils/cloudinaryUpload')
 
@@ -380,7 +381,7 @@ const updateProfile = async (req, res) => {
 }
 
 
-// Calificar Desempeño del Estudiante, HU-035
+// Calificar Desempeño del Estudiante, HU-036
 // PUT /api/tutor/sessions/:id/rating
 const rateStudent = async (req, res) => {
     const { id } = req.params;
@@ -447,6 +448,81 @@ const rateStudent = async (req, res) => {
     }
 }
 
+// Reportar Estudiante Problemático, HU-037
+// POST /api/tutor/sessions/:id/report
+const CATEGORIAS_REPORTE_VALIDAS = ['Conducta_Inapropiada', 'Falsificacion_Documentos','Agresion_Verbal_Fisica', 'Robo_Dano_Instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion_Objetos_Peligrosos'];
+const reportStudent = async (req, res) => {
+    const { id } = req.params;
+    const { categoria, motivo } = req.body;
+    const id_Tutor = req.user.id;
+
+    if (!CATEGORIAS_REPORTE_VALIDAS.includes(categoria)) {
+        return res.status(400).json({
+            status: 'error',
+            message: `Categoría de reporte inválida. Debe de ser una de: ${CATEGORIAS_REPORTE_VALIDAS.join(', ')}`,
+        });
+        // if (!categoria || typeof categoria !== 'string' || categoria.trim().length === 0) {
+        //     return res.status(400).json({
+        //         status: 'error',
+        //         message: 'La categoría del reporte es obligatoria.',
+        //     });
+        // }
+    }
+
+    if (!motivo || typeof motivo !== 'string' || motivo.trim().length === 0) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'El motivo del reporte es obligatorio.',
+        });
+    }
+
+    try {
+        const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
+        if (!sesioninfo) {
+            return res.status(404).json({ status: 'error', message: 'Sesión no encontrada.' });
+        }
+        if (sesioninfo.estado !== 'Atendida') {
+            return res.status(400).json({ status: 'error', message: 'La sesión solo puede ser calificada cuando está atendida.' });
+        }
+
+        const reportData = await reportModel.createStudentReport(
+            sesioninfo.id,
+            sesioninfo.id_tutor,
+            sesioninfo.id_estudiante,
+            {
+                categoria,
+                motivo: motivo.trim(),
+            }
+        );
+
+        if (!reportData) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'Error al crear el reporte del estudiante.',
+            });
+        }
+
+        if (reportData.duplicate) {
+            return res.status(409).json({
+                status: 'error',
+                message: 'Ya existe un reporte para esta sesión y estudiante.',
+            });
+        }
+
+        return res.status(201).json({
+            status: 'success',
+            message: 'Reporte creado exitosamente.',
+            data: reportData,
+        });
+    } catch (error) {
+        console.error('Error al crear el reporte:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error interno del servidor al crear el reporte.',
+        });
+    }
+}
+
 module.exports = {
     getSchedule,
     getSessionDetails,
@@ -457,4 +533,5 @@ module.exports = {
     cancelSession,
     updateProfile,
     rateStudent,
+    reportStudent,
 }
