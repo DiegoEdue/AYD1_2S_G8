@@ -9,21 +9,29 @@
     "lint": "eslint",
     "test:unit": "node --test test/admin_frontend.unit.test.js",
     "cypress:open": "cypress open",
-    "cypress:run": "cypress run"
+    "cypress:run": "cypress run",
+    "test": "vitest run",
+    "cy:open": "cypress open",
+    "cy:run": "cypress run",
+    "e2e": "start-server-and-test dev http://localhost:3000 cy:run"
   },
   "dependencies": {
-    "motion": "^13.1.1",
+    "clsx": "^2.1.1",
+    "motion": "^13.5.1",
     "next": "16.3.2",
     "react": "19.2.8",
     "react-dom": "19.2.8",
     "recharts": "^3.10.1",
-    "sileo": "^0.1.5"
+    "sileo": "^0.1.5",
+    "tailwind-merge": "^3.7.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
-    "cypress": "^14.5.4",
+    "cypress": "^16.1.1",
     "eslint": "^9",
     "eslint-config-next": "16.3.2",
-    "tailwindcss": "^4"
+    "start-server-and-test": "^3.0.13",
+    "tailwindcss": "^4",
+    "vitest": "^5.0.3"
   }
 }

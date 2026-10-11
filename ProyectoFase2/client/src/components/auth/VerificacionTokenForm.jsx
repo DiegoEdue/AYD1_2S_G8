@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
+import OtpInput from "@/components/ui/OtpInput";
 
 export default function VerificacionTokenForm({
   correo,
@@ -64,17 +65,17 @@ export default function VerificacionTokenForm({
               : "Ingresa el código de 6 dígitos enviado a tu correo."
           }
         >
-          <input
-            id="token"
-            type="text"
-            autoComplete="one-time-code"
-            autoCapitalize="none"
-            spellCheck={false}
-            inputMode="numeric"
+          <OtpInput
+            length={6}
             value={token}
-            onChange={(e) => setToken(e.target.value.replace(/\D/g, "").slice(0, 6))}
-            className={`${inputClass(!!error)} font-mono tracking-wide`}
-            placeholder="123456"
+            onChange={(valor) => {
+              setToken(valor);
+              if (error) setError("");
+            }}
+            status={error || errorServidor ? "error" : "idle"}
+            disabled={cargando}
+            autoFocus
+            aria-label="Código de verificación"
           />
         </FormField>
 
