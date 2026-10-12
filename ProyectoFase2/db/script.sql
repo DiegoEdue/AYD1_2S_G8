@@ -235,13 +235,6 @@ CREATE TABLE student_reports (
     descripcion        TEXT         NOT NULL,
     estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
     fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
-    CONSTRAINT chk_student_report_categoria CHECK (categoria IN (
-        'Conducta inapropiada',
-        'Falsificación de documentos',
-        'Agresión verbal o física',
-        'Robo o daño a instalaciones',
-        'Otro'
-    )),
     CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
     CONSTRAINT student_reports_sesion_fkey
         FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
