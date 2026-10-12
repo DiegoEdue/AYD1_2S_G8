@@ -48,10 +48,15 @@ const getStudentSessionsByState = async (studentId, estados) => {
         SELECT s.id_sesion, s.fecha_sesion AS fecha, s.hora_sesion AS hora, s.motivo, s.estado,
                m.nombre AS materia,
                CONCAT(t.nombre, ' ', t.apellido) AS tutor,
-               t.correo AS correo_tutor
+               t.correo AS correo_tutor,
+               tr.id_rating, tr.estrellas, tr.comentario, tr.fecha_calificacion,
+               rp.id_reporte, rp.categoria AS categoria_reporte,
+               rp.estado AS estado_reporte, rp.fecha_reporte
         FROM sesion s
         JOIN tutor t ON s.id_tutor = t.id_tutor
         JOIN materia m ON s.id_materia = m.id_materia
+        LEFT JOIN tutor_ratings tr ON tr.id_sesion = s.id_sesion
+        LEFT JOIN tutor_reports rp ON rp.id_sesion = s.id_sesion
         WHERE s.id_estudiante = ${studentId}
           AND s.estado = ANY(${estados})
         ORDER BY s.fecha_sesion ASC, s.hora_sesion ASC
@@ -66,6 +71,18 @@ const getStudentSessionsByState = async (studentId, estados) => {
         materia: row.materia,
         tutor: row.tutor,
         correoTutor: row.correo_tutor,
+        calificacion: row.id_rating === null || row.id_rating === undefined ? null : {
+            id: row.id_rating,
+            estrellas: row.estrellas,
+            comentario: row.comentario,
+            fechaCalificacion: row.fecha_calificacion,
+        },
+        reporte: row.id_reporte === null || row.id_reporte === undefined ? null : {
+            id: row.id_reporte,
+            categoria: row.categoria_reporte,
+            estado: row.estado_reporte,
+            fechaReporte: row.fecha_reporte,
+        },
     }));
 };
 
