@@ -1,5 +1,8 @@
 import { apiFetch, apiFetchBlob } from "./client";
 import { TIPOS_RECURSO } from "./tipos-recurso";
+import { PLATAFORMA, USAR_MOCK } from "../mock/config";
+import * as mock from "../mock/api";
+import { construirConstanciaPdf } from "../pdf/constancia";
 
 // GET /student/study-plans  (HU-031)
 export function normalizarPlan(fila) {
@@ -18,22 +21,46 @@ export function normalizarPlan(fila) {
 }
 
 export async function listarPlanesEstudio() {
+  if (USAR_MOCK) return mock.listarPlanes();
+
   const response = await apiFetch("/student/study-plans");
   const filas = Array.isArray(response?.data) ? response.data : [];
   return filas.map(normalizarPlan);
 }
 
-// GET /student/study-plans/:id/pdf  (HU-032)
-export async function descargarPlanPdf(idPlan) {
-  const blob = await apiFetchBlob(`/student/study-plans/${idPlan}/pdf`);
+function guardarBlob(blob, nombreArchivo) {
   const url = URL.createObjectURL(blob);
   const enlace = document.createElement("a");
   enlace.href = url;
-  enlace.download = `educonnect-plan-${idPlan}.pdf`;
+  enlace.download = nombreArchivo;
   document.body.appendChild(enlace);
   enlace.click();
   enlace.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
+// HU-032: constancia del plan de estudio en PDF.
+// Modo mock: el PDF se genera en el navegador (encabezado, tabla de recursos y firma del tutor).
+// Modo backend: GET /student/study-plans/:id/pdf  (la plantilla oficial la arma el servidor).
+export async function descargarPlanPdf(planOId) {
+  // Acepta el plan completo o solo su id (así sirve con cualquier versión de la pantalla).
+  const planRecibido = planOId && typeof planOId === "object" ? planOId : null;
+  const idPlan = planRecibido?.id ?? planOId;
+  const nombreArchivo = `educonnect-plan-${idPlan}.pdf`;
+
+  if (USAR_MOCK) {
+    const plan = planRecibido ?? (await mock.listarPlanes()).find((p) => String(p.id) === String(idPlan));
+    if (!plan) throw new Error("No encontramos el plan de estudio para generar la constancia.");
+    const bytes = construirConstanciaPdf(plan, {
+      nombrePlataforma: PLATAFORMA.nombre,
+      telefono: PLATAFORMA.telefono,
+      fechaEmision: new Date(),
+    });
+    guardarBlob(new Blob([bytes], { type: "application/pdf" }), nombreArchivo);
+    return;
+  }
+
+  guardarBlob(await apiFetchBlob(`/student/study-plans/${idPlan}/pdf`), nombreArchivo);
 }
 
 export function recursoVacio(id) {

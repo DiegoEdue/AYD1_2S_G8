@@ -7,6 +7,8 @@ const CONFIG = {
     aprobado: { texto: "Aprobado", clase: "bg-sage text-white" },
     rechazado: { texto: "Rechazado", clase: "bg-crimson text-white" },
     inactivo: { texto: "Dado de baja", clase: "bg-charcoal/10 text-charcoal-light" },
+    sancionado: { texto: "Sancionado", clase: "bg-crimson text-white" },
+    descartado: { texto: "Descartado", clase: "bg-charcoal/10 text-charcoal-light" },
     };
 
     export default function StatusPill({ estado }) {

@@ -7,9 +7,10 @@ import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/Toast";
 import Button from "@/components/ui/Button";
 import FormField, { inputClass } from "@/components/ui/FormField";
+import { USAR_MOCK } from "@/lib/mock/config";
 
 export default function LoginPage() {
-    const { login, loginComoAdmin } = useAuth();
+    const { login, loginComoAdmin, entrarComoDemo } = useAuth();
     const { mostrarToast } = useToast();
     const router = useRouter();
 
@@ -153,6 +154,29 @@ export default function LoginPage() {
                             Iniciar sesión
                         </Button>
                     </form>
+
+                    {USAR_MOCK && (
+                        <section
+                            aria-label="Acceso demo"
+                            className="mt-6 rounded-lg border border-dashed border-sage-dark/60 bg-sage-light/20 p-4"
+                        >
+                            <p className="text-sm font-semibold text-charcoal">Modo demo (sin backend)</p>
+                            <p className="mt-0.5 text-xs text-charcoal-light">
+                                Entra con datos simulados para ver las funciones nuevas.
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                                <Button variante="secundario" tamanio="sm" data-cy="demo-estudiante" onClick={() => entrarComoDemo("estudiante")}>
+                                    Estudiante
+                                </Button>
+                                <Button variante="secundario" tamanio="sm" data-cy="demo-tutor" onClick={() => entrarComoDemo("tutor")}>
+                                    Tutor
+                                </Button>
+                                <Button variante="secundario" tamanio="sm" data-cy="demo-admin" onClick={() => entrarComoDemo("admin")}>
+                                    Administrador
+                                </Button>
+                            </div>
+                        </section>
+                    )}
 
                     <p className="mt-6 text-center text-sm text-charcoal-light">
                         ¿Aún no tienes cuenta?{" "}

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-  "test": "node --test test/*.test.js",
+  "test": "node --test test-student/*.test.js",
   "test:unit": "jest --config jest.unit.config.cjs --runInBand",
   "start": "node server.js",
   "dev": "nodemon server.js"
