@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Button from "@/components/ui/Button";
 import Modal from "@/components/ui/Modal";
 import { EstrellasLectura } from "@/components/ui/Estrellas";
@@ -19,12 +19,14 @@ export default function EvaluacionSesion({ rol, sesion, contraparte, onActualiza
   const [modal, setModal] = useState(null); // "calificar" | "reportar" | null
   const [enviando, setEnviando] = useState(false);
   const [errorServidor, setErrorServidor] = useState("");
+  const [categoriasServidor, setCategoriasServidor] = useState(null);
 
   if (!esSesionAtendida(sesion)) return null;
 
   const esEstudiante = rol === "estudiante";
   const objeto = esEstudiante ? "tutor" : "estudiante";
-  const categorias = esEstudiante ? CATEGORIAS_REPORTE_TUTOR : CATEGORIAS_REPORTE_ESTUDIANTE;
+  const categorias =
+    categoriasServidor ?? (esEstudiante ? CATEGORIAS_REPORTE_TUTOR : CATEGORIAS_REPORTE_ESTUDIANTE);
 
   function abrir(cual) {
     setErrorServidor("");
