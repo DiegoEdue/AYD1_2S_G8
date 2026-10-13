@@ -2,6 +2,8 @@ const { comparePassword, hashPassword } = require('../utils/bcrypt')
 const scheduleModel = require('../models/schedule')
 const sessionModel = require('../models/session')
 const tutorModel = require('../models/tutor')
+const ratingModel = require('../models/rating')
+const reportModel = require('../models/report')
 const { sendCancellationEmail } = require('../services/email')
 const { subirImagen } = require('../utils/cloudinaryUpload')
 
@@ -379,6 +381,141 @@ const updateProfile = async (req, res) => {
 }
 
 
+// Calificar Desempeño del Estudiante, HU-036
+// PUT /api/tutor/sessions/:id/rating
+const rateStudent = async (req, res) => {
+    const { id } = req.params;
+    const { estrellas, comentario } = req.body;
+    const id_Tutor = req.user.id;
+
+    if (!Number.isInteger(estrellas) || estrellas < 1 || estrellas > 5) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'La calificación debe ser un número entero entre 1 y 5.',
+        });
+    }
+
+    if (!comentario || typeof comentario !== 'string' || comentario.trim().length === 0) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'El comentario es obligatorio.',
+        });
+    }
+
+    if (comentario.trim().length > 500) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'El comentario no puede exceder los 500 caracteres.',
+        });
+    }
+
+    try {
+        const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
+        if (!sesioninfo) {
+            return res.status(404).json({ status: 'error', message: 'Sesión no encontrada.' });
+        }
+        if (sesioninfo.estado !== 'Atendida') {
+            return res.status(400).json({ status: 'error', message: 'La sesión solo puede ser calificada cuando está atendida.' });
+        }
+
+        const ratingData = await ratingModel.upsertRating(
+            sesioninfo.id,
+            sesioninfo.id_estudiante,
+            sesioninfo.id_tutor,
+            {
+            estrellas,
+            comentario: comentario.trim(),
+        });
+
+        if (!ratingData) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'Error al guardar la calificación.',
+            });
+        }
+
+        return res.status(ratingData.created ? 201 : 200).json({
+            status: 'success',
+            message: 'Calificación guardada exitosamente.',
+            data: ratingData,
+        });
+    } catch (error) {
+        console.error('Error al calificar la sesión:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error interno del servidor al calificar la sesión.',
+        });
+    }
+}
+
+// Reportar Estudiante Problemático, HU-037
+// POST /api/tutor/sessions/:id/report
+const CATEGORIAS_REPORTE_VALIDAS = ['Conducta inapropiada', 'Falsificacion de documentos','Agresion verbal o fisica', 'Robo o dano a instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion Objetos Peligrosos', 'Uso Indebido de la Tecnologia'];
+const reportStudent = async (req, res) => {
+    const { id } = req.params;
+    const { categoria, motivo } = req.body;
+    const id_Tutor = req.user.id;
+
+    if (!CATEGORIAS_REPORTE_VALIDAS.includes(categoria)) {
+        return res.status(400).json({
+            status: 'error',
+            message: `Categoría de reporte inválida. Debe de ser una de: ${CATEGORIAS_REPORTE_VALIDAS.join(', ')}`,
+        });
+    }
+
+    if (!motivo || typeof motivo !== 'string' || motivo.trim().length === 0) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'El motivo del reporte es obligatorio.',
+        });
+    }
+
+    try {
+        const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
+        if (!sesioninfo) {
+            return res.status(404).json({ status: 'error', message: 'Sesión no encontrada.' });
+        }
+        if (sesioninfo.estado !== 'Atendida') {
+            return res.status(400).json({ status: 'error', message: 'La sesión solo puede ser calificada cuando está atendida.' });
+        }
+
+        const reportData = await reportModel.createStudentReport(
+            sesioninfo.id,
+            sesioninfo.id_tutor,
+            sesioninfo.id_estudiante,
+            {
+                categoria: categoria.trim(),
+                motivo: motivo.trim(),
+            }
+        );
+
+        if (!reportData) {
+            return res.status(500).json({
+                status: 'error',
+                message: 'Error al crear el reporte del estudiante.',
+            });
+        }
+
+        if (reportData.duplicate) {
+            return res.status(409).json({
+                status: 'error',
+                message: 'Ya existe un reporte para esta sesión y estudiante.',
+            });
+        }
+
+        return res.status(201).json({
+            status: 'success',
+            message: 'Reporte creado exitosamente.',
+            data: reportData,
+        });
+    } catch (error) {
+        console.error('Error al crear el reporte:', error);
+        return res.status(500).json({
+            status: 'error',
+            message: 'Error interno del servidor al crear el reporte.',
+        });
+    }
+}
 
 module.exports = {
     getSchedule,
@@ -389,4 +526,6 @@ module.exports = {
     attendSession,
     cancelSession,
     updateProfile,
+    rateStudent,
+    reportStudent,
 }
