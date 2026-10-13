@@ -1,7 +1,5 @@
 import { apiFetch } from "./client";
 import { normalizarRecurso } from "./plan-estudio";
-import { USAR_MOCK } from "../mock/config";
-import * as mock from "../mock/api";
 
 // --- Estudiante ---
 export async function programarSesion({ idTutor, idMateria, fecha, hora, motivo }) {
@@ -12,36 +10,35 @@ export async function programarSesion({ idTutor, idMateria, fecha, hora, motivo 
 }
 
 export async function listarSesionesActivasEstudiante() {
-  if (USAR_MOCK) return mock.listarActivasEstudiante();
   return apiFetch("/student/sessions/active");
 }
 
+// GET /student/sessions/history → cada sesión trae `calificacion` ({ id, estrellas, comentario, fechaCalificacion })
 export async function listarHistorialEstudiante() {
-  if (USAR_MOCK) return mock.listarHistorialEstudiante();
-  return apiFetch("/student/sessions/history");
+  const response = await apiFetch("/student/sessions/history");
+  const data = Array.isArray(response?.data)
+    ? response.data.map((sesion) => ({ ...sesion, reportada: Boolean(sesion.reporte) }))
+    : [];
+  return { ...response, data };
 }
 
 export async function cancelarSesionComoEstudiante(id) {
-  if (USAR_MOCK) return mock.cancelarComoEstudiante(id);
   return apiFetch(`/student/sessions/${id}/cancel`, { method: "PATCH" });
 }
 
 // --- Tutor ---
 export async function listarSesionesPendientesTutor() {
-  if (USAR_MOCK) return mock.listarPendientesTutor();
   return apiFetch("/tutor/sessions/pending");
 }
 
 // El servidor pagina este historial (por defecto 20 por página, máximo 100).
 export async function listarHistorialTutor({ page = 1, pageSize = 20 } = {}) {
-  if (USAR_MOCK) return mock.listarHistorialTutor({ page, pageSize });
   return apiFetch(`/tutor/sessions/history?page=${page}&pageSize=${pageSize}`);
 }
 
 // HU-013 / HU-035: atender una sesión registra el plan de estudio.
 // body: { dificultades: string, recursos: [{ nombre, tipo, descripcion }] }
 export async function atenderSesion(id, { dificultades, recursos }) {
-  if (USAR_MOCK) return mock.atender(id, { dificultades, recursos });
   return apiFetch(`/tutor/sessions/${id}/attend`, {
     method: "PATCH",
     body: { dificultades, recursos },
@@ -52,7 +49,7 @@ export async function atenderSesion(id, { dificultades, recursos }) {
 // El servidor devuelve el plan con claves en inglés ({ dificulties, resources: [{ name, type, description }] });
 // aquí se lleva a la misma forma que usa el resto de la app.
 export async function obtenerDetalleSesionTutor(id) {
-  const response = USAR_MOCK ? await mock.detalleSesionTutor(id) : await apiFetch(`/tutor/sessions/${id}/detail`);
+  const response = await apiFetch(`/tutor/sessions/${id}/detail`);
   const detalle = response?.data ?? {};
   const plan = detalle.plan;
   return {
@@ -67,7 +64,6 @@ export async function obtenerDetalleSesionTutor(id) {
 }
 
 export async function cancelarSesionComoTutor(id) {
-  if (USAR_MOCK) return mock.cancelarComoTutor(id);
   return apiFetch(`/tutor/sessions/${id}/cancel`, { method: "PATCH" });
 }
 
@@ -99,7 +95,7 @@ export async function obtenerPerfil(rol) {
     const response = await apiFetch("/tutor/profile");
     return { ...response, data: normalizarPerfilTutor(response?.data) };
   }
-  return apiFetch("/estudiante/profile");
+  return apiFetch("/student/profile");
 }
 
 export async function actualizarPerfil(rol, datos) {

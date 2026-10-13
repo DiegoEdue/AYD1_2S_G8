@@ -4,7 +4,6 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { login as loginApi, loginAdmin, verificarSegundoFactorAdmin, cerrarSesion, resendVerificationToken } from "@/lib/api/auth";
 import { setToken } from "@/lib/api/client";
-import { USUARIOS_DEMO } from "@/lib/mock/usuarios-demo";
 
 const AuthContext = createContext(null);
 
@@ -12,13 +11,6 @@ const rutasPorRol = {
   estudiante: "/estudiante/tutores",
   tutor: "/tutor/horarios",
   admin: "/admin/solicitudes",
-};
-
-// En modo demo se aterriza directo en una pantalla de la Fase 2 (las demás dependen del backend).
-const RUTAS_DEMO = {
-  estudiante: "/estudiante/plan-estudio",
-  tutor: "/tutor/sesiones/pendientes",
-  admin: "/admin/denuncias",
 };
 
 export function AuthProvider({ children }) {
@@ -98,14 +90,6 @@ export function AuthProvider({ children }) {
     return response;
   }
 
-  // Modo solo front: entra sin backend como un usuario simulado de cada rol.
-  function entrarComoDemo(rol) {
-    const demo = USUARIOS_DEMO[rol];
-    if (!demo) return;
-    guardarUsuario(demo);
-    router.push(RUTAS_DEMO[rol] || "/");
-  }
-
   function logout() {
     setToken(null);
     guardarUsuario(null);
@@ -113,7 +97,7 @@ export function AuthProvider({ children }) {
     cerrarSesion();
   }
 
-  const value = { usuario, cargando, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario, resendVerification, entrarComoDemo };
+  const value = { usuario, cargando, login, loginComoAdmin, completarSegundoFactorAdmin, logout, guardarUsuario, resendVerification };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

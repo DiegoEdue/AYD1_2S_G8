@@ -1,6 +1,4 @@
 import { apiFetch } from "./client";
-import { USAR_MOCK } from "../mock/config";
-import * as mock from "../mock/api";
 
 export async function listarSolicitudes() {
   return apiFetch("/admin/solicitudes");
@@ -88,15 +86,13 @@ export async function actualizarTutorAdmin(id, datos) {
 }
 
 export async function listarDenuncias(tipo = "tutores") {
-  if (USAR_MOCK) return mock.listarDenunciasAdmin(tipo);
   return apiFetch(`/admin/denuncias?tipo=${tipo}`);
 }
 
-export async function resolverDenuncia(id, accion, motivo = "") {
-  if (USAR_MOCK) return mock.resolverDenunciaAdmin(id, accion);
+export async function resolverDenuncia(id, accion, motivo = "", tipo = "tutores") {
   return apiFetch(`/admin/denuncias/${id}/resolver`, {
     method: "PATCH",
-    body: { accion, motivo },
+    body: { accion, motivo, tipo },
   });
 }
 
