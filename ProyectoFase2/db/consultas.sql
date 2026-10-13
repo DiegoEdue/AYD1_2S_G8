@@ -13,4 +13,4 @@ FROM tutor t
 LEFT JOIN tutor_ratings r ON r.id_tutor = t.id_tutor
 WHERE t.estado_aprobacion = 'aprobado'
 GROUP BY t.id_tutor
-ORDER BY promedio DESC NULLS LAST;
+ORDER BY promedio DESC NULLS LAST, total_calificaciones DESC, nombre_completo;
