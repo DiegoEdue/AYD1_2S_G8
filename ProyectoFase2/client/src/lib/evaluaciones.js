@@ -4,21 +4,39 @@ export const MAX_COMENTARIO = 500;
 export const MIN_DESCRIPCION_REPORTE = 20;
 export const MAX_DESCRIPCION_REPORTE = 1000;
 
+// `valor` es exactamente lo que valida el backend (si no coincide responde 400).
 export const CATEGORIAS_REPORTE_TUTOR = [
-  { valor: "etica_profesionalismo", etiqueta: "Ética y profesionalismo" },
-  { valor: "negligencia_academica", etiqueta: "Negligencia académica" },
-  { valor: "abuso_conducta_inapropiada", etiqueta: "Abuso / Conducta inapropiada" },
-  { valor: "falsificacion", etiqueta: "Falsificación" },
-  { valor: "otro", etiqueta: "Otro" },
+  { valor: "Ética y profesionalismo", etiqueta: "Ética y profesionalismo" },
+  { valor: "Negligencia académica", etiqueta: "Negligencia académica" },
+  { valor: "Abuso o conducta inapropiada", etiqueta: "Abuso o Conducta inapropiada" },
+  { valor: "Falsificación de información", etiqueta: "Falsificación de información" },
+  { valor: "Acoso o intimidación", etiqueta: "Acoso o intimidación" },
+  { valor: "Discriminación", etiqueta: "Discriminación" },
+  { valor: "Incumplimiento de horarios", etiqueta: "Incumplimiento de horarios" },
+  { valor: "Incumplimiento de responsabilidades", etiqueta: "Incumplimiento de responsabilidades" },
+  { valor: "Divulgación de información confidencial", etiqueta: "Divulgación de información confidencial" },
+  { valor: "Cobros indebidos", etiqueta: "Cobros indebidos" },
 ];
 
+// Tutor -> estudiante (tutor.controller: CATEGORIAS_REPORTE_VALIDAS).
 export const CATEGORIAS_REPORTE_ESTUDIANTE = [
-  { valor: "conducta_inapropiada", etiqueta: "Conducta inapropiada" },
-  { valor: "falsificacion_documentos", etiqueta: "Falsificación de documentos" },
-  { valor: "agresion", etiqueta: "Agresión verbal / física" },
-  { valor: "robo_dano", etiqueta: "Robo o daño a instalaciones" },
-  { valor: "otro", etiqueta: "Otro" },
+  { valor: "Conducta inapropiada", etiqueta: "Conducta inapropiada" },
+  { valor: "Falsificacion de documentos", etiqueta: "Falsificación de documentos" },
+  { valor: "Agresion verbal o fisica", etiqueta: "Agresión verbal o física" },
+  { valor: "Robo o dano a instalaciones", etiqueta: "Robo o daño a instalaciones" },
+  { valor: "Plagio_Copia", etiqueta: "Plagio o copia" },
+  { valor: "Inasistencia_Injustificada", etiqueta: "Inasistencia injustificada" },
+  { valor: "Incumplimiento_Acuerdos", etiqueta: "Incumplimiento de acuerdos" },
+  { valor: "Acoso_Bullying", etiqueta: "Acoso / Bullying" },
+  { valor: "Portacion Objetos Peligrosos", etiqueta: "Portación de objetos peligrosos" },
+  { valor: "Uso Indebido de la Tecnologia", etiqueta: "Uso indebido de la tecnología" },
 ];
+
+// Convierte lo que devuelve el backend ("Plagio_Copia") en una opción del select.
+export function categoriaDesdeBackend(valor) {
+  const conocida = [...CATEGORIAS_REPORTE_TUTOR, ...CATEGORIAS_REPORTE_ESTUDIANTE].find((c) => c.valor === valor);
+  return conocida ?? { valor, etiqueta: String(valor).replaceAll("_", " ") };
+}
 
 function normalizarEstado(estado = "") {
   return String(estado).trim().toLowerCase().replaceAll("_", "-");
