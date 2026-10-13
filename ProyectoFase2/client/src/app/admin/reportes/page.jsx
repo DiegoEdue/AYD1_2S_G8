@@ -144,7 +144,9 @@ export default function ReportesPage() {
   }, [reporte, tope]);
 
   const porHorario = useMemo(() => {
-    return reporte?.porHorario || [];
+    return (reporte?.horariosDemandados || [])
+      .map((h) => ({ hora: h.franja_horaria, total: h.total_sesiones }))
+      .sort((a, b) => String(a.hora).localeCompare(String(b.hora)));
   }, [reporte]);
 
   if (error) {

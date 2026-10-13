@@ -9,6 +9,7 @@ import StatusPill from "@/components/ui/StatusPill";
 import Avatar from "@/components/ui/Avatar";
 import { useToast } from "@/components/ui/Toast";
 import { listarDenuncias, resolverDenuncia } from "@/lib/api/admin";
+import { categoriaDesdeBackend } from "@/lib/evaluaciones";
 
 export default function DenunciasPage() {
   const { mostrarToast } = useToast();
@@ -44,15 +45,15 @@ export default function DenunciasPage() {
 
     setProcesando(true);
     try {
-      await resolverDenuncia(denunciaSeleccionada.id, accionResolucion, motivoResolucion);
+      await resolverDenuncia(denunciaSeleccionada.id, accionResolucion, motivoResolucion, tipo);
 
       setDenuncias((prev) =>
         prev.map((d) =>
           d.id === denunciaSeleccionada.id
             ? {
-                ...d,
-                estado: accionResolucion === "dar_de_baja" ? "sancionado" : "descartado",
-              }
+              ...d,
+              estado: accionResolucion === "dar_de_baja" ? "sancionado" : "descartado",
+            }
             : d
         )
       );
@@ -115,7 +116,7 @@ export default function DenunciasPage() {
               <>
                 <td className="px-4 py-3">
                   <span className="inline-block rounded-md bg-crimson/10 px-2.5 py-1 text-xs font-semibold text-crimson">
-                    {d.categoria || "Conducta"}
+                    {d.categoria ? categoriaDesdeBackend(d.categoria).etiqueta : "Conducta"}
                   </span>
                 </td>
                 <td className="max-w-xs px-4 py-3 text-xs text-charcoal">
@@ -149,6 +150,7 @@ export default function DenunciasPage() {
                       variante="peligro"
                       tamanio="sm"
                       disabled={yaResuelto}
+                      className={yaResuelto ? "opacity-50 cursor-not-allowed" : ""}
                       onClick={() => {
                         setDenunciaSeleccionada(d);
                         setAccionResolucion("dar_de_baja");
@@ -204,8 +206,8 @@ export default function DenunciasPage() {
               {procesando
                 ? "Procesando…"
                 : accionResolucion === "dar_de_baja"
-                ? "Sí, dar de baja"
-                : "Sí, rechazar denuncia"}
+                  ? "Sí, dar de baja"
+                  : "Sí, rechazar denuncia"}
             </Button>
           </>
         }
@@ -227,7 +229,7 @@ export default function DenunciasPage() {
 
             <div className="flex flex-col gap-1.5">
               <label htmlFor="motivoResolucion" className="text-xs font-medium text-charcoal-light">
-                Comentarios / Justificación administrativa (opcional):
+                Comentarios o Justificación administrativa (opcional):
               </label>
               <textarea
                 id="motivoResolucion"
