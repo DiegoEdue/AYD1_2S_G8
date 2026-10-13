@@ -73,24 +73,49 @@ const findHistoryByTutor = async (id_Tutor, { page = 1, limit = 20 } = {}) => {
         [id_Tutor]
     );
 
+    // Se une la calificación (student_ratings) y el reporte (student_reports) que el tutor ya hizo,
+    // para que el front sepa si debe mostrar o no los botones "Calificar" y "Reportar".
     const result = await db.query(
-        `${SELECT_BASE}
+        `SELECT s.id_sesion, s.fecha_sesion AS fecha, s.hora_sesion AS hora, s.estado,
+                CONCAT(e.nombre, ' ', e.apellido) AS nombre_estudiante,
+                m.nombre AS materia,
+                sr.id_rating, sr.estrellas, sr.comentario, sr.fecha_calificacion,
+                rp.id_reporte, rp.categoria AS categoria_reporte,
+                rp.estado AS estado_reporte, rp.fecha_reporte
+        FROM sesion s
+        JOIN estudiante e ON s.id_estudiante = e.id_estudiante
+        JOIN materia m ON s.id_materia = m.id_materia
+        LEFT JOIN student_ratings sr ON sr.id_sesion = s.id_sesion
+        LEFT JOIN student_reports rp ON rp.id_sesion = s.id_sesion
         WHERE s.id_tutor = $1 AND s.estado <> 'Activa'
         ORDER BY s.fecha_sesion DESC, s.hora_sesion DESC
         LIMIT $2 OFFSET $3;`,
         [id_Tutor, limit, offset]
     );
-    //return result.rows.map(mapSessionRow);
     const data = result.rows.map((row) => ({
         id: row.id_sesion,
         fecha: row.fecha.toISOString().slice(0, 10), // Formatear a "YYYY-MM-DD"
         hora: row.hora.slice(0, 5), // Formatear a "HH:MM"
         estudiante: row.nombre_estudiante,
-        estado: row.estado, // 'Activa','Atendida','Cancelada_Estudiante','Cancelada_Tutor'
+        materia: row.materia,
+        estado: row.estado, // 'Atendida','Cancelada_Estudiante','Cancelada_Tutor'
         estadoDescripcion: ESTADOS_SESION[row.estado] || row.estado,
+        calificacion: row.id_rating === null ? null : {
+            id: row.id_rating,
+            estrellas: row.estrellas,
+            comentario: row.comentario,
+            fechaCalificacion: row.fecha_calificacion,
+        },
+        reporte: row.id_reporte === null ? null : {
+            id: row.id_reporte,
+            categoria: row.categoria_reporte,
+            estado: row.estado_reporte,
+            fechaReporte: row.fecha_reporte,
+        },
     }));
 
-    return { data, total: result.rows.length }; // devuelve las sess
+    // total = todas las sesiones del historial (no solo las de esta página)
+    return { data, total: totalResult.rows[0].total };
 }
 
 // Marca la sesión como atendida guardando el plan de estudio

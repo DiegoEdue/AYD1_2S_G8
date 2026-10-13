@@ -388,10 +388,10 @@ const rateStudent = async (req, res) => {
     const { estrellas, comentario } = req.body;
     const id_Tutor = req.user.id;
 
-    if (!Number.isInteger(estrellas) || estrellas < 1 || estrellas > 5) {
+    if (!Number.isInteger(estrellas) || estrellas < 0 || estrellas > 5) {
         return res.status(400).json({
             status: 'error',
-            message: 'La calificación debe ser un número entero entre 1 y 5.',
+            message: 'La calificación debe ser un número entero entre 0 y 5.',
         });
     }
 
@@ -470,13 +470,20 @@ const reportStudent = async (req, res) => {
         });
     }
 
+    if (motivo.trim().length > 500) {
+        return res.status(400).json({
+            status: 'error',
+            message: 'El motivo no puede exceder los 500 caracteres.',
+        });
+    }
+
     try {
         const sesioninfo = await sessionModel.findSessionByIdAndTutorId(id, id_Tutor);
         if (!sesioninfo) {
             return res.status(404).json({ status: 'error', message: 'Sesión no encontrada.' });
         }
         if (sesioninfo.estado !== 'Atendida') {
-            return res.status(400).json({ status: 'error', message: 'La sesión solo puede ser calificada cuando está atendida.' });
+            return res.status(400).json({ status: 'error', message: 'La sesión solo puede ser reportada cuando está atendida.' });
         }
 
         const reportData = await reportModel.createStudentReport(
@@ -517,7 +524,11 @@ const reportStudent = async (req, res) => {
     }
 }
 
+// GET /api/tutor/report-categories: fuente única de categorías para el front
+const getReportCategories = (req, res) => res.status(200).json({ status: 'success', data: CATEGORIAS_REPORTE_VALIDAS });
+
 module.exports = {
+    getReportCategories,
     getSchedule,
     getSessionDetails,
     upsertSchedule,
