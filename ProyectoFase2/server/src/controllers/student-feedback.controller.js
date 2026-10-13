@@ -6,7 +6,12 @@ const REPORT_CATEGORIES = [
     "Negligencia académica",
     "Abuso o conducta inapropiada",
     "Falsificación de información",
-    "Otro",
+    "Acoso o intimidación",
+    "Discriminación",
+    "Incumplimiento de horarios",
+    "Incumplimiento de responsabilidades",
+    "Divulgación de información confidencial",
+    "Cobros indebidos",
 ];
 
 const validSessionId = id => /^[1-9]\d*$/.test(id) && Number.isSafeInteger(Number(id));
