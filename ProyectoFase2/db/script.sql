@@ -194,12 +194,19 @@ CREATE TABLE tutor_reports (
     descripcion        TEXT         NOT NULL,
     estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
     fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    fecha_resolucion   TIMESTAMP    NOT NULL;
+    motivo_resolucion  TEXT         NOT NULl;
     CONSTRAINT chk_tutor_report_categoria CHECK (categoria IN (
         'Ética y profesionalismo',
         'Negligencia académica',
         'Abuso o conducta inapropiada',
         'Falsificación de información',
-        'Otro'
+        'Acoso o intimidación', 
+        'Discriminación',
+        'Incumplimiento de horarios',
+        'Incumplimiento de responsabilidades',
+        'Divulgación de información confidencial',
+        'Cobros indebidos'
     )),
     CONSTRAINT chk_tutor_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
     CONSTRAINT tutor_reports_sesion_fkey
@@ -235,6 +242,8 @@ CREATE TABLE student_reports (
     descripcion        TEXT         NOT NULL,
     estado             VARCHAR(20)  NOT NULL DEFAULT 'Pendiente',
     fecha_reporte      TIMESTAMP    NOT NULL DEFAULT now(),
+    fecha_resolucion   TIMESTAMP    NOT NULL;
+    motivo_resolucion  TEXT         NOT NULl;
     CONSTRAINT chk_student_report_estado CHECK (estado IN ('Pendiente','Resuelto','Descartado')),
     CONSTRAINT student_reports_sesion_fkey
         FOREIGN KEY (id_sesion, id_estudiante, id_tutor)
