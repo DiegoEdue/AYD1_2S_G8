@@ -591,6 +591,10 @@ const deactivateStudent = async (req, res) => {
     const fullName = `${student.nombre} ${student.apellido}`;
 
     // 2. Eliminar referencias y registros asociados al estudiante
+    await db.query('DELETE FROM tutor_ratings WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM student_ratings WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM tutor_reports WHERE id_estudiante = $1', [id]);
+    await db.query('DELETE FROM student_reports WHERE id_estudiante = $1', [id]);
     await db.query('DELETE FROM sesion WHERE id_estudiante = $1', [id]);
     await db.query('DELETE FROM solicitud WHERE id_estudiante = $1', [id]);
     await db.query('DELETE FROM estudiante WHERE id_estudiante = $1', [id]);
@@ -698,6 +702,10 @@ const deactivateTutor = async (req, res) => {
     const fullName = `${tutor.nombre} ${tutor.apellido}`;
 
     // 2. Eliminar referencias y registros asociados al tutor
+    await db.query('DELETE FROM tutor_ratings WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM student_ratings WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM tutor_reports WHERE id_tutor = $1', [id]);
+    await db.query('DELETE FROM student_reports WHERE id_tutor = $1', [id]);
     await db.query('DELETE FROM sesion WHERE id_tutor = $1', [id]);
     await db.query('DELETE FROM tutor_materia WHERE id_tutor = $1', [id]);
     await db.query('DELETE FROM tutor_dia_atencion WHERE id_tutor = $1', [id]);
@@ -1252,64 +1260,120 @@ const updateTutorAdmin = async (req, res) => {
 // ─────────────────────────────────────────────────────────────────────────────
 // HU-042 & HU-043: Listar denuncias
 // ─────────────────────────────────────────────────────────────────────────────
+const DENUNCIAS = {
+  tutores: { tabla: 'tutor_reports', columnaAcusado: 'id_tutor', baja: (req, res) => deactivateTutor(req, res) },
+  estudiantes: { tabla: 'student_reports', columnaAcusado: 'id_estudiante', baja: (req, res) => deactivateStudent(req, res) },
+};
+const tipoDenuncia = (valor) => {
+  if (valor === 'tutor' || valor === 'tutores') return 'tutores';
+  if (valor === 'estudiante' || valor === 'estudiantes') return 'estudiantes';
+  return null;
+};
+
 const getDenuncias = async (req, res) => {
+  const tipo = tipoDenuncia(req.query.tipo || 'tutores');
+  if (!tipo) {
+    return res.status(400).json({ status: 'error', message: 'El tipo debe ser "tutores" o "estudiantes".' });
+  }
+
+  // Quien denuncia es el otro rol: contra tutores denuncia un estudiante y viceversa.
+  const consulta = tipo === 'tutores'
+    ? `SELECT r.id_reporte AS id, 'tutor' AS tipo, r.id_sesion, r.categoria, r.descripcion AS motivo,
+              r.id_tutor AS id_acusado,
+              CONCAT(a.nombre, ' ', a.apellido) AS denunciado_nombre, a.foto_url AS denunciado_foto,
+              CONCAT(d.nombre, ' ', d.apellido) AS denunciante_nombre,
+              r.fecha_reporte AS fecha, LOWER(r.estado) AS estado
+       FROM tutor_reports r
+       JOIN tutor a ON a.id_tutor = r.id_tutor
+       JOIN estudiante d ON d.id_estudiante = r.id_estudiante
+       ORDER BY (LOWER(r.estado) = 'pendiente') DESC, r.fecha_reporte DESC`
+    : `SELECT r.id_reporte AS id, 'estudiante' AS tipo, r.id_sesion, r.categoria, r.descripcion AS motivo,
+              r.id_estudiante AS id_acusado,
+              CONCAT(a.nombre, ' ', a.apellido) AS denunciado_nombre, a.foto_url AS denunciado_foto,
+              CONCAT(d.nombre, ' ', d.apellido) AS denunciante_nombre,
+              r.fecha_reporte AS fecha, LOWER(r.estado) AS estado
+       FROM student_reports r
+       JOIN estudiante a ON a.id_estudiante = r.id_estudiante
+       JOIN tutor d ON d.id_tutor = r.id_tutor
+       ORDER BY (LOWER(r.estado) = 'pendiente') DESC, r.fecha_reporte DESC`;
+
   try {
-    const { tipo = 'tutores' } = req.query;
-    try {
-      const result = await db.query(
-        `SELECT id_denuncia AS id, tipo_acusado AS tipo, categoria, motivo, 
-                nombre_acusado, nombre_denunciante, fecha, estado 
-         FROM denuncia WHERE tipo_acusado = $1 ORDER BY fecha DESC`,
-        [tipo === 'estudiantes' ? 'estudiante' : 'tutor']
-      );
-      return res.status(200).json({ status: 'success', data: result.rows });
-    } catch (tableErr) {
-      return res.status(200).json({ status: 'success', data: [] });
-    }
+    const result = await db.query(consulta);
+    return res.status(200).json({ status: 'success', data: result.rows });
   } catch (error) {
     console.error('Error en getDenuncias:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Error interno al listar denuncias.',
-    });
+    return res.status(500).json({ status: 'error', message: 'Error interno al listar denuncias.' });
   }
 };
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HU-042 & HU-043: Resolver denuncia
+// Body: { tipo: 'tutores'|'estudiantes', accion: 'dar_de_baja'|'rechazar_denuncia', motivo? }
+// Los ids de tutor_reports y student_reports son independientes, por eso `tipo` es obligatorio.
 // ─────────────────────────────────────────────────────────────────────────────
 const resolverDenuncia = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { accion, motivo, tipo_acusado, id_acusado } = req.body || {};
+  const { id } = req.params;
+  const { accion, motivo } = req.body || {};
+  const tipo = tipoDenuncia((req.body || {}).tipo || req.query.tipo);
 
-    if (accion === 'baja' && id_acusado) {
-      if (tipo_acusado === 'tutor') {
-        req.params.id = id_acusado;
-        return deactivateTutor(req, res);
-      } else if (tipo_acusado === 'estudiante') {
-        req.params.id = id_acusado;
-        return deactivateStudent(req, res);
-      }
+  if (!/^[1-9]\d*$/.test(id)) {
+    return res.status(400).json({ status: 'error', message: 'ID de denuncia inválido.' });
+  }
+  if (!tipo) {
+    return res.status(400).json({ status: 'error', message: 'Indica el tipo de denuncia: "tutores" o "estudiantes".' });
+  }
+  const darDeBaja = accion === 'dar_de_baja' || accion === 'baja';
+  const descartar = accion === 'rechazar_denuncia' || accion === 'descartar';
+  if (!darDeBaja && !descartar) {
+    return res.status(400).json({ status: 'error', message: 'Acción inválida. Usa "dar_de_baja" o "rechazar_denuncia".' });
+  }
+
+  const { tabla, columnaAcusado, baja } = DENUNCIAS[tipo];
+  const comentario = typeof motivo === 'string' && motivo.trim() ? motivo.trim() : null;
+
+  try {
+    const found = await db.query(
+      `SELECT id_reporte, ${columnaAcusado} AS id_acusado, categoria, estado FROM ${tabla} WHERE id_reporte = $1`,
+      [id]
+    );
+    if (found.rows.length === 0) {
+      return res.status(404).json({ status: 'error', message: 'Denuncia no encontrada.' });
+    }
+    const denuncia = found.rows[0];
+    if (String(denuncia.estado).toLowerCase() !== 'pendiente') {
+      return res.status(409).json({ status: 'error', message: 'Esta denuncia ya fue resuelta.' });
     }
 
-    try {
-      await db.query(
-        `UPDATE denuncia SET estado = $1, fecha_resolucion = CURRENT_TIMESTAMP WHERE id_denuncia = $2`,
-        [accion === 'baja' ? 'sancionado' : 'descartado', id]
+    if (darDeBaja) {
+      // Se reutiliza la baja existente (borra la cuenta y envía el correo) sin responder todavía:
+      // si falla, la denuncia sigue pendiente.
+      const salida = {
+        code: 200,
+        body: null,
+        status(c) { this.code = c; return this; },
+        json(b) { this.body = b; return this; },
+      };
+      await baja(
+        { params: { id: String(denuncia.id_acusado) }, body: { motivo: comentario || `Sanción por denuncia: ${denuncia.categoria}` } },
+        salida
       );
-    } catch (ignoreErr) {}
+      if (salida.code !== 200) return res.status(salida.code).json(salida.body);
+    }
+
+    // Al dar de baja, la cuenta y sus reportes se eliminan (ver deactivateTutor/deactivateStudent),
+    // por lo que este UPDATE solo deja huella cuando la denuncia se descarta.
+    await db.query(
+      `UPDATE ${tabla} SET estado = $1, fecha_resolucion = NOW(), motivo_resolucion = $2 WHERE id_reporte = $3`,
+      [darDeBaja ? 'Resuelto' : 'Descartado', comentario, id]
+    );
 
     return res.status(200).json({
       status: 'success',
-      message: accion === 'baja' ? 'Usuario dado de baja exitosamente.' : 'Denuncia descartada exitosamente.',
+      message: darDeBaja ? 'Usuario dado de baja exitosamente.' : 'Denuncia descartada exitosamente.',
     });
   } catch (error) {
     console.error('Error en resolverDenuncia:', error);
-    return res.status(500).json({
-      status: 'error',
-      message: 'Error interno al resolver la denuncia.',
-    });
+    return res.status(500).json({ status: 'error', message: 'Error interno al resolver la denuncia.' });
   }
 };
 
@@ -1319,15 +1383,14 @@ const resolverDenuncia = async (req, res) => {
 const getTutorRatings = async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT t.id_tutor, CONCAT(t.nombre, ' ', t.apellido) AS nombre,
+      `SELECT t.id_tutor, CONCAT(t.nombre, ' ', t.apellido) AS nombre_completo, t.correo,
               t.universidad_graduacion AS especialidad, t.foto_url,
-              COUNT(s.id_sesion)::integer AS total_sesiones,
-              COALESCE(ROUND(AVG(CASE WHEN s.estado = 'Atendida' THEN 5.0 ELSE 4.5 END), 1), 5.0) AS promedio_estrellas
+              (SELECT COUNT(*)::integer FROM sesion s WHERE s.id_tutor = t.id_tutor) AS total_sesiones,
+              (SELECT COUNT(*)::integer FROM tutor_ratings tr WHERE tr.id_tutor = t.id_tutor) AS total_evaluaciones,
+              COALESCE((SELECT ROUND(AVG(tr.estrellas)::numeric, 1) FROM tutor_ratings tr WHERE tr.id_tutor = t.id_tutor), 0) AS promedio_estrellas
        FROM tutor t
-       LEFT JOIN sesion s ON s.id_tutor = t.id_tutor
        WHERE t.estado_aprobacion = 'aprobado'
-       GROUP BY t.id_tutor, t.nombre, t.apellido, t.universidad_graduacion, t.foto_url
-       ORDER BY promedio_estrellas DESC, nombre ASC`
+       ORDER BY promedio_estrellas DESC, nombre_completo ASC`
     );
     return res.status(200).json({ status: 'success', data: result.rows });
   } catch (error) {
@@ -1345,15 +1408,14 @@ const getTutorRatings = async (req, res) => {
 const getStudentRatings = async (req, res) => {
   try {
     const result = await db.query(
-      `SELECT e.id_estudiante, CONCAT(e.nombre, ' ', e.apellido) AS nombre,
+      `SELECT e.id_estudiante, CONCAT(e.nombre, ' ', e.apellido) AS nombre_completo, e.correo,
               e.carnet, e.foto_url,
-              COUNT(s.id_sesion)::integer AS total_sesiones,
-              COALESCE(ROUND(AVG(CASE WHEN s.estado = 'Atendida' THEN 5.0 ELSE 4.8 END), 1), 5.0) AS promedio_estrellas
+              (SELECT COUNT(*)::integer FROM sesion s WHERE s.id_estudiante = e.id_estudiante) AS total_sesiones,
+              (SELECT COUNT(*)::integer FROM student_ratings sr WHERE sr.id_estudiante = e.id_estudiante) AS total_evaluaciones,
+              COALESCE((SELECT ROUND(AVG(sr.estrellas)::numeric, 1) FROM student_ratings sr WHERE sr.id_estudiante = e.id_estudiante), 0) AS promedio_estrellas
        FROM estudiante e
-       LEFT JOIN sesion s ON s.id_estudiante = e.id_estudiante
        WHERE e.estado_aprobacion = 'aprobado'
-       GROUP BY e.id_estudiante, e.nombre, e.apellido, e.carnet, e.foto_url
-       ORDER BY promedio_estrellas DESC, nombre ASC`
+       ORDER BY promedio_estrellas DESC, nombre_completo ASC`
     );
     return res.status(200).json({ status: 'success', data: result.rows });
   } catch (error) {
