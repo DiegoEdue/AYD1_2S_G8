@@ -14,3 +14,16 @@ LEFT JOIN tutor_ratings r ON r.id_tutor = t.id_tutor
 WHERE t.estado_aprobacion = 'aprobado'
 GROUP BY t.id_tutor
 ORDER BY promedio DESC NULLS LAST, total_calificaciones DESC, nombre_completo;
+
+
+-- Consulta para obtener el promedio de calificion de estudiantes
+SELECT e.id_estudiante,
+       e.nombre || ' ' || e.apellido AS nombre_completo,
+       ROUND(AVG(r.estrellas), 2)    AS promedio,
+       COUNT(r.id_rating)            AS total_calificaciones
+       
+FROM estudiante e
+LEFT JOIN student_ratings r ON r.id_estudiante = e.id_estudiante
+WHERE e.estado_aprobacion = 'aprobado'
+GROUP BY e.id_estudiante
+ORDER BY promedio DESC NULLS LAST, total_calificaciones DESC, nombre_completo;
