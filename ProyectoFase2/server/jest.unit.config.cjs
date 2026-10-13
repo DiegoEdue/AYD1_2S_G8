@@ -1,5 +1,8 @@
 module.exports = {
-    testEnvironment: "node",
-    testMatch: ["<rootDir>/test-student/UnitTest/**/*.unit.test.js"],
-    clearMocks: true,
+  testEnvironment: "node",
+  testMatch: [
+    "<rootDir>/test-student/UnitTest/**/*.unit.test.js",
+    "<rootDir>/test/**/*.test.js",
+  ],
+  clearMocks: true,
 };
