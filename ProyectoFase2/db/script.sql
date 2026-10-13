@@ -258,3 +258,7 @@ CREATE UNIQUE INDEX uq_sesion_activa_est_fecha_hora
 CREATE UNIQUE INDEX uq_sesion_activa_tutor_fecha_hora
     ON sesion (id_tutor, fecha_sesion, hora_sesion)
     WHERE estado = 'Activa';
+
+-- HU-046: índices para reportes analíticos sobre sesion
+CREATE INDEX idx_sesion_estado_fecha   ON sesion (estado, fecha_sesion); -- sesiones por estado y mes
+CREATE INDEX idx_sesion_materia_estado ON sesion (id_materia, estado); -- cancelación por materia
