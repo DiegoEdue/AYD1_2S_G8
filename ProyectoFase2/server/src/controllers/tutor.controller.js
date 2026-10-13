@@ -450,7 +450,7 @@ const rateStudent = async (req, res) => {
 
 // Reportar Estudiante Problemático, HU-037
 // POST /api/tutor/sessions/:id/report
-const CATEGORIAS_REPORTE_VALIDAS = ['Conducta inapropiada', 'Falsificación de documentos','Agresión verbal o física', 'Robo o dano a instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion_Objetos_Peligrosos', 'Uso_Indebido_Tecnologia', 'Otro'];
+const CATEGORIAS_REPORTE_VALIDAS = ['Conducta inapropiada', 'Falsificacion de documentos','Agresion verbal o fisica', 'Robo o dano a instalaciones', 'Plagio_Copia', 'Inasistencia_Injustificada', 'Incumplimiento_Acuerdos', 'Acoso_Bullying', 'Portacion Objetos Peligrosos', 'Uso Indebido de la Tecnologia'];
 const reportStudent = async (req, res) => {
     const { id } = req.params;
     const { categoria, motivo } = req.body;
@@ -461,12 +461,6 @@ const reportStudent = async (req, res) => {
             status: 'error',
             message: `Categoría de reporte inválida. Debe de ser una de: ${CATEGORIAS_REPORTE_VALIDAS.join(', ')}`,
         });
-        // if (!categoria || typeof categoria !== 'string' || categoria.trim().length === 0) {
-        //     return res.status(400).json({
-        //         status: 'error',
-        //         message: 'La categoría del reporte es obligatoria.',
-        //     });
-        // }
     }
 
     if (!motivo || typeof motivo !== 'string' || motivo.trim().length === 0) {
