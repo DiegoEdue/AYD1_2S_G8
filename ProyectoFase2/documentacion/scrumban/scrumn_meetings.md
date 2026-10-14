@@ -172,46 +172,46 @@ Duración del Sprint: `42:39 minutos`
 
 ### 4.1 Sprint Planning 4
 
-Fecha `24/08/2026`  
-Duración del Sprint: `17:38 minutos`
+Fecha `30/09/2026`  
+Duración del Sprint: `17:10 minutos`
 **Grabaciones:**
 
-- [Sprint Planning](https://drive.google.com/file/d/18F_hiD1wqGPuwVtZo3DGNiah3e9-lmmN/view?usp=drive_link)
+- [Sprint Planning](https://drive.google.com/file/d/1wN3e522beCrOslGw57oI4QtgqYZYjmIC/view?usp=drive_link)
 
 ### 4.2 Daily Scrum  
 
 #### 4.2.1 Daily 1
 
-- Duración: `6:29 minutos`  
-- Enlace: [Daily 1](https://drive.google.com/file/d/1o3HP9X_bro9ykAGz_jCPubwFNIEAbB-R/view?usp=drive_link)
+- Duración: `6:10 minutos`  
+- Enlace: [Daily 1](https://drive.google.com/file/d/1oW2DWNA1pPIYfsufgh8mDCS0s_VCI94q/view?usp=drive_link)
 
 #### 4.2.2 Daily 2
 
-- Duración: `6:58 minutos`  
-- Enlace: [Daily 2](https://drive.google.com/file/d/14kCPHVE5tuGOm6eXcAESIk26q4f9Yadv/view?usp=drive_link)
+- Duración: `6:49 minutos`  
+- Enlace: [Daily 2](https://drive.google.com/file/d/1IYymNLoidVIUSo7oj6ROXt5ESZ5sDj5d/view?usp=drive_link)
 
 #### 4.2.3 Daily 3
 
-- Duración: `6:54 minutos`
-- Enlace: [Daily 3](https://drive.google.com/file/d/1MFU_74S5Qd__oPYh_XA3B_E7zfnGMTmW/view?usp=drive_link)
+- Duración: `7:45 minutos`
+- Enlace: [Daily 3](https://drive.google.com/file/d/1CitCO7qpZVIKssDfX-_7dJCN5GR0aWor/view?usp=drive_link)
 
 #### 4.2.4 Daily 4
 
-- Duración: `5:39 minutos`  
-- Enlace: [Daily 4](https://drive.google.com/file/d/1HHZomNgzBASHns-N-noK5we3XyHpe_V0/view?usp=drive_link)
+- Duración: `7:55 minutos`  
+- Enlace: [Daily 4](https://drive.google.com/file/d/1cVDB9jvGWZSuWmtCRVY5b4W3rKKIITVH/view?usp=drive_link)
 
 #### 4.2.5 Daily 5
 
-- Duración: `6:23 minutos`
-- Enlace: [Daily 5](https://drive.google.com/file/d/15qj0GP0Y6UXNBUoJ4ujHNBIxooliIi1D/view?usp=drive_link)
+- Duración: `7:30 minutos`
+- Enlace: [Daily 5](https://drive.google.com/file/d/1AguBJHZ97jaWBJc4LQC__AlS-q9Htxem/view?usp=drive_link)
 
 #### .2.6 Daily 6
 
-- Duración: `5:10 minutos`
-- Enlace: [Daily 6](https://drive.google.com/file/d/1yxYEOrm-FnOls-0Jo00FYK82hwk23LNi/view?usp=drive_link)
+- Duración: `7:33 minutos`
+- Enlace: [Daily 6](https://drive.google.com/file/d/1v9Hn1PiGILKD3StlWn3wb-FvspRpFHlu/view?usp=drive_link)
 
 ### 4.3 Sprint Retrospective
 
-- Fecha `01/09/2026`  
-- Duración: `21:08 minutos`
-- Enlace: [Sprint Retrospective](https://drive.google.com/file/d/1Qxbf60Y9z4ivG_jM7tmCR2zN1AFENVex/view?usp=drive_link)
+- Fecha `07/10/2026`  
+- Duración: `35:30 minutos`
+- Enlace: [Sprint Retrospective](https://drive.google.com/file/d/1rcdDyrD-iVxKQhHUL0oHbFzZNoY6odtg/view?usp=drive_link)
