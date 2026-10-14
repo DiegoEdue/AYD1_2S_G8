@@ -60,3 +60,29 @@
 ### Mi perfil Estudiante
 
 ![Perfil](./img/Estudiante%20·%20Mi%20perfil.svg)
+
+## Prototipos para la fase 2
+
+### Reportes Actualizado
+
+![Reportes](./img/Admin%20·%20Reportes.svg)
+
+### Historial de Tutor Actualizado
+
+![Historial](./img/Tutor%20·%20Historial%20de%20Tutorías.svg)
+
+### Historial de Estudiante Actualizado
+
+![Historial](./img/Estudiante%20·%20Historial%20de%20tutorías.svg)
+
+### Denuncias
+
+![Denuncias](./img/Admin%20·%20Denuncias.svg)
+
+### Planes de estudio
+
+![Plan](./img/Estudiante%20·%20Planes%20de%20estudio.svg)
+
+### Plan de estudio tutor
+
+![Plan](./img/Tutor%20·%20Enviar%20plan%20de%20estudio.svg)
