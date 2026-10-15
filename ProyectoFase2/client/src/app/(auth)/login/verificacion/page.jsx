@@ -1,165 +1,159 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { useToast } from "@/components/ui/Toast";
 import Button from "@/components/ui/Button";
-import FormField, { inputClass } from "@/components/ui/FormField";
+import FormField from "@/components/ui/FormField";
+import OtpInput from "@/components/ui/OtpInput";
 
-export default function LoginPage() {
-    const { login, loginComoAdmin } = useAuth();
+export default function VerificacionPrimerInicioPage() {
+    const { login, resendVerification } = useAuth();
     const { mostrarToast } = useToast();
     const router = useRouter();
 
-    const [identificador, setIdentificador] = useState("");
-    const [password, setPassword] = useState("");
-    const [errores, setErrores] = useState({});
+    const [codigo, setCodigo] = useState("");
     const [cargando, setCargando] = useState(false);
-    const [errorGeneral, setErrorGeneral] = useState("");
+    const [error, setError] = useState("");
 
-    function validar() {
-        const e = {};
-        if (!identificador.trim()) {
-            e.identificador = "Ingresa tu correo electrónico";
+    const [data] = useState(() => {
+        if (typeof window === "undefined") return null;
+        const raw = window.sessionStorage.getItem("educonnect_pending_auth");
+        if (!raw) return null;
+        try {
+            return JSON.parse(raw);
+        } catch {
+            window.sessionStorage.removeItem("educonnect_pending_auth");
+            return null;
         }
-        if (!password) {
-            e.password = "Ingresa tu contraseña.";
+    });
+
+    useEffect(() => {
+        if (!data) {
+            router.push("/login");
         }
-        setErrores(e);
-        return Object.keys(e).length === 0;
-    }
+    }, [data, router]);
+
+    if (!data) return null;
 
     async function onSubmit(ev) {
         ev.preventDefault();
-        setErrorGeneral("");
-        if (!validar()) return;
+        setError("");
+
+        if (!codigo || codigo.trim().length < 6) {
+            setError("Ingresa el código de 6 dígitos enviado a tu correo.");
+            return;
+        }
 
         setCargando(true);
-        const inputLimpio = identificador.trim();
-        const tieneArroba = inputLimpio.includes("@");
-        const credenciales = { email: inputLimpio, password };
-
         try {
-            let resultado;
-            if (tieneArroba) {
-                try {
-                    resultado = await login(credenciales);
-                } catch (errEst) {
-                    try {
-                        resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
-                    } catch {
-                        throw errEst;
-                    }
-                }
-            } else {
-                try {
-                    resultado = await loginComoAdmin({ nombre_usuario: inputLimpio, password });
-                } catch (errAdmin) {
-                    try {
-                        resultado = await login(credenciales);
-                    } catch {
-                        throw errAdmin;
-                    }
-                }
-            }
+            // Pasamos verification_token como lo requiere auth.js
+            const respuesta = await login({
+                email: data.identificador,
+                password: data.password,
+                verification_token: codigo.trim(),
+            });
 
-            // Redirección para 2FA
-            if (resultado?.requiereSegundoFactor) {
-                sessionStorage.setItem(
-                    "educonnect_2fa",
-                    JSON.stringify({
-                        adminId: resultado.adminId,
-                        status: resultado.status,
-                        qr_code: resultado.qr_code ?? null,
-                    })
-                );
-                router.push("/login/segundo-factor");
+            // Si el token aún es inválido o expiró
+            if (respuesta?.requiresVerification) {
+                setError(respuesta.message || "Código de verificación inválido o expirado.");
                 return;
             }
 
-            // Redirección para primer inicio de sesión / Verificación por correo
-            if (resultado?.requiresVerification) {
-                sessionStorage.setItem(
-                    "educonnect_pending_auth",
-                    JSON.stringify({
-                        identificador: inputLimpio,
-                        password,
-                        tokenExpired: resultado.tokenExpired || false,
-                    })
-                );
-                router.push("/login/verificacion");
-                return;
-            }
-
-            mostrarToast("Bienvenido a EduConnect.", "exito");
+            sessionStorage.removeItem("educonnect_pending_auth");
+            mostrarToast("Correo verificado exitosamente. ¡Bienvenido!", "exito");
         } catch (err) {
-            setErrorGeneral(err.message || "Credenciales incorrectas.");
+            setError(err.message || "Código de verificación inválido o expirado.");
+        } finally {
+            setCargando(false);
+        }
+    }
+
+    async function handleReenviar() {
+        setCargando(true);
+        setError("");
+        try {
+            if (resendVerification) {
+                await resendVerification({ email: data.identificador });
+            }
+            mostrarToast("Nuevo código enviado a tu correo institucional.", "exito");
+        } catch (err) {
+            setError(err.message || "Error al solicitar un nuevo código.");
         } finally {
             setCargando(false);
         }
     }
 
     return (
-        <div className="flex min-h-screen items-center justify-center bg-paper px-4 py-10">
+        <div className="flex min-h-screen items-center justify-center bg-charcoal px-4 py-10">
             <div className="w-full max-w-md overflow-hidden rounded-card bg-white shadow-soft">
                 <div className="p-8">
-                    <h1 className="font-display text-2xl text-charcoal">EduConnect - G8</h1>
+                    <h1 className="font-display text-xl text-charcoal">
+                        Verifica tu correo electrónico
+                    </h1>
                     <p className="mt-1 text-sm text-charcoal-light">
-                        Inicia sesión para gestionar tus tutorías académicas.
+                        Es tu primer inicio de sesión. Ingresa el código de 6 dígitos que enviamos a{" "}
+                        <strong className="break-all font-semibold text-charcoal">{data.identificador}</strong>.
                     </p>
 
-                    {errorGeneral && (
+                    {error && (
                         <div
                             role="alert"
                             className="mt-4 rounded-lg border border-crimson/30 bg-crimson-light/30 px-4 py-3 text-sm text-crimson-dark"
                         >
-                            {errorGeneral}
+                            {error}
                         </div>
                     )}
 
                     <form onSubmit={onSubmit} noValidate className="mt-6 flex flex-col gap-4">
                         <FormField
-                            label="Correo electrónico"
-                            name="identificador"
+                            label="Código de verificación"
+                            name="codigo"
                             required
-                            error={errores.identificador}
                         >
-                            <input
-                                id="identificador"
-                                type="text"
-                                autoComplete="username"
-                                value={identificador}
-                                onChange={(e) => setIdentificador(e.target.value)}
-                                className={inputClass(!!errores.identificador)}
-                                placeholder="tucorreo@usac.edu.gt"
+                            <OtpInput
+                                length={6}
+                                value={codigo}
+                                onChange={(valor) => {
+                                    setCodigo(valor);
+                                    if (error) setError("");
+                                }}
+                                status={error ? "error" : "idle"}
+                                disabled={cargando}
+                                autoFocus
+                                aria-label="Código enviado a tu correo"
                             />
                         </FormField>
 
-                        <FormField label="Contraseña" name="password" required error={errores.password}>
-                            <input
-                                id="password"
-                                type="password"
-                                autoComplete="current-password"
-                                value={password}
-                                onChange={(e) => setPassword(e.target.value)}
-                                className={inputClass(!!errores.password)}
-                                placeholder="••••••••"
-                            />
-                        </FormField>
+                        <div className="flex gap-3">
+                            <Link href="/login" className="flex-1">
+                                <Button
+                                    variante="fantasma"
+                                    type="button"
+                                    className="w-full"
+                                    disabled={cargando}
+                                    onClick={() => sessionStorage.removeItem("educonnect_pending_auth")}
+                                >
+                                    Atrás
+                                </Button>
+                            </Link>
+                            <Button type="submit" cargando={cargando} className="flex-1">
+                                Verificar e ingresar
+                            </Button>
+                        </div>
 
-                        <Button type="submit" cargando={cargando} className="mt-2 w-full">
-                            Iniciar sesión
+                        <Button
+                            type="button"
+                            variante="fantasma"
+                            className="mt-1 w-full text-xs"
+                            onClick={handleReenviar}
+                            disabled={cargando}
+                        >
+                            ¿No recibiste el código? Reenviar correo
                         </Button>
                     </form>
-
-                    <p className="mt-6 text-center text-sm text-charcoal-light">
-                        ¿Aún no tienes cuenta?{" "}
-                        <Link href="/registro" className="font-semibold text-crimson hover:underline">
-                            Regístrate aquí
-                        </Link>
-                    </p>
                 </div>
             </div>
         </div>
