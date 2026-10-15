@@ -271,11 +271,11 @@ En este sprint se seleccionaron todas las historias de usuario con **prioridad a
 
 ### 6.1 Descripción del Sprint Backlog
 
-En este sprint se agregaron nuevas historias de usuario enfocadas en la documentación, pruebas y deslpliegue del sistema. Se abordaron aquellas etiquetadas como **prioridad media (amarillas)** y **prioridad baja (azules)**.
+En este sprint se agregaron nuevas historias de usuario enfocadas en la documentación, pruebas y deslpliegue del sistema. Se abordaron aquellas etiquetadas como **prioridad media (amarillas)**.
 
 > [!IMPORTANT]
 >
-> En el segundo sprint se siguió la metodología Scrumban, acá ya se agregó la 6ta. columna correspondiente a las historias de usuario (Product Backlog). Además cada historia de usuario correspondiente a este sprint se descompuso en tareas más pequeñas para ser más especifícos a la hora de realizarlas y así poder llevar un mejor control en el tablero.
+> En el cuarto sprint se trabajaron las historias de usuario de prioridad media y ya se desplegó el front completo en Vercel y el contenedor del backend en una instacia de AWS.
 
 ### 6.1.1 Historias de Usuario Abordadas
 
@@ -300,47 +300,57 @@ En este sprint se agregaron nuevas historias de usuario enfocadas en la document
 
 #### 6.1.2.1 Estado Inicial
 
-![Sprint 2 - Tablero Inicial (Parte 1)](./img/IS1.png)  
-![Sprint 2 - Tablero Inicial (Parte 2)](./img/IS2.png)  
-![Sprint 2 - Tablero Inicial (Parte 3)](./img/IS3.png)  
-![Sprint 2 - Tablero Inicial (Parte 4)](./img/IS4.png)  
-![Sprint 2 - Tablero Inicial (Parte 5)](./img/IS5.png)  
-![Sprint 2 - Tablero Inicial (Parte 6)](./img/IS6.png)  
-![Sprint 2 - Tablero Inicial (Parte 7)](./img/IS7.png)  
-![Sprint 2 - Tablero Inicial (Parte 8)](./img/IS8.png)  
-![Sprint 2 - Tablero Inicial (Parte 9)](./img/IS9.png)  
-![Sprint 2 - Tablero Inicial (Parte 10)](./img/IS10.png)  
-![Sprint 2 - Tablero Inicial (Parte 11)](./img/IS11.png)  
-![Sprint 2 - Tablero Inicial (Parte 12)](./img/IS12.png)
+![Sprint 4 - Tablero Inicial (Parte 1)](./img/FT1.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 2)](./img/FT2.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 3)](./img/FT3.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 4)](./img/FT4.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 5)](./img/FT5.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 6)](./img/FT6.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 7)](./img/FT7.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 8)](./img/FT8.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 9)](./img/FT9.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 10)](./img/FT10.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 11)](./img/FT11.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 12)](./img/FT12.jpeg)  
+![Sprint 4 - Tablero Inicial (Parte 13)](./img/FT13.jpeg)
 
 #### 6.1.2.2 Estado Intermedio
 
-![Sprint 2 - Mitad del Srint (Parte 1)](./img/MS1.png)  
-![Sprint 2 - Mitad del Srint (Parte 2)](./img/MS2.png)  
-![Sprint 2 - Mitad del Srint (Parte 3)](./img/MS3.png)  
-![Sprint 2 - Mitad del Srint (Parte 4)](./img/MS4.png)  
-![Sprint 2 - Mitad del Srint (Parte 5)](./img/MS5.png)  
-![Sprint 2 - Mitad del Srint (Parte 6)](./img/MS6.png)  
-![Sprint 2 - Mitad del Srint (Parte 7)](./img/MS7.png)  
-![Sprint 2 - Mitad del Srint (Parte 8)](./img/MS8.png)
+![Sprint 4 - Mitad del Srint (Parte 1)](./img/MC1.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 2)](./img/MC2.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 3)](./img/MC3.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 4)](./img/MC4.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 5)](./img/MC5.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 6)](./img/MC6.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 7)](./img/MC7.jpeg)  
+![Sprint 4 - Mitad del Srint (Parte 8)](./img/MC8.jpeg)
+![Sprint 4 - Mitad del Srint (Parte 9)](./img/MC9.jpeg)
 
 #### 6.1.2.3 Estado Final
 
-![Sprint 2 - Final de Sprint (Parte 1)](./img/FS1.png)  
-![Sprint 2 - Final de Sprint (Parte 2)](./img/FS2.png)  
-![Sprint 2 - Final de Sprint (Parte 3)](./img/FS3.png)
-![Sprint 2 - Final de Sprint (Parte 4)](./img/FS4.png)  
-![Sprint 2 - Final de Sprint (Parte 5)](./img/FS5.png)  
-![Sprint 2 - Final de Sprint (Parte 6)](./img/FS6.png)
-![Sprint 2 - Final de Sprint (Parte 7)](./img/FS7.png)  
-![Sprint 2 - Final de Sprint (Parte 8)](./img/FS8.png)  
-![Sprint 2 - Final de Sprint (Parte 9)](./img/FS9.png)
-![Sprint 2 - Final de Sprint (Parte 10)](./img/FS10.png)  
-![Sprint 2 - Final de Sprint (Parte 11)](./img/FS11.png)  
-![Sprint 2 - Final de Sprint (Parte 12)](./img/FS12.png)
-![Sprint 2 - Final de Sprint (Parte 13)](./img/FS13.png)  
-![Sprint 2 - Final de Sprint (Parte 14)](./img/FS14.png)  
-![Sprint 2 - Final de Sprint (Parte 15)](./img/FS15.png)
+![Sprint 4 - Final de Sprint (Parte 1)](./img/FC1.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 2)](./img/FC2.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 3)](./img/FC3.jpeg)
+![Sprint 4 - Final de Sprint (Parte 4)](./img/FC4.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 5)](./img/FC5.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 6)](./img/FC6.jpeg)
+![Sprint 4 - Final de Sprint (Parte 7)](./img/FC7.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 8)](./img/FC8.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 9)](./img/FC9.jpeg)
+![Sprint 4 - Final de Sprint (Parte 10)](./img/FC10.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 11)](./img/FC11.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 12)](./img/FC12.jpeg)
+![Sprint 4 - Final de Sprint (Parte 13)](./img/FC13.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 14)](./img/FC14.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 15)](./img/FC15.jpeg)
+![Sprint 4 - Final de Sprint (Parte 16)](./img/FC16.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 17)](./img/FC17.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 18)](./img/FC18.jpeg)
+![Sprint 4 - Final de Sprint (Parte 19)](./img/FC19.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 20)](./img/FC20.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 21)](./img/FC21.jpeg)
+![Sprint 4 - Final de Sprint (Parte 22)](./img/FC22.jpeg)  
+![Sprint 4 - Final de Sprint (Parte 23)](./img/FC23.jpeg)  
 
 > [!INFO]
 >
