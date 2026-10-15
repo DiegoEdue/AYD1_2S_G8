@@ -241,3 +241,136 @@ En esta sección se visualizan los reportes del sistema. Relacionados a las sesi
 - Asegurese de llenar los campos.
 
 ![Error7](./img/error7.png)
+
+## 9. Funciones nuevas
+
+### Estudiante
+
+El registro cambió, debido a que ahora se solicita tu carnet escaneado en pdf y una fotografía obligatoria.
+
+![registro](./img/registro-estudiante2.png)
+
+Si eres un estudiante nuevo y ya un administrador aprobó tu cuenta, entonces en el primer inicio de sesión se enviará un código de 6 dígitos para confirmar que el correo es válido. Esto únicamente para el primer inicio, ya que en los demás ingresarás solo con tus credenciales.
+
+![verificacion](./img/verificacion.png)
+
+Luego de ya haber recibido alguna tutoría con un tutor es posible calificarlo con 0 o 5 estrellas y además si hubo algún problema durante la sesión es posible denunciarlo.
+
+![historial](./img/historial-student.png)
+
+![calificacion](./img/calificacion-tutor.png)
+
+![reporte](./img/reportar-tutor.png)
+
+![categorias](./img/categorias-tutor.png)
+
+Además luego de que un tutor ya haya marcado como atendida tu tutoría, puede mandarte material de estudio y marcar en los puntos que necesitas mejorar. Esto lo podrás visualizar en un área nueva del sidebar, al clickear ahí podrás observar la nueva vista donde podrás ver los materiales de estudio de cada tutoría y podrás descargar una constancia.
+
+![plan](./img/plan-estudio.png)
+
+Si presionas el pdf se podrá visualizar el pdf en una vista previa del mismo y si gustas puedes abrirlo en una pestaña de tu navegador.
+
+![lector](./img/lector-pdf.png)
+
+### Tutor
+
+El registro cambió, debido a que ahora se solicita tu cv actualizado escaneado en pdf.
+
+![registro](./img/registro-tutor2.png)
+
+Si eres un tutor nuevo y ya un administrador aprobó tu cuenta, entonces en el primer inicio de sesión se enviará un código de 6 dígitos para confirmar que el correo es válido. Esto únicamente para el primer inicio, ya que en los demás ingresarás solo con tus credenciales.
+
+![verificacion](./img/verificacion.png)
+
+Luego de ya haber recibido alguna tutoría con un estudiante es posible calificarlo con 0 o 5 estrellas y además si hubo algún problema durante la sesión es posible denunciarlo.
+
+![historial](./img/historial-tutor.png)
+
+![calificacion](./img/calificacion-estudiante.png)
+
+![reporte](./img/reportar-estudiante.png)
+
+![categorias](./img/categorias-estudiante.png)
+
+Para marcar como atendida una sesión, es necesario remarcar los puntos en los cuales un estudiante debe mejorar. Además es posible agregar material para que pueda estudiar, puede agregar enlaces de vídeos, enlaces de páginas web, pdfs, imágenes y texto.
+
+![plan](./img/plan-estudio-tutor.png)
+
+Si presionas el pdf se podrá visualizar el pdf en una vista previa del mismo y si gustas puedes abrirlo en una pestaña de tu navegador.
+
+![lector](./img/lector-pdf.png)
+
+### Administrador
+
+El segundo factor de autenticación fue modificado visualmente, debido a que ahora existe un recuadro por cada número del código que se debe de ingresar.
+
+![2fa](./img/segundo-factor-admin.png)
+
+Como administrador podemos aceptar o rechazar las solicitudes de nuevos usuarios.
+
+![rechazar](./img/rechazar-solicitud.png)
+
+![aprobar](./img/arpobar-registro.png)
+
+Como administrador se pueden ver todas las denuncias que han hecho los tutores y estudiantes. El motivo de su denuncia y ya el administrador tiene la decisión de dar de baja al usuario o rechazar la denuncia.
+
+![denuncias](./img/denuncias-estudiantes.png)
+
+![reportes](./img/denuncias-tutores.pngg)
+
+![baja](./img/dardebaja-usuarios.png)
+
+![rechazar](./img/rechazar-denuncia.png)
+
+Ahora en el área de usuarios que ya son parte del sistema, existe una opción para visualizar sus documentos que fueron cargados al registrarse y otra opción para poder editar sus datos a excepción de su correo, carnet o número de identificación.
+
+![usuarios](./img/usuarios-admin2.png)
+
+![usuarios](./img/usuarios-admin3.png)
+
+![editar](./img/editar-usuarios.png)
+
+![visor](./img/visor-pdf.png)
+
+En el área de reportes ahora existen 2 reportes nuevos, los cuales nos dan un promedio de calificación de cada tutor o estudiante y la cantidad de calificaciones que tiene cada uno de ellos.
+
+![reportes](./img/reportes-admin2.png)
+
+![reportes](./img/reportes-tutores.png)
+
+## 10. Solución de errores cómunes
+
+### No puedo registrarme
+
+- Es necesario que llene todos los campos de registro.
+- Es necesario que adjunte su fotografía y carnet o cv.
+
+![Error14](./img/error14.png)
+
+![Error15](./img/error15.png)
+
+## No puedo ingresar
+
+- Verifique que el código de autenticación es correcto.
+- Verifique que el código de autenticación no esté vencido.
+
+![Error16](./img/error16.png)
+
+### No puedo calificar
+
+- Verifique que haya escogido una nota para el tutor o estudiante.
+- En el caso del tutor, verifique haber añadido un comentario a su calificación.
+
+![Error10](./img/error10.png)
+
+![Error12](./img/error12.png)
+
+### No puedo denunciar
+
+- Verifique haber escogigo un motivo para su denuncia.
+- Es necesario que especifique el motivo de su denuncia.
+- El comentario que añadirá debe de tener al menos 20 carácteres.
+
+![Error13](./img/error13.png)
+
+![Error11](./img/error11.png)
