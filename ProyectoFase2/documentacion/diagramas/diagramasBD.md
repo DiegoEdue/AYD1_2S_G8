@@ -1,7 +1,8 @@
 
 
 ## Modelo Logico
-![Modelo Logico](image/Logical.png)
+![Modelo Logico](image/modelo_logico.jpg)
+
 
 ## Modelo Relacional
 ![Modelo Relacional](image/Relational_1.png)
