@@ -28,13 +28,13 @@ Este diagrama muestra el flujo mediante el cual el estudiante localiza tutores s
 
 ![CUN-03](image/cun03.png)
 
-## Expansión — CUN-04 Atender y Registrar Retroalimentación
+## Expansión — CUN-04 Gestionar Ciclo de Vida de Sesiones
 
 **Descripción**
 
-Este diagrama describe la interacción del tutor con las sesiones que tiene pendientes, incluyendo la consulta ordenada de dicha lista y la posibilidad de atender una sesión específica registrando el resumen correspondiente, lo que cierra formalmente el ciclo de la tutoría.
+Este diagrama integra el ciclo de vida completo de una sesión de tutoría una vez programada: la consulta de las sesiones pendientes del tutor y de las sesiones activas del estudiante, la atención de la sesión registrando un plan de estudio estructurado (dificultades identificadas y recursos recomendados), la cancelación por parte del estudiante o del tutor (esta última con notificación automática por correo al estudiante afectado), la consulta del historial de sesiones atendidas y canceladas de ambos roles, y la consulta del plan de estudio por parte del estudiante con la opción de descargar su constancia en PDF.
 
-![CUN-04](image/CUN-04.png)
+![CUN-04](image/cun04.png)
 
 ## Expansión — CUN-05 Cancelar Sesiones y Notificar
 
