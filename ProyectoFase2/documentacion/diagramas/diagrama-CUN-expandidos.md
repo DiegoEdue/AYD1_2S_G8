@@ -8,9 +8,9 @@ Los diagramas de esta sección expanden cada uno de los siete procesos de negoci
 
 **Descripción**
 
-Este diagrama detalla el proceso de gestión de cuenta y acceso, abarcando el registro de estudiantes y tutores, la aprobación o rechazo de dichas solicitudes por parte del administrador, el inicio de sesión con su respectiva notificación por correo, la validación del segundo factor de autenticación exclusiva del administrador, y la gestión del perfil propio de cada usuario.
+Este diagrama detalla el proceso de gestión de cuenta y acceso, abarcando el registro de estudiantes y tutores con el envío del token de verificación a su correo, la aprobación o rechazo de dichas solicitudes por parte del administrador mediante la revisión de los documentos PDF del solicitante y la notificación del resultado por correo, el inicio de sesión, la verificación del correo con el token en el primer acceso de estudiantes y tutores, la validación del segundo factor de autenticación exclusiva del administrador, y la gestión del perfil propio de cada usuario.
 
-![CUN-01](image/CUN-01.png)
+![CUN-01](image/cun01.png)
 
 ## Expansión — CUN-02 Configurar Horarios y Disponibilidad
 
