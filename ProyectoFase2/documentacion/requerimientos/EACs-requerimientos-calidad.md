@@ -1,46 +1,46 @@
 # Requerimientos de Calidad - EAC
 
-> Documento basado en las historias de usuario de EduConnect y estructurado con el formato sugerido para escenarios de atributos de calidad.
+> Escenarios de calidad para los flujos disponibles en EduConnect. Las cifras indicadas son objetivos de aceptación; no representan mediciones de rendimiento o disponibilidad ya realizadas.
 
 ## 1. Eficiencia
 
-### EAC-1: Tiempo de carga del catálogo de tutores
+### EAC-1: Tiempo de respuesta del catálogo de tutores
 
 **ID:** EAC-1  
 **Atributo de calidad:** Rendimiento  
-**Escenario crudo:** Un estudiante consulta el catálogo de tutores al mismo tiempo que varios compañeros buscan por materia, universidad o experiencia.  
-**Estímulo:** Solicitud de visualización del catálogo con filtros activos.  
+**Escenario crudo:** Un estudiante autenticado consulta el catálogo de tutores aprobados y aplica filtros por materia, universidad, experiencia, género o edad.  
+**Estímulo:** Solicitud de consulta del catálogo o cambio de filtros.  
 **Fuente del estímulo:** Estudiante  
 **Entorno:** Hora pico de uso con varios usuarios concurrentes.  
-**Artefacto:** API de tutores, base de datos y interfaz web.  
-**Respuesta esperada:** El sistema devuelve la lista de tutores con filtros aplicados sin atrasos perceptibles.  
-**Medida de la respuesta:** 95% de consultas resueltas en menos de 2 segundos.  
+**Artefacto:** API del catálogo, consultas a PostgreSQL e interfaz web con filtros.  
+**Respuesta esperada:** El sistema muestra tutores aprobados y sus materias y disponibilidad; la interfaz aplica los filtros solicitados.  
+**Medida de la respuesta:** Objetivo: 95% de consultas resueltas en menos de 2 segundos con 50 usuarios concurrentes.  
 **Objetivo de negocio:** Mantener una experiencia fluida y evitar abandono durante la elección de tutor.
 
-### EAC-2: Respuesta del sistema al agendar sesión
+### EAC-2: Respuesta del sistema al programar una sesión
 
 **ID:** EAC-2  
 **Atributo de calidad:** Rendimiento  
-**Escenario crudo:** Varios estudiantes intentan agendar tutorías simultáneamente para el mismo tutor.  
-**Estímulo:** Confirmación de sesión.  
+**Escenario crudo:** Un estudiante autenticado selecciona tutor, materia, fecha y hora y solicita una sesión.  
+**Estímulo:** Envío de la solicitud de programación.  
 **Fuente del estímulo:** Estudiante  
-**Entorno:** Alta concurrencia en el proceso de reserva.  
-**Artefacto:** Motor de horarios, validación de disponibilidad y API de sesiones.  
-**Respuesta esperada:** El sistema valida la disponibilidad y confirma o rechaza la sesión con un mensaje claro.  
-**Medida de la respuesta:** 99% de las validaciones ejecutadas en menos de 1.5 segundos.  
+**Entorno:** Uso normal y solicitudes concurrentes para un mismo tutor y horario.  
+**Artefacto:** Validación de disponibilidad, API de sesiones y base de datos.  
+**Respuesta esperada:** El sistema valida día, rango horario, materia y ocupación; crea la sesión o informa el motivo del rechazo.  
+**Medida de la respuesta:** Objetivo: 99% de solicitudes respondidas en menos de 1.5 segundos; ninguna reserva debe confirmarse fuera del horario o en una franja ya ocupada.  
 **Objetivo de negocio:** Garantizar reservas confiables sin frustración por retrasos o duplicaciones.
 
-### EAC-3: Carga del panel administrativo
+### EAC-3: Carga de reportes administrativos
 
 **ID:** EAC-3  
 **Atributo de calidad:** Rendimiento  
-**Escenario crudo:** El administrador consulta el dashboard de reportes y los listados de aprobación cuando existe alta actividad en la plataforma.  
-**Estímulo:** Solicitud de reportes y listas administrativas.  
+**Escenario crudo:** El administrador consulta las estadísticas de sesiones, las calificaciones o las solicitudes pendientes.  
+**Estímulo:** Apertura de un reporte o listado administrativo.  
 **Fuente del estímulo:** Administrador  
-**Entorno:** Uso normal con volumen alto de registros y sesiones.  
-**Artefacto:** Módulo administrativo y servicios de consultas.  
-**Respuesta esperada:** La interfaz muestra la información sin bloqueos ni tiempos muertos.  
-**Medida de la respuesta:** Carga completa del panel en menos de 4 segundos en 95% de las consultas.  
+**Entorno:** Uso normal con un volumen representativo de sesiones, usuarios y evaluaciones.  
+**Artefacto:** Módulo administrativo y consultas agregadas a la base de datos.  
+**Respuesta esperada:** La interfaz muestra totales, estados, sesiones por materia y tutor, cancelaciones, demanda horaria y calificaciones disponibles.  
+**Medida de la respuesta:** Objetivo: 95% de consultas completas en menos de 4 segundos. Los reportes se calculan al consultarlos; no son una transmisión en tiempo real.  
 **Objetivo de negocio:** permitir decisiones ágiles y soporte operativo eficiente.
 
 ---
@@ -51,40 +51,40 @@
 
 **ID:** EAC-4  
 **Atributo de calidad:** Disponibilidad  
-**Escenario crudo:** Un estudiante o tutor intenta iniciar sesión durante una hora de alta demanda.  
-**Estímulo:** Login y navegación básica en la plataforma.  
+**Escenario crudo:** Un estudiante o tutor intenta acceder con sus credenciales y, cuando corresponde, verifica su correo electrónico.  
+**Estímulo:** Inicio de sesión o envío del código de verificación.  
 **Fuente del estímulo:** Estudiante, Tutor, Administrador  
 **Entorno:** Operación normal con picos de uso.  
-**Artefacto:** Servicios de autenticación y frontend principal.  
-**Respuesta esperada:** El sistema permanece disponible y responde al usuario con mensajes claros si hay demora o error.  
-**Medida de la respuesta:** Disponibilidad del 99.5% mensual.  
+**Artefacto:** API de autenticación, correo de verificación y frontend principal.  
+**Respuesta esperada:** El sistema valida credenciales, estado de aprobación y verificación del correo, y comunica claramente el resultado.  
+**Medida de la respuesta:** Objetivo de disponibilidad del 99.5% mensual, medido sobre los servicios desplegados.  
 **Objetivo de negocio:** asegurar acceso constante a la plataforma y continuidad del servicio educativo.
 
 ### EAC-5: Integridad de sesiones y horarios
 
 **ID:** EAC-5  
 **Atributo de calidad:** Confiabilidad  
-**Escenario crudo:** El tutor modifica su horario mientras existen sesiones programadas en conflicto.  
+**Escenario crudo:** El tutor modifica los días u horas de atención mientras tiene sesiones activas fuera del nuevo horario.  
 **Estímulo:** Cambio de disponibilidad del tutor.  
 **Fuente del estímulo:** Tutor  
 **Entorno:** Actualización de horarios en cualquier momento.  
 **Artefacto:** Lógica de validación de horarios y base de datos.  
 **Respuesta esperada:** El sistema impide la actualización y advierte al usuario que debe reprogramar o cancelar sesiones conflictivas.  
-**Medida de la respuesta:** 100% de las actualizaciones conflictivas bloqueadas y notificadas.  
+**Medida de la respuesta:** 100% de actualizaciones conflictivas rechazadas; la respuesta debe identificar las sesiones que impiden el cambio.  
 **Objetivo de negocio:** prevenir inconsistencias operativas y mantener la confianza del estudiante.
 
-### EAC-6: Persistencia de aprobaciones y cambios de estado
+### EAC-6: Consistencia de cambios de estado y bajas
 
 **ID:** EAC-6  
 **Atributo de calidad:** Confiabilidad  
-**Escenario crudo:** El administrador aprueba o rechaza un registro y la plataforma debe reflejar ese cambio de forma consistente.  
-**Estímulo:** Cambio de estado del usuario.  
-**Fuente del estímulo:** Administrador  
+**Escenario crudo:** El administrador aprueba o rechaza una solicitud, da de baja una cuenta, o un participante cancela o atiende una sesión.  
+**Estímulo:** Cambio de estado o eliminación de una entidad del flujo.  
+**Fuente del estímulo:** Administrador, Estudiante o Tutor  
 **Entorno:** Operación normal del flujo de aprobación.  
-**Artefacto:** Servicios de administración y base de datos.  
-**Respuesta esperada:** El estado del usuario cambia de manera consistente y la notificación se envía correctamente.  
-**Medida de la respuesta:** 100% de cambios registrados con trazabilidad y sin inconsistencias de estado.  
-**Objetivo de negocio:** mantener la integridad del proceso de validación académica.
+**Artefacto:** Servicios de administración y sesiones, base de datos y servicio de correo cuando aplique.  
+**Respuesta esperada:** El sistema persiste el nuevo estado y lo muestra de forma consistente. El envío de correo es una operación externa; un fallo de correo no debe revertir una transición ya persistida y debe quedar registrado para soporte.  
+**Medida de la respuesta:** 100% de transiciones válidas persistidas una sola vez y de bajas reflejadas consistentemente en los listados correspondientes.  
+**Objetivo de negocio:** mantener la integridad de las solicitudes y de la agenda de tutorías.
 
 ---
 
@@ -94,40 +94,40 @@
 
 **ID:** EAC-7  
 **Atributo de calidad:** Seguridad  
-**Escenario crudo:** Un usuario intenta acceder a la plataforma con credenciales incorrectas o con intención de forzar acceso.  
-**Estímulo:** Intento de login.  
+**Escenario crudo:** Un usuario intenta acceder con credenciales incorrectas, una cuenta pendiente/rechazada o sin verificar el correo requerido.  
+**Estímulo:** Intento de inicio de sesión.  
 **Fuente del estímulo:** Usuario no autorizado o atacante  
 **Entorno:** Operación normal y acceso remoto.  
-**Artefacto:** Sistema de autenticación y validación de credenciales.  
-**Respuesta esperada:** El sistema valida credenciales y rechaza accesos no autorizados.  
-**Medida de la respuesta:** 100% de intentos inválidos bloqueados por validación; ninguna credencial se expone en la interfaz.  
+**Artefacto:** Sistema de autenticación, verificación de correo y gestión de estados de cuenta.  
+**Respuesta esperada:** El sistema compara la contraseña con su hash, bloquea cuentas no autorizadas y solicita el código de correo en el primer acceso que lo requiera.  
+**Medida de la respuesta:** 100% de intentos inválidos o no autorizados rechazados; las respuestas no incluyen hashes ni contraseñas.  
 **Objetivo de negocio:** proteger la información académica y la identidad de usuarios.
 
 ### EAC-8: Control de acceso por rol
 
 **ID:** EAC-8  
 **Atributo de calidad:** Seguridad  
-**Escenario crudo:** Un estudiante intenta acceder a funciones administrativas o un tutor intenta visualizar datos de otros perfiles.  
+**Escenario crudo:** Un usuario intenta acceder a una operación protegida que corresponde a otro rol o a datos de otra cuenta.  
 **Estímulo:** Navegación o solicitud de operación protegida.  
 **Fuente del estímulo:** Usuario autenticado  
 **Entorno:** Uso normal del sistema.  
 **Artefacto:** Middleware de autenticación y control de permisos.  
 **Respuesta esperada:** El sistema restringe el acceso a funciones fuera de su rol y no permite visualizar información ajena.  
-**Medida de la respuesta:** 100% de accesos no autorizados bloqueados.  
+**Medida de la respuesta:** 100% de solicitudes sin JWT válido o con rol incorrecto rechazadas por la API.  
 **Objetivo de negocio:** mantener la confidencialidad de la información del sistema.
 
-### EAC-9: Seguridad de la contraseña
+### EAC-9: Protección de credenciales y segundo factor
 
 **ID:** EAC-9  
 **Atributo de calidad:** Seguridad  
-**Escenario crudo:** Un usuario registra una contraseña débil o intenta reutilizar una insegura.  
-**Estímulo:** Registro o actualización de contraseña.  
+**Escenario crudo:** Un usuario registra o cambia su contraseña, o un administrador intenta completar el inicio de sesión sin un código TOTP válido.  
+**Estímulo:** Alta/cambio de credenciales o verificación del segundo factor.  
 **Fuente del estímulo:** Estudiante, Tutor, Administrador  
-**Entorno:** Proceso de registro y edición de perfil.  
-**Artefacto:** Validación de contraseña y almacenamiento seguro.  
-**Respuesta esperada:** El sistema exige criterios mínimos de complejidad y almacena la contraseña en forma encriptada.  
-**Medida de la respuesta:** 100% de contraseñas rechazadas si no cumplen requisitos mínimos; 100% de almacenamientos con cifrado.  
-**Objetivo de negocio:** reducir riesgos de acceso indebido y cumplimiento de políticas de seguridad.
+**Entorno:** Registro, edición del perfil e inicio de sesión administrativo.  
+**Artefacto:** Validaciones de contraseña, almacenamiento de hashes y autenticación TOTP.  
+**Respuesta esperada:** Las contraseñas se almacenan como hash; el cambio de contraseña del estudiante requiere su contraseña actual y la sesión administrativa solo se emite tras validar el código TOTP, cuyo secreto se almacena cifrado.  
+**Medida de la respuesta:** 100% de contraseñas almacenadas como hash; 100% de códigos TOTP inválidos rechazados. La interfaz de registro requiere al menos ocho caracteres con mayúscula, minúscula y número.  
+**Objetivo de negocio:** proteger las cuentas y reducir el riesgo de acceso indebido.
 
 ---
 
@@ -137,26 +137,26 @@
 
 **ID:** EAC-10  
 **Atributo de calidad:** Usabilidad  
-**Escenario crudo:** Un nuevo usuario intenta completar el formulario de registro y necesita validar qué campos son obligatorios y cómo elegir su modalidad de tutoría o género.  
+**Escenario crudo:** Un estudiante o tutor completa el registro, adjunta la documentación solicitada y selecciona las opciones disponibles para género y modalidad de tutoría.  
 **Estímulo:** Completar formulario de registro.  
 **Fuente del estímulo:** Estudiante o Tutor  
 **Entorno:** Primer uso de la plataforma.  
-**Artefacto:** Formularios de registro y validación en frontend.  
-**Respuesta esperada:** El usuario identifica claramente los campos obligatorios y recibe mensajes específicos si algún dato es incorrecto.  
-**Medida de la respuesta:** 90% de usuarios capaces de completar el registro sin asistencia en primera instancia.  
+**Artefacto:** Formularios de registro, validaciones frontend y API de registro.  
+**Respuesta esperada:** El usuario identifica datos y documentos requeridos, recibe errores comprensibles y entiende que su cuenta debe ser aprobada y su correo verificado antes de ingresar.  
+**Medida de la respuesta:** Objetivo: 90% de usuarios completa el registro sin asistencia; ningún formulario debe marcar como opcional un dato o archivo que la API rechaza si falta.  
 **Objetivo de negocio:** reducir errores de entrada y aumentar la tasa de registro exitoso.
 
 ### EAC-11: Claridad del historial y sesiones
 
 **ID:** EAC-11  
 **Atributo de calidad:** Usabilidad  
-**Escenario crudo:** Un tutor consulta sesiones pendientes y pasadas para organizar su semana.  
-**Estímulo:** Acceso al historial y listado de mentorías.  
-**Fuente del estímulo:** Tutor  
+**Escenario crudo:** Un estudiante o tutor consulta sesiones activas, pendientes o históricas; el estudiante consulta además las evaluaciones disponibles y sus planes de estudio.  
+**Estímulo:** Acceso a los listados, historial o plan de estudio.  
+**Fuente del estímulo:** Estudiante o Tutor  
 **Entorno:** Uso cotidiano de la plataforma.  
-**Artefacto:** Vistas de sesiones y filtros de historial.  
-**Respuesta esperada:** La interfaz presenta la información de manera legible y diferenciada por estados.  
-**Medida de la respuesta:** 90% de usuarios identifica el estado correcto de cada sesión sin ayuda adicional.  
+**Artefacto:** Vistas de sesiones, historial, evaluaciones y planes de estudio.  
+**Respuesta esperada:** La interfaz presenta participantes, materia, fecha, hora y estado de manera legible; diferencia sesiones atendidas y canceladas y permite evaluar o reportar solo cuando corresponde.  
+**Medida de la respuesta:** Objetivo: 90% de usuarios identifica el estado y la acción disponible para una sesión sin ayuda adicional.  
 **Objetivo de negocio:** facilitar la gestión del tiempo y la atención académica.
 
 ---
@@ -176,15 +176,30 @@
 **Medida de la respuesta:** 80% de los cambios de UI realizables sin afectar módulos no relacionados.  
 **Objetivo de negocio:** mantener la evolución del producto con menor esfuerzo y menor riesgo técnico.
 
-### EAC-13: Registro de cambios de estado
+### EAC-13: Mantenibilidad de los flujos del sistema
 
 **ID:** EAC-13  
 **Atributo de calidad:** Mantenibilidad  
-**Escenario crudo:** El equipo necesita revisar el historial de aprobaciones, rechazos y cancelaciones.  
-**Estímulo:** Auditoría de eventos relevantes.  
-**Fuente del estímulo:** Administrador o equipo técnico  
-**Entorno:** Operación y soporte del sistema.  
-**Artefacto:** Registro de cambios y logs.  
-**Respuesta esperada:** El sistema conserva información suficiente para identificar quién realizó cada acción, cuándo y qué cambio ocurrió.  
-**Medida de la respuesta:** 100% de eventos críticos registrados con identificador, fecha y resultado.  
-**Objetivo de negocio:** facilitar auditoría, soporte y resolución de incidencias.
+**Escenario crudo:** El equipo necesita mantener o ampliar los flujos de registro, horarios, sesiones, planes de estudio, evaluaciones y moderación.  
+**Estímulo:** Cambio localizado en una regla o pantalla del producto.  
+**Fuente del estímulo:** Equipo de desarrollo  
+**Entorno:** Desarrollo y mantenimiento evolutivo.  
+**Artefacto:** Módulos de rutas, controladores, modelos, servicios y componentes reutilizables.  
+**Respuesta esperada:** El cambio puede implementarse en la capa responsable y validarse mediante pruebas focalizadas sin afectar flujos no relacionados.  
+**Medida de la respuesta:** Objetivo: al menos 80% de cambios localizados de UI o lógica pueden probarse sin regresiones en módulos ajenos.  
+**Objetivo de negocio:** facilitar la evolución del producto con menor esfuerzo y riesgo técnico.
+
+### EAC-14: Consistencia de reportes y moderación
+
+**ID:** EAC-14  
+**Atributo de calidad:** Integridad de datos  
+**Escenario crudo:** Un estudiante o tutor reporta a la contraparte de una sesión atendida y el administrador resuelve o descarta el reporte.  
+**Estímulo:** Creación o resolución de una denuncia.  
+**Fuente del estímulo:** Estudiante, Tutor o Administrador  
+**Entorno:** Operación autenticada de la plataforma.  
+**Artefacto:** API de evaluaciones, tablas de reportes y módulo de moderación administrativa.  
+**Respuesta esperada:** El reporte queda asociado a la sesión y a las personas correctas, solo puede enviarse para una sesión atendida y no puede resolverse dos veces.  
+**Medida de la respuesta:** 100% de reportes rechazados si la sesión no pertenece al usuario o no está atendida; 100% de denuncias resueltas con un solo estado final.  
+**Objetivo de negocio:** preservar la integridad del proceso de evaluación y moderación.
+
+> Las metas de tiempo, disponibilidad y facilidad de uso deben confirmarse con pruebas sobre un despliegue representativo. El repositorio no incluye mediciones que demuestren que ya se alcanzaron.
