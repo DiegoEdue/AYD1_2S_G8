@@ -2,7 +2,7 @@
 
 **Descripción**
 
-Los diagramas de esta sección expanden cada uno de los siete procesos de negocio (CUN) identificados en la primera descomposición, mostrando los casos de uso puntuales que los conforman, los actores que los ejecutan y las relaciones `<<include>>`/`<<extend>>` existentes entre ellos. Este nivel de detalle permite observar las interacciones específicas entre los actores y el sistema dentro de cada módulo funcional.
+Los diagramas de esta sección expanden cada uno de los seis procesos de negocio (CUN) identificados en la primera descomposición, mostrando los casos de uso puntuales que los conforman, los actores que los ejecutan y las relaciones `<<include>>`/`<<extend>>` existentes entre ellos. Este nivel de detalle permite observar las interacciones específicas entre los actores y el sistema dentro de cada módulo funcional, incluyendo las funcionalidades incorporadas en la fase 2: la verificación de correo con token, el visor de documentos PDF para la aprobación de registros, el plan de estudio estructurado con su constancia en PDF, las calificaciones y los reportes de conducta, y los nuevos reportes analíticos.
 
 ## Expansión — CUN-01 Gestionar Cuenta y Acceso
 
@@ -44,18 +44,11 @@ Este diagrama corresponde a la gestión de usuarios y de los reportes y califica
 
 ![CUN-05](image/cun05.png)
 
-## Expansión — CUN-06 Consultar Historial y Sesiones
+## Expansión — CUN-06 Generar Reportes
 
 **Descripción**
 
-Este diagrama agrupa las consultas de seguimiento académico disponibles para estudiantes y tutores: las sesiones activas del estudiante y los historiales de sesiones atendidas o canceladas, tanto del estudiante como del tutor.
+Este diagrama corresponde a la generación de reportes analíticos sobre el uso de la plataforma por parte del administrador: los tutores que más estudiantes han atendido y las materias con mayor demanda de sesiones, así como las cancelaciones por materia y los horarios con mayor demanda incorporados en la segunda fase. Los datos se calculan al momento de la consulta.
 
-![CUN-06](image/CUN-06.png)
+![CUN-06](image/cun06.png)
 
-## Expansión — CUN-07 Gestionar Usuarios y Generar Reportes
-
-**Descripción**
-
-Este diagrama corresponde a las funciones de control administrativo de la plataforma: dar de baja a estudiantes o tutores aprobados que incumplan las políticas institucionales, y generar reportes analíticos en tiempo real sobre el uso del sistema.
-
-![CUN-07](image/CUN-07.png)
