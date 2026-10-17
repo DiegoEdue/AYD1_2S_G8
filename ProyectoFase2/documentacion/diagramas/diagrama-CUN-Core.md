@@ -1,8 +1,6 @@
 # Core del Negocio — Caso de Uso de Alto Nivel
 
-EduConnect es una plataforma web centralizada para la gestión integral de tutorías académicas que conecta a estudiantes, tutores y administradores en un entorno digital seguro e intuitivo. El núcleo del sistema integra la programación inteligente de sesiones con validación en tiempo real para prevenir traslapes de horarios, un motor de búsqueda avanzada de tutores mediante filtros multidimensionales, la trazabilidad del ciclo de vida de las tutorías con registro de resúmenes académicos, y una capa de supervisión administrativa respaldada por autenticación de doble factor (2FA), notificaciones automatizadas por correo electrónico y generación de reportes analíticos para la toma de decisiones estratégicas.
-
-
+EduConnect es una plataforma web centralizada para la gestión integral de tutorías académicas que conecta a estudiantes, tutores y administradores en un entorno digital seguro e intuitivo. El núcleo del sistema integra el registro de usuarios con verificación de correo mediante token y aprobación administrativa sustentada en la revisión de sus documentos PDF, la programación de sesiones con validación para prevenir traslapes de horarios, un motor de búsqueda avanzada de tutores mediante filtros multidimensionales, y la trazabilidad del ciclo de vida de las tutorías, que abarca la atención con un plan de estudio estructurado (dificultades identificadas y recursos recomendados), la cancelación, el historial y la constancia en PDF. Se complementa con un sistema de calificaciones y reportes de conducta entre estudiantes y tutores, y con una capa de supervisión administrativa respaldada por autenticación de doble factor (2FA), notificaciones automatizadas por correo electrónico y generación de reportes analíticos para la toma de decisiones estratégicas.
 # Tabla de Actores
 
 | Actor | Por que es un actor |
