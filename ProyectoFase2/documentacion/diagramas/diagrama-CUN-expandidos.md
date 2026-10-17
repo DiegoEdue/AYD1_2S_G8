@@ -26,7 +26,7 @@ Este diagrama representa el proceso mediante el cual el tutor define o modifica 
 
 Este diagrama muestra el flujo mediante el cual el estudiante localiza tutores según distintos criterios de búsqueda, consulta su disponibilidad horaria y, finalmente, programa una sesión de tutoría, validando en el proceso que no existan traslapes ni sesiones activas duplicadas con el mismo tutor.
 
-![CUN-03](image/CUN-03.png)
+![CUN-03](image/cun03.png)
 
 ## Expansión — CUN-04 Atender y Registrar Retroalimentación
 
