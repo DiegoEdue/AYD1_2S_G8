@@ -17,8 +17,8 @@
 **Actores involucrados:** Estudiante, Sistema
 
 **RF-1-1-3**  
-**Descripción:** El sistema debe permitir cargar una fotografía opcional durante el registro del estudiante.  
-**Prioridad:** Media  
+**Descripción:** El sistema debe requerir una fotografía de perfil y el carnet estudiantil escaneado en PDF durante el registro del estudiante; la interfaz debe indicarlos como obligatorios, en concordancia con la validación del servidor.  
+**Prioridad:** Alta  
 **Actores involucrados:** Estudiante, Sistema
 
 **RF-1-1-4**  
@@ -34,12 +34,12 @@
 **Actores involucrados:** Tutor, Sistema
 
 **RF-1-2-2**  
-**Descripción:** El formulario de registro de tutor debe incluir nombre, apellido, carnet o identificación, fecha de nacimiento, género, dirección, teléfono, fotografía obligatoria, número de identificación del tutor, especialidad, dirección de tutoría, correo electrónico, año de inicio de tutorías, universidad de graduación y contraseña.  
+**Descripción:** El formulario de registro de tutor debe incluir nombre, apellido, carnet o identificación, fecha de nacimiento, género, dirección, teléfono, fotografía obligatoria, CV obligatorio en PDF, número de identificación del tutor, una o más materias de especialidad, dirección de tutoría, correo electrónico, año de inicio de tutorías, universidad de graduación y contraseña.  
 **Prioridad:** Alta  
 **Actores involucrados:** Tutor, Sistema
 
 **RF-1-2-3**  
-**Descripción:** La dirección de tutoría debe permitir registrar una modalidad válida, ya sea física o online.  
+**Descripción:** La dirección de tutoría debe permitir seleccionar una modalidad válida: Física u Online.  
 **Prioridad:** Alta  
 **Actores involucrados:** Tutor, Sistema
 
@@ -51,12 +51,12 @@
 ### CU1-3 Autenticación
 
 **RF-1-3-1**  
-**Descripción:** El sistema debe validar las credenciales ingresadas por el estudiante o tutor comparando la contraseña almacenada en formato encriptado.  
+**Descripción:** El sistema debe validar las credenciales ingresadas por el estudiante o tutor comparando la contraseña con el hash almacenado.  
 **Prioridad:** Alta  
 **Actores involucrados:** Estudiante, Tutor, Sistema
 
 **RF-1-3-2**  
-**Descripción:** El sistema debe manejar correctamente la autenticación del administrador con la validación de usuario y contraseña.  
+**Descripción:** El sistema debe validar el nombre de usuario y la contraseña del administrador como primer paso de autenticación, antes de solicitar el segundo factor.  
 **Prioridad:** Alta  
 **Actores involucrados:** Administrador, Sistema
 
@@ -65,6 +65,21 @@
 **Prioridad:** Media  
 **Actores involucrados:** Usuario, Sistema
 
+**RF-1-3-4**  
+**Descripción:** El sistema debe solicitar la verificación del correo mediante un código de seis dígitos en el primer inicio de sesión de estudiantes y tutores, validar que no hayan transcurrido más de 24 horas desde su emisión y permitir solicitar el reenvío del código.  
+**Prioridad:** Alta  
+**Actores involucrados:** Estudiante, Tutor, Sistema
+
+**RF-1-3-5**  
+**Descripción:** El sistema debe autenticar al administrador mediante nombre de usuario y contraseña y requerir un código TOTP de seis dígitos; en la primera configuración debe permitir vincular una aplicación autenticadora mediante un código QR.  
+**Prioridad:** Alta  
+**Actores involucrados:** Administrador, Sistema
+
+**RF-1-3-6**  
+**Descripción:** El sistema debe impedir el inicio de sesión de estudiantes y tutores cuyas cuentas estén pendientes, rechazadas o dadas de baja, y comunicar el estado correspondiente.  
+**Prioridad:** Alta  
+**Actores involucrados:** Estudiante, Tutor, Sistema
+
 ---
 
 ## 2. Módulo: Administrador
@@ -72,7 +87,7 @@
 ### CU2-1 Aprobación o Rechazo de Estudiantes
 
 **RF-2-1-1**  
-**Descripción:** El administrador debe poder visualizar la lista de estudiantes pendientes de aprobación con su fotografía, nombre completo, carnet, género, fecha de nacimiento y correo electrónico.  
+**Descripción:** El administrador debe poder visualizar las solicitudes pendientes de estudiantes y revisar sus datos principales, fotografía, carnet y documento PDF escaneado.  
 **Prioridad:** Alta  
 **Actores involucrados:** Administrador, Sistema
 
@@ -89,7 +104,7 @@
 ### CU2-2 Aprobación o Rechazo de Tutores
 
 **RF-2-2-1**  
-**Descripción:** El administrador debe poder revisar la lista de tutores pendientes con los datos principales del perfil, incluyendo fotografía, nombre completo, identificación, género, especialidad, número de identificación de tutor y correo electrónico.  
+**Descripción:** El administrador debe poder revisar las solicitudes pendientes de tutores y consultar sus datos principales, fotografía, carnet o identificación, materias de especialidad, número de identificación del tutor, correo electrónico y CV en PDF.  
 **Prioridad:** Alta  
 **Actores involucrados:** Administrador, Sistema
 
@@ -106,31 +121,55 @@
 ### CU2-3 Gestión y Baja de Usuarios
 
 **RF-2-3-1**  
-**Descripción:** El administrador debe poder consultar la lista completa de estudiantes aprobados y darles de baja cuando exista una justificación válida.  
+**Descripción:** El administrador debe poder consultar la lista de estudiantes aprobados y ejecutar la baja confirmada de una cuenta.  
 **Prioridad:** Media  
 **Actores involucrados:** Administrador, Sistema
 
 **RF-2-3-2**  
-**Descripción:** El administrador debe poder consultar la lista de tutores activos y gestionar su baja o suspensión.  
+**Descripción:** El administrador debe poder consultar la lista de tutores aprobados y ejecutar la baja confirmada de una cuenta.  
 **Prioridad:** Media  
 **Actores involucrados:** Administrador, Sistema
 
 **RF-2-3-3**  
-**Descripción:** Antes de realizar una baja, el sistema debe solicitar confirmación del administrador y notificar al usuario afectado.  
+**Descripción:** Antes de realizar una baja, el sistema debe solicitar confirmación; puede registrar un motivo y debe intentar notificar al usuario afectado por correo. La operación de baja elimina físicamente la cuenta y sus registros asociados.  
 **Prioridad:** Media  
 **Actores involucrados:** Administrador, Sistema, Usuario
 
 ### CU2-4 Reportes Analíticos
 
 **RF-2-4-1**  
-**Descripción:** El administrador debe poder acceder a un módulo de reportes con al menos dos visualizaciones analíticas del uso del sistema.  
+**Descripción:** El administrador debe poder consultar reportes de sesiones por estado, materia y tutor, totales de sesiones, estudiantes y tutores, cancelaciones por materia y franjas horarias con mayor demanda.  
 **Prioridad:** Media  
 **Actores involucrados:** Administrador, Sistema
 
 **RF-2-4-2**  
-**Descripción:** Los indicadores del sistema deben calcularse con datos en tiempo real relacionados con las sesiones registradas y el comportamiento de usuarios.  
+**Descripción:** El administrador debe poder consultar reportes de calificaciones promedio y cantidad de evaluaciones de tutores y estudiantes aprobados. Los datos deben calcularse al momento de la consulta; no se requiere actualización por transmisión en tiempo real.  
 **Prioridad:** Media  
 **Actores involucrados:** Sistema, Administrador
+
+### CU2-5 Gestión de perfiles aprobados
+
+**RF-2-5-1**  
+**Descripción:** El administrador debe poder listar y editar los datos permitidos de estudiantes y tutores aprobados, y ejecutar la baja confirmada de una cuenta; actualmente la baja elimina físicamente la cuenta y sus registros asociados. El correo electrónico principal debe permanecer sin cambios desde esta operación.  
+**Prioridad:** Media  
+**Actores involucrados:** Administrador, Sistema
+
+**RF-2-5-2**  
+**Descripción:** Antes de dar de baja una cuenta, el sistema debe solicitar confirmación y permitir que el administrador agregue un motivo opcional; el servidor debe intentar notificar al usuario por correo.  
+**Prioridad:** Alta  
+**Actores involucrados:** Administrador, Sistema, Usuario
+
+### CU2-6 Revisión de denuncias
+
+**RF-2-6-1**  
+**Descripción:** El administrador debe poder consultar denuncias contra tutores o estudiantes, incluyendo categoría, descripción, sesión relacionada, denunciante, denunciado, fecha y estado.  
+**Prioridad:** Alta  
+**Actores involucrados:** Administrador, Sistema
+
+**RF-2-6-2**  
+**Descripción:** El administrador debe poder resolver una denuncia pendiente aplicando la baja del usuario denunciado o descartando la denuncia; una denuncia ya resuelta no debe procesarse nuevamente.  
+**Prioridad:** Alta  
+**Actores involucrados:** Administrador, Sistema
 
 ---
 
@@ -161,12 +200,12 @@
 **Actores involucrados:** Tutor, Sistema
 
 **RF-3-2-2**  
-**Descripción:** El tutor debe poder atender una sesión pendiente e ingresar un resumen estructurado de la tutoría.  
+**Descripción:** El tutor debe poder atender una sesión pendiente registrando las dificultades académicas identificadas y al menos un recurso recomendado, con nombre, tipo y descripción de uso.  
 **Prioridad:** Alta  
 **Actores involucrados:** Tutor, Sistema
 
 **RF-3-2-3**  
-**Descripción:** Al atender la sesión, el sistema debe cambiar su estado a "Atendida" y guardar el resumen para historial posterior.  
+**Descripción:** Al guardar la atención, el sistema debe cambiar el estado de la sesión a "Atendida" y asociar el plan de estudio estructurado para su consulta posterior por el estudiante.  
 **Prioridad:** Alta  
 **Actores involucrados:** Tutor, Sistema
 
@@ -200,9 +239,21 @@
 **Actores involucrados:** Tutor, Sistema
 
 **RF-3-4-2**  
-**Descripción:** Si el tutor actualiza su contraseña, el sistema debe validarla y almacenarla en formato encriptado.  
+**Descripción:** Si el tutor actualiza su contraseña, el sistema debe validarla, almacenarla como hash y proteger los campos identificadores no editables, como el correo y el número de identificación del tutor.  
 **Prioridad:** Baja  
 **Actores involucrados:** Tutor, Sistema
+
+### CU3-5 Evaluación y reporte de estudiantes
+
+**RF-3-5-1**  
+**Descripción:** El tutor debe poder calificar al estudiante de una sesión atendida mediante una puntuación de cero a cinco estrellas y un comentario obligatorio.  
+**Prioridad:** Media  
+**Actores involucrados:** Tutor, Sistema
+
+**RF-3-5-2**  
+**Descripción:** El tutor debe poder reportar al estudiante de una sesión atendida seleccionando una categoría válida y describiendo los hechos para revisión administrativa.  
+**Prioridad:** Media  
+**Actores involucrados:** Tutor, Sistema, Administrador
 
 ---
 
@@ -221,7 +272,7 @@
 **Actores involucrados:** Sistema, Estudiante
 
 **RF-4-1-3**  
-**Descripción:** El estudiante debe poder filtrar y buscar tutores por criterios relevantes como materia, Universidad, experiencia, género y edad.  
+**Descripción:** El estudiante debe poder filtrar tutores por materia, universidad de graduación, experiencia mínima, género y rango de edad.  
 **Prioridad:** Alta  
 **Actores involucrados:** Estudiante, Sistema
 
@@ -255,7 +306,7 @@
 **Actores involucrados:** Estudiante, Sistema
 
 **RF-4-3-3**  
-**Descripción:** El estudiante debe poder consultar el historial de sesiones pasadas para revisar su actividad académica.  
+**Descripción:** El estudiante debe poder consultar el historial de sesiones atendidas y canceladas, identificar quién canceló cuando corresponda y acceder a la evaluación o reporte de la contraparte en sesiones atendidas.  
 **Prioridad:** Media  
 **Actores involucrados:** Estudiante, Sistema
 
@@ -267,9 +318,33 @@
 **Actores involucrados:** Estudiante, Sistema
 
 **RF-4-4-2**  
-**Descripción:** Si se actualiza la contraseña, el sistema debe aplicar validación de seguridad y almacenamiento encriptado.  
+**Descripción:** Si se actualiza la contraseña, el estudiante debe proporcionar su contraseña actual; el sistema debe validar la nueva contraseña y almacenarla como hash.  
 **Prioridad:** Media  
 **Actores involucrados:** Estudiante, Sistema
+
+### CU4-5 Plan de estudio y constancia
+
+**RF-4-5-1**  
+**Descripción:** El estudiante debe poder consultar los planes de estudio asociados a sus sesiones atendidas, incluyendo tutor, fecha, dificultades identificadas y recursos recomendados.  
+**Prioridad:** Alta  
+**Actores involucrados:** Estudiante, Tutor, Sistema
+
+**RF-4-5-2**  
+**Descripción:** El estudiante debe poder descargar en PDF una constancia generada a partir de un plan de estudio propio.  
+**Prioridad:** Media  
+**Actores involucrados:** Estudiante, Sistema
+
+### CU4-6 Evaluación y reporte de tutores
+
+**RF-4-6-1**  
+**Descripción:** El estudiante debe poder calificar al tutor de una sesión atendida con una puntuación de cero a cinco estrellas y un comentario opcional.  
+**Prioridad:** Media  
+**Actores involucrados:** Estudiante, Sistema
+
+**RF-4-6-2**  
+**Descripción:** El estudiante debe poder reportar al tutor de una sesión atendida seleccionando una categoría válida y describiendo los hechos para revisión administrativa.  
+**Prioridad:** Media  
+**Actores involucrados:** Estudiante, Sistema, Administrador
 
 ---
 
@@ -286,6 +361,11 @@
 **Actores involucrados:** Sistema
 
 **RF-5-3**  
-**Descripción:** El sistema debe registrar las acciones relevantes de cambio de estado para permitir trazabilidad operativa.  
+**Descripción:** El sistema debe conservar el estado vigente de las solicitudes, cuentas, sesiones y denuncias, así como el historial de sesiones atendidas y canceladas.  
 **Prioridad:** Media  
 **Actores involucrados:** Sistema
+
+**RF-5-4**  
+**Descripción:** Toda ruta protegida debe requerir un token de autenticación válido y verificar que el rol corresponda a la operación solicitada.  
+**Prioridad:** Alta  
+**Actores involucrados:** Sistema, Estudiante, Tutor, Administrador

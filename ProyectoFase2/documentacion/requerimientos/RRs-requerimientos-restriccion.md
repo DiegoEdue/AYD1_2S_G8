@@ -5,40 +5,40 @@
 ## 1. Restricciones tecnológicas
 
 **RR-1**  
-**Descripción:** El sistema debe funcionar como una aplicación web basada en arquitectura cliente-servidor, con front-end en Next.js y back-end orientado a servicios REST.  
+**Descripción:** El sistema debe funcionar como una aplicación web cliente-servidor, con front-end en Next.js, back-end en Node.js/Express y servicios HTTP tipo REST.  
 **Justificación:** El proyecto requiere una solución moderna, modular y accesible desde distintos navegadores y dispositivos.  
 **Categoría:** Tecnológica  
 **Impacto:** Limita la implementación a tecnologías compatibles con la infraestructura actual del proyecto.
 
 **RR-2**  
-**Descripción:** Las APIs del sistema deben exponerse en formato JSON y responder mediante protocolos HTTP/HTTPS.  
+**Descripción:** Las APIs del sistema deben intercambiar datos en JSON mediante HTTP/HTTPS, excepto las operaciones que entregan archivos, como constancias y documentos PDF.  
 **Justificación:** Facilita la integración entre frontend, backend y servicios de correo y autenticación.  
 **Categoría:** Tecnológica  
 **Impacto:** Se excluyen otros protocolos o estándares de intercambio no compatibles con la solución web.
 
 **RR-3**  
-**Descripción:** La plataforma debe mantener una separación clara entre cliente y servidor, evitando cambios directos en el backend cuando se requieran ajustes de interfaz.  
-**Justificación:** El cliente y el servidor se desarrollan por separado y el alcance solicitado indica cambios solo en frontend para ciertos escenarios.  
+**Descripción:** La plataforma debe mantener separadas las responsabilidades del cliente web y del servidor/API; las reglas de negocio y validaciones críticas deben aplicarse en el servidor además de las validaciones de interfaz.  
+**Justificación:** El cliente y el servidor se desarrollan como componentes independientes y el servidor es responsable de proteger la integridad de los datos.  
 **Categoría:** Organizacional / Tecnológica  
 **Impacto:** Fija un lineamiento de responsabilidad en cada capa del sistema.
 
 **RR-4**  
-**Descripción:** El sistema debe soportar autenticación mediante correo y contraseña para estudiantes y tutores, así como un flujo de validación para administradores.  
+**Descripción:** El sistema debe autenticar a estudiantes y tutores con correo y contraseña, exigir verificación de correo en el primer acceso y autenticar a administradores con nombre de usuario, contraseña y segundo factor TOTP.  
 **Justificación:** Es parte del flujo principal de acceso del producto según las historias de usuario.  
 **Categoría:** Tecnológica  
 **Impacto:** Requiere implementar mecanismos de seguridad y control de sesión por perfil.
 
 **RR-5**  
-**Descripción:** El sistema debe permitir la gestión de archivos de perfil, incluyendo fotografías obligatorias para tutores y opcionales para estudiantes.  
-**Justificación:** La historia de usuario exige asociar identidad visual y validación del tutor.  
+**Descripción:** El registro requiere fotografía y documento PDF de respaldo para estudiantes y tutores (carnet estudiantil para estudiantes y CV para tutores); las fotografías también pueden actualizarse desde el perfil.  
+**Justificación:** Los documentos adjuntos se utilizan en la revisión administrativa y el perfil permite asociar una imagen al usuario.  
 **Categoría:** Tecnológica  
 **Impacto:** El sistema debe manejar almacenamiento y presentación de archivos multimedia en la aplicación.
 
 ## 2. Restricciones de seguridad y cumplimiento
 
 **RR-6**  
-**Descripción:** Las contraseñas deben cumplir requisitos mínimos de seguridad: longitud mínima, uso de mayúsculas, minúsculas y números.  
-**Justificación:** Se requiere protección básica frente a accesos no autorizados y cumplimiento de estándares de seguridad.  
+**Descripción:** La interfaz de registro y cambio de contraseña exige un mínimo de ocho caracteres con mayúscula, minúscula y número; las rutas de registro del servidor actualmente validan como mínimo ocho caracteres con al menos una letra y un número. Las contraseñas se almacenan como hash.  
+**Justificación:** Se requiere protección básica frente a accesos no autorizados; las reglas del cliente y del servidor deben mantenerse alineadas.  
 **Categoría:** Legal / Seguridad  
 **Impacto:** Los usuarios deben crear credenciales más complejas y la validación debe implementarse en las pantallas y en la lógica del sistema.
 
@@ -55,8 +55,8 @@
 **Impacto:** El sistema debe validar contexto antes de disparar cada correo.
 
 **RR-9**  
-**Descripción:** El administrador debe proporcionar justificación obligatoria para la baja o retiro de una cuenta o sesión cuando aplique.  
-**Justificación:** Se exige trazabilidad y responsabilidad en decisiones críticas del sistema.  
+**Descripción:** El administrador puede proporcionar un motivo al dar de baja una cuenta o resolver una denuncia; el motivo es opcional en la interfaz y el servidor utiliza un texto predeterminado cuando no se proporciona.  
+**Justificación:** El motivo aporta contexto para la notificación al usuario, sin bloquear la operación si no se ingresa.  
 **Categoría:** Organizacional  
 **Impacto:** El proceso administrativo requiere un paso adicional de validación y registro.
 
@@ -66,7 +66,7 @@
 **Descripción:** El sistema debe mostrar la información de sesiones y usuarios con un orden cronológico claro, especialmente en listas de pendientes y historial.  
 **Justificación:** La organización del tiempo es esencial para la gestión académica de tutorías.  
 **Categoría:** Interfaz / Organizacional  
-**Impacto:** Require diseñar vistas y filtros con ordenamiento consistente y una representación clara del estado.
+**Impacto:** Requiere diseñar vistas y filtros con ordenamiento consistente y una representación clara del estado.
 
 **RR-11**  
 **Descripción:** El sistema debe permitir la modificación de horarios del tutor solo si no existen sesiones activas en conflicto con la nueva disponibilidad.  
@@ -81,10 +81,10 @@
 **Impacto:** Restricción de diseño del modelo de datos y presentación de la información.
 
 **RR-13**  
-**Descripción:** La plataforma debe mantener registros de estado para cada estudiante, tutor y sesión para permitir historial y trazabilidad.  
-**Justificación:** Las historias de usuario requieren aprobación, rechazo, baja, cancelación, atención y finalización con seguimiento claro.  
+**Descripción:** La plataforma debe manejar estados de aprobación para solicitudes y cuentas, y estados de sesión para sesiones activas, atendidas y canceladas por estudiante o tutor. Las denuncias también deben distinguirse como pendientes, resueltas o descartadas.  
+**Justificación:** Los flujos de aprobación, atención, cancelación, evaluación y moderación dependen de transiciones de estado coherentes.  
 **Categoría:** Organizacional / Operacional  
-**Impacto:** Se requiere un modelo de estados definido y consistente para todo el sistema.
+**Impacto:** Las operaciones permitidas dependen del estado actual; por ejemplo, solo sesiones atendidas pueden calificarse o reportarse.
 
 ## 4. Restricciones de negocio e interfaz
 
@@ -115,19 +115,49 @@
 ## 5. Restricciones de datos y auditoría
 
 **RR-18**  
-**Descripción:** El sistema debe conservar la información de la sesión en el historial aunque la misma haya sido atendida o cancelada.  
-**Justificación:** El proyecto exige evidencia y seguimiento académico para cada tutoría.  
+**Descripción:** El sistema debe conservar en el historial las sesiones atendidas y canceladas mientras permanezcan las cuentas y los registros asociados; actualmente, la baja administrativa elimina la cuenta y también sus sesiones, calificaciones y denuncias relacionadas.  
+**Justificación:** El historial permite el seguimiento académico, pero la operación actual de baja realiza eliminación permanente de los datos vinculados.  
 **Categoría:** Datos / Operacional  
-**Impacto:** Se requiere almacenamiento permanente de registros históricos y estados asociados.
+**Impacto:** La baja de un usuario afecta la disponibilidad de datos históricos asociados y debe considerarse al gestionar respaldos o auditoría.
 
 **RR-19**  
-**Descripción:** La plataforma debe registrar las decisiones administrativas sobre aprobación, rechazo y baja de usuarios con la trazabilidad suficiente para auditoría.  
-**Justificación:** El flujo de validación del sistema requiere evidencia de decisiones con responsable y resultado.  
+**Descripción:** La plataforma conserva el estado de solicitudes, usuarios, sesiones y denuncias, pero el código revisado no mantiene una bitácora completa con el actor y cada transición administrativa.  
+**Justificación:** Conocer el estado actual permite operar los flujos; la auditoría de quién realizó cada cambio requiere una bitácora adicional.  
 **Categoría:** Organizacional  
-**Impacto:** Se deben conservar logs o bitácoras de cambios en procesos críticos.
+**Impacto:** Los estados actuales no bastan para reconstruir todas las acciones administrativas ni su responsable.
 
 **RR-20**  
 **Descripción:** La información de sesiones y perfiles debe mantenerse consistente con el rol del usuario, evitando accesos cruzados entre estudiantes, tutores y administradores.  
 **Justificación:** Se protege la confidencialidad y la integridad del servicio de tutorías.  
 **Categoría:** Seguridad / Datos  
 **Impacto:** El diseño de consultas, permisos y vistas debe estar alineado con el nivel de acceso autorizado.
+
+**RR-21**  
+**Descripción:** Las solicitudes de tutoría deben asociar un estudiante, un tutor aprobado, una materia impartida por ese tutor, una fecha, una hora y un motivo; solo se permiten días y horas configurados y franjas disponibles.  
+**Justificación:** La programación depende del calendario y de las materias declaradas por el tutor.  
+**Categoría:** Operacional / Datos  
+**Impacto:** La API debe rechazar reservas fuera de disponibilidad, con materia ajena al tutor o en una franja ocupada.
+
+**RR-22**  
+**Descripción:** Los planes de estudio solo pueden registrarse al atender una sesión e incluyen dificultades identificadas y al menos un recurso recomendado con nombre, tipo y descripción de uso.  
+**Justificación:** El plan se genera como resultado académico de una tutoría atendida y se consulta desde el historial del estudiante.  
+**Categoría:** Operacional / Datos  
+**Impacto:** No se debe asociar un plan a sesiones activas o canceladas; la constancia PDF solo debe descargarse para un plan del estudiante autenticado.
+
+**RR-23**  
+**Descripción:** Las evaluaciones y denuncias solo pueden asociarse a sesiones atendidas y a la contraparte de esa sesión; las categorías de denuncia deben pertenecer al conjunto permitido por el sistema.  
+**Justificación:** La evaluación y moderación dependen de una interacción académica concluida y verificable.  
+**Categoría:** Seguridad / Datos  
+**Impacto:** La API debe validar la pertenencia y el estado de la sesión antes de aceptar una calificación o denuncia.
+
+**RR-24**  
+**Descripción:** Las cuentas administrativas requieren segundo factor TOTP para emitir una sesión autenticada; en la configuración inicial el administrador debe registrar su aplicación autenticadora mediante un código QR.  
+**Justificación:** El panel administrativo permite aprobar, editar, eliminar cuentas y resolver denuncias.  
+**Categoría:** Seguridad  
+**Impacto:** El administrador no puede acceder a las rutas protegidas solo con usuario y contraseña.
+
+**RR-25**  
+**Descripción:** La baja administrativa de estudiantes o tutores elimina de la base de datos la cuenta y los registros asociados que maneja la operación (solicitudes, sesiones, calificaciones, denuncias y, para tutores, materias y días de atención); el sistema intenta notificar la baja por correo.  
+**Justificación:** El comportamiento actual de baja es una eliminación física, no una suspensión reversible con conservación íntegra del historial.  
+**Categoría:** Datos / Operacional  
+**Impacto:** La acción es destructiva para la información vinculada y debe confirmarse antes de ejecutarse; el envío de correo depende del servicio externo.
