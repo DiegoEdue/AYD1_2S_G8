@@ -18,7 +18,7 @@ Este diagrama detalla el proceso de gestión de cuenta y acceso, abarcando el re
 
 Este diagrama representa el proceso mediante el cual el tutor define o modifica sus días y franjas horarias de atención. Incluye la validación de conflictos con sesiones activas, la cual se ejecuta únicamente cuando se trata de una modificación sobre un horario ya existente.
 
-![CUN-02](image/CUN-02.png)
+![CUN-02](image/cun02.png)
 
 ## Expansión — CUN-03 Buscar Tutores y Programar Sesiones
 
