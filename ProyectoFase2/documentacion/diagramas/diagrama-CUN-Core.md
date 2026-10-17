@@ -7,9 +7,9 @@ EduConnect es una plataforma web centralizada para la gestión integral de tutor
 
 | Actor | Por que es un actor |
 |-------|-------------------|
-| Estudiante | Rol externo que se registra, busca tutores, programa/cancela sesiones y gestiona su perfil (RF-1-1, RF-4-x). Interactúa directamente con el sistema persiguiendo un objetivo propio (agendar tutorías). |
-| Tutor | 	Rol externo que se registra, publica horarios, atiende/cancela sesiones y gestiona su perfil (RF-1-2, RF-3-x). Objetivo propio: administrar su agenda académica. |
-| Administrador | Rol externo que aprueba/rechaza/da de baja usuarios y consulta reportes (RF-2-x). Tiene un flujo de autenticación propio (2FA) que lo distingue claramente de los otros dos. |
+| Estudiante | Rol externo que se registra (con fotografía y carnet en PDF), verifica su correo con token, busca tutores, programa y cancela sesiones, consulta su plan de estudio, califica y reporta tutores, y gestiona su perfil (RF-1-1, RF-4-x). Interactúa directamente con el sistema persiguiendo un objetivo propio: agendar tutorías y dar seguimiento a su aprendizaje. |
+| Tutor | Rol externo que se registra (con CV en PDF), verifica su correo con token, publica horarios, atiende y cancela sesiones registrando un plan de estudio estructurado, califica y reporta estudiantes, y gestiona su perfil (RF-1-2, RF-3-x). Objetivo propio: administrar su agenda académica y su labor de tutoría. |
+| Administrador | Rol externo que aprueba o rechaza usuarios revisando sus documentos PDF, da de baja usuarios, atiende los reportes de conducta y consulta calificaciones y reportes analíticos (RF-2-x). Tiene un flujo de autenticación propio (2FA) que lo distingue de los otros dos. |
 
 ### Diagrama de core
 
