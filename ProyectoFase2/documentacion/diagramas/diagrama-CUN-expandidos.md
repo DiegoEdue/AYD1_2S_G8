@@ -36,13 +36,13 @@ Este diagrama integra el ciclo de vida completo de una sesión de tutoría una v
 
 ![CUN-04](image/cun04.png)
 
-## Expansión — CUN-05 Cancelar Sesiones y Notificar
+## Expansión — CUN-05 Gestionar Usuarios y Reportes
 
 **Descripción**
 
-Este diagrama presenta los dos flujos independientes de cancelación de una sesión de tutoría: el que ejecuta el estudiante y el que ejecuta el tutor, este último acompañado de la notificación automática por correo al estudiante afectado.
+Este diagrama corresponde a la gestión de usuarios y de los reportes y calificaciones entre estudiantes y tutores. El administrador puede editar los datos de los usuarios aprobados y darlos de baja, revisar las denuncias presentadas contra tutores y contra estudiantes resolviéndolas con la baja del usuario denunciado o descartándolas, y consultar las calificaciones promedio de ambos roles. Por su parte, el estudiante y el tutor pueden calificar y reportar a su contraparte en las sesiones atendidas.
 
-![CUN-05](image/CUN-05.png)
+![CUN-05](image/cun05.png)
 
 ## Expansión — CUN-06 Consultar Historial y Sesiones
 
