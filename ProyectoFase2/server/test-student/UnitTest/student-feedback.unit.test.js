@@ -82,7 +82,7 @@ describe("HU-034 — reportes contra tutores", () => {
         getReportCategories({}, res);
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith(expect.objectContaining({
-            data: expect.arrayContaining(["Ética y profesionalismo", "Otro"]),
+            data: expect.arrayContaining(["Ética y profesionalismo", "Negligencia académica"]),
         }));
     });
 
@@ -122,7 +122,7 @@ describe("HU-034 — reportes contra tutores", () => {
     test("no permite reportar de nuevo una sesión", async () => {
         sql.mockResolvedValueOnce([]).mockResolvedValueOnce([{ estado: "Atendida" }]);
         const res = response();
-        await reportTutor({ params: { id: "89" }, user: { id: 49 }, body: { categoria: "Otro", descripcion: "Descripción del incidente" } }, res);
+        await reportTutor({ params: { id: "89" }, user: { id: 49 }, body: { categoria: "Negligencia académica", descripcion: "Descripción del incidente" } }, res);
         expect(res.status).toHaveBeenCalledWith(409);
     });
 });

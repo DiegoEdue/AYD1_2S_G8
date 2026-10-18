@@ -27,7 +27,7 @@ describe('Pruebas Unitarias - Calificar Desempeño del Estudiante', () => {
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith({ 
             status: 'error', 
-            message: 'La calificación debe ser un número entero entre 1 y 5.' 
+            message: 'La calificación debe ser un número entero entre 0 y 5.' 
         });
     });
 
