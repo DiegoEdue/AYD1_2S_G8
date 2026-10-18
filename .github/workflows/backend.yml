@@ -1,0 +1,97 @@
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ProyectoFase2/server/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ProyectoFase2/server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "📥 Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "🟢 Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "📦 Instalar dependencias"
+        run: npm ci
+
+      - name: "🐳 Build imagen Docker"
+        run: docker build -t cicd-educonnect .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: "📥 Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "🟢 Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "📦 Instalar dependencias (cached)"
+        run: npm ci
+
+      - name: "🧪 Ejecutar pruebas unitarias"
+        run: npm run test:unit
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: "📥 Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "🟢 Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "📦 Instalar solo dependencias de producción"
+        run: npm ci --omit=dev
+
+      - name: "🚀 Verificar que el server inicia y se mantiene vivo (15s)"
+        env:
+          PORT: 4000
+          NODE_ENV: test
+          OTP_ENCRYPTION_KEY: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          JWT_SECRET: "test-secret-for-ci-only-do-not-use-in-production"
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+        run: |
+          # Inicia el server en background
+          npm start &
+          SERVER_PID=$!
+
+          # Espera 15 segundos; si el proceso muere antes, timeout falla
+          # timeout retorna 124 si lo mató por tiempo = éxito (server vivo)
+          timeout 15s tail --pid=$SERVER_PID -f /dev/null
+          EXIT_CODE=$?
+
+          # Limpieza: mata el server si sigue vivo
+          kill $SERVER_PID 2>/dev/null || true
+
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "✅ Server se mantuvo vivo 15 segundos - deploy simulado OK"
+            exit 0
+          else
+            echo "❌ Server crasheó o terminó prematuramente (exit code: $EXIT_CODE)"
+            exit 1
+          fi
