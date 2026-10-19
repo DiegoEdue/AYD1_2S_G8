@@ -124,7 +124,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>El sistema genera un token único (código de seis dígitos) asociado al usuario y registra su fecha de emisión.</td></tr><tr><td>2</td><td>El sistema compone el correo institucional del remitente "EduConnect" con el logo de la plataforma, un mensaje breve de bienvenida, el token de verificación e instrucciones claras sobre cómo proceder.</td></tr><tr><td>3</td><td>El sistema envía el correo a la dirección registrada.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>3</td><td>Si el servicio de correo falla, la cuenta ya registrada se conserva y el fallo queda registrado para soporte; el usuario podrá solicitar el reenvío del código en su primer inicio de sesión.</td></tr></table> |
 | **Condiciones posteriores** | El usuario recibe el token de verificación, que deberá ingresar en su primer inicio de sesión. |
-| **Comentarios** | Se modela como <<include>> de CU1-1 y CU1-2 porque ocurre siempre en ambos registros. |
+| **Comentarios** | Se modela como «include» de CU1-1 y CU1-2 porque ocurre siempre en ambos registros. |
 
 <br>
 
@@ -140,7 +140,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>Durante el primer inicio de sesión, el sistema solicita el correo, la contraseña y el token de verificación.</td></tr><tr><td>2</td><td>El usuario ingresa el token recibido por correo.</td></tr><tr><td>3</td><td>El sistema valida que la cuenta haya sido aprobada por el Administrador y que el token ingresado sea válido y no hayan transcurrido más de 24 horas desde su emisión.</td></tr><tr><td>4</td><td>El sistema marca el correo como verificado y otorga acceso según el rol.</td></tr><tr><td>5</td><td>En los inicios de sesión posteriores solo se solicitan correo y contraseña.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>3</td><td>Si la cuenta aún no fue aprobada, no se permite el acceso y se muestra un mensaje explicativo.</td></tr><tr><td>3</td><td>Si el token es incorrecto o venció, no se permite el acceso y se muestra un mensaje indicando qué falta; el usuario puede solicitar el reenvío del código.</td></tr></table> |
 | **Condiciones posteriores** | El correo del usuario queda verificado y este accede a las vistas de su rol, o permanece sin acceso con un mensaje explicativo. |
-| **Comentarios** | Se modela como <<extend>> de CU1-4 porque solo aplica a estudiantes y tutores en su primer acceso. |
+| **Comentarios** | Se modela como «extend» de CU1-4 porque solo aplica a estudiantes y tutores en su primer acceso. |
 
 <br>
 
@@ -156,7 +156,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>El sistema obtiene el documento PDF de la solicitud seleccionada (carnet escaneado en el caso del estudiante, CV en el caso del tutor) mediante una ruta segura.</td></tr><tr><td>2</td><td>El sistema muestra el documento en un visor de PDF embebido, directamente en la página y sin necesidad de descargarlo.</td></tr><tr><td>3</td><td>El Administrador revisa el documento junto con los datos principales de la solicitud.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1-3</td><td>No se identifican cursos alternativos: el documento PDF es obligatorio en el registro.</td></tr></table> |
 | **Condiciones posteriores** | El Administrador cuenta con el documento visualizado para decidir si aprueba o rechaza la solicitud. |
-| **Comentarios** | Se modela como <<include>> de CU1-3 porque forma parte de la revisión de la solicitud (HU-038, HU-039). |
+| **Comentarios** | Se modela como «include» de CU1-3 porque forma parte de la revisión de la solicitud (HU-038, HU-039). |
 
 
 ---
@@ -190,7 +190,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>Se obtienen todas las sesiones activas/programadas del tutor.</td></tr><tr><td>2</td><td>Se compara la fecha/hora de cada sesión contra el nuevo rango horario propuesto.</td></tr><tr><td>3</td><td>Si ninguna sesión queda fuera de rango, se retorna validación exitosa.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>2</td><td>Si al menos una sesión queda fuera del nuevo rango, se retorna la lista de sesiones en conflicto.</td></tr></table> |
 | **Condiciones posteriores** | Se informa a CU2-1 si la actualización puede proceder o debe bloquearse. |
-| **Comentarios** | Se modela como <<extend>> de CU2-1, ya que solo se ejecuta cuando se modifica un horario ya existente. |
+| **Comentarios** | Se modela como «extend» de CU2-1, ya que solo se ejecuta cuando se modifica un horario ya existente. |
 
 
 ---
@@ -240,7 +240,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>El estudiante selecciona un tutor y una materia dentro de las que imparte ese tutor.</td></tr><tr><td>2</td><td>Se invoca "Consultar Disponibilidad de Tutor" para la fecha elegida.</td></tr><tr><td>3</td><td>El estudiante selecciona hora e ingresa el motivo de la sesión.</td></tr><tr><td>4</td><td>El sistema valida que la fecha esté dentro de los días de atención del tutor y que el horario esté libre.</td></tr><tr><td>5</td><td>El sistema valida que el estudiante no tenga ya una sesión activa con ese mismo tutor.</td></tr><tr><td>6</td><td>El sistema valida que no exista traslape con otras sesiones del estudiante en esa fecha/hora.</td></tr><tr><td>7</td><td>Se crea la sesión asociada al estudiante, tutor y materia correspondientes.</td></tr><tr><td>8</td><td>Se confirma la programación exitosa.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>4</td><td>Si la fecha está fuera de los días de atención, la materia no corresponde al tutor o el horario ya no está disponible, se muestra el mensaje de error con el motivo del rechazo.</td></tr><tr><td>5</td><td>Si ya existe una sesión activa con ese tutor, se rechaza con un mensaje específico.</td></tr><tr><td>6</td><td>Si hay traslape con otra sesión, se rechaza con un mensaje específico.</td></tr></table> |
 | **Condiciones posteriores** | La sesión queda registrada en estado "Pendiente", asociada a estudiante, tutor, materia, fecha, hora y motivo. |
-| **Comentarios** | Incluye a CU3-2 (<<include>>) para la consulta de disponibilidad. |
+| **Comentarios** | Incluye a CU3-2 («include») para la consulta de disponibilidad. |
 
 
 ---
@@ -275,7 +275,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>El tutor presiona "Atender" sobre una sesión pendiente.</td></tr><tr><td>2</td><td>Se despliega el formulario estructurado del plan de estudio.</td></tr><tr><td>3</td><td>El tutor ingresa las dificultades identificadas (obligatorio), describiendo los temas complejos detectados.</td></tr><tr><td>4</td><td>El tutor agrega uno o más recursos recomendados, especificando para cada uno: nombre, tipo (Texto, Video, PDF, Enlace) y descripción de uso.</td></tr><tr><td>5</td><td>El tutor confirma.</td></tr><tr><td>6</td><td>El sistema cambia el estado de la sesión a "Atendida" y guarda el plan de estudio (dificultades y recursos recomendados).</td></tr><tr><td>7</td><td>La sesión se remueve de la lista de pendientes y queda disponible en el historial con su plan completo.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>3</td><td>Si no se ingresan las dificultades identificadas, el sistema impide confirmar y señala el campo obligatorio.</td></tr><tr><td>4</td><td>Si no se agrega al menos un recurso recomendado, o a algún recurso le falta nombre, tipo o descripción de uso, el sistema impide confirmar y señala el dato faltante.</td></tr></table> |
 | **Condiciones posteriores** | La sesión queda en estado "Atendida", con el plan de estudio accesible en los historiales del tutor y del estudiante y en el plan de estudio del estudiante. Desde ese momento la sesión puede ser calificada y reportada por ambos participantes. |
-| **Comentarios** | Se modela como <<extend>> de CU4-1: se ejecuta sobre una sesión de la lista de pendientes. |
+| **Comentarios** | Se modela como «extend» de CU4-1: se ejecuta sobre una sesión de la lista de pendientes. |
 
 <br>
 
@@ -383,7 +383,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>1</td><td>El estudiante presiona "Descargar PDF" sobre un plan de estudio.</td></tr><tr><td>2</td><td>El sistema verifica que el plan pertenezca al estudiante autenticado.</td></tr><tr><td>3</td><td>El sistema genera el PDF con: encabezado (nombre de la plataforma EduConnect, fecha de emisión y teléfono de contacto), cuerpo con una tabla de los recursos recomendados (nombre, tipo y descripción de uso) y pie de página con la firma digital emulada del tutor (nombre completo, especialidad y número de identificación).</td></tr><tr><td>4</td><td>El sistema entrega el archivo PDF para su descarga.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>2</td><td>Si el plan no pertenece al estudiante autenticado, el sistema rechaza la solicitud y no genera la constancia.</td></tr></table> |
 | **Condiciones posteriores** | El estudiante obtiene la constancia en PDF del plan de estudio. |
-| **Comentarios** | Se modela como <<extend>> de CU4-8: es una acción opcional sobre el plan consultado. |
+| **Comentarios** | Se modela como «extend» de CU4-8: es una acción opcional sobre el plan consultado. |
 
 
 ---
@@ -402,7 +402,7 @@
 | **Secuencia normal** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td colspan="2">**Flujo Estudiante:**</td></tr><tr><td>1</td><td>El Administrador accede a "Estudiantes Aprobados".</td></tr><tr><td>2</td><td>Selecciona "Dar de baja" sobre un estudiante.</td></tr><tr><td>3</td><td>El sistema solicita confirmación y permite ingresar un motivo opcional; si no se ingresa, el servidor utiliza un texto predeterminado.</td></tr><tr><td>4</td><td>El Administrador confirma.</td></tr><tr><td>5</td><td>El sistema elimina la cuenta del estudiante y sus registros asociados (solicitudes, sesiones, calificaciones y denuncias), impidiéndole el acceso.</td></tr><tr><td>6</td><td>El sistema intenta enviar un correo automático notificando la baja.</td></tr><tr><td colspan="2">**Flujo Tutor:**</td></tr><tr><td>7</td><td>El Administrador accede a "Tutores Aprobados".</td></tr><tr><td>8</td><td>Selecciona "Dar de baja" sobre un tutor.</td></tr><tr><td>9</td><td>El sistema solicita confirmación y permite ingresar un motivo opcional; si no se ingresa, el servidor utiliza un texto predeterminado.</td></tr><tr><td>10</td><td>El Administrador confirma.</td></tr><tr><td>11</td><td>El sistema elimina la cuenta del tutor y sus registros asociados (solicitudes, sesiones, calificaciones, denuncias, materias y días de atención), impidiéndole el acceso.</td></tr><tr><td>12</td><td>El sistema intenta enviar un correo automático notificando la baja.</td></tr></table> |
 | **Excepciones / Cursos alternativos** | <table><tr><th>Pasos</th><th>Acción</th></tr><tr><td>4, 10</td><td>Si el Administrador cancela, el sistema retorna sin cambios.</td></tr><tr><td>6, 12</td><td>Si el envío del correo falla, la baja ya ejecutada no se revierte y el fallo queda registrado para soporte, dado que el envío depende de un servicio externo.</td></tr></table> |
 | **Condiciones posteriores** | El usuario afectado y sus registros asociados son eliminados del sistema, por lo que no tiene acceso a la plataforma, y se intentó notificarlo por correo. |
-| **Comentarios** | La acción es destructiva e irreversible para la información vinculada, por lo que siempre requiere confirmación previa (RR-25). Se modela como <<extend>> de CU5-7 y CU5-8: es la acción opcional de "Dar de baja" al resolver una denuncia. |
+| **Comentarios** | La acción es destructiva e irreversible para la información vinculada, por lo que siempre requiere confirmación previa (RR-25). Se modela como «extend» de CU5-7 y CU5-8: es la acción opcional de "Dar de baja" al resolver una denuncia. |
 
 <br>
 
