@@ -1,68 +1,39 @@
-# Manual Técnico — Backend EduConnect - G8
+# Manual Técnico Integral — EduConnect - G8 (Fase 1 y Fase 2)
 
-> **Servidor:** `server/` — Node.js + Express + PostgreSQL
-> **Base URL:** `http://localhost:4000/api`
+> **Plataforma:** EduConnect — Plataforma de Gestión de Tutorías Académicas  
+> **Servidor:** `server/` — Node.js 22 LTS + Express + PostgreSQL (Neon Cloud) + Cloudinary  
+> **Cliente:** `client/` — Next.js 14 + React + Tailwind CSS / Vanilla CSS  
+> **Base URL Local:** `http://localhost:4000/api`  
+> **URL Producción AWS (Backend y Proyecto Completo):** [EduConnect - G8](http://107.21.86.168/login)  
+> **URL Producción Vercel (Frontend):** [https://educonnect-lovat-five.vercel.app/login](https://educonnect-lovat-five.vercel.app/login)  
 
 ---
 
-## Índice
+## Índice General
 
-- [Manual Técnico — Backend EduConnect - G8](#manual-técnico--backend-educonnect---g8)
-  - [Índice](#índice)
+- [PARTE I: MANUAL TÉCNICO — FASE 1](#parte-i-manual-técnico--fase-1)
   - [1. Dependencias y convenciones comunes](#1-dependencias-y-convenciones-comunes)
   - [2. Registro de Tutores y Estudiantes](#2-registro-de-tutores-y-estudiantes)
     - [2.1 Registro de Tutores](#21-registro-de-tutores)
-      - [Body (JSON, todos requeridos)](#body-json-todos-requeridos)
-      - [Flujo de ejecución](#flujo-de-ejecución)
-      - [Respuestas](#respuestas)
     - [2.2 Registro de Estudiantes](#22-registro-de-estudiantes)
-      - [Body (JSON)](#body-json)
-      - [Flujo de ejecución](#flujo-de-ejecución-1)
-      - [Respuestas](#respuestas-1)
   - [3. Módulo Administrador](#3-módulo-administrador)
     - [3.1 Historias de Usuario (HU-005 a HU-008)](#31-historias-de-usuario-hu-005-a-hu-008)
-      - [\[HU-005\] Aprobación o Rechazo de Estudiantes](#hu-005-aprobación-o-rechazo-de-estudiantes)
-      - [\[HU-006\] Aprobación o Rechazo de Tutores](#hu-006-aprobación-o-rechazo-de-tutores)
-      - [\[HU-007\] Gestión y Baja de Estudiantes Aprobados](#hu-007-gestión-y-baja-de-estudiantes-aprobados)
-      - [\[HU-008\] Gestión y Baja de Tutores Aprobados](#hu-008-gestión-y-baja-de-tutores-aprobados)
     - [3.2 Endpoints](#32-endpoints)
     - [3.3 Autenticación con Doble Factor (2FA/TOTP)](#33-autenticación-con-doble-factor-2fatotp)
-      - [Utilidades de soporte (`utils/twoFactor.js`)](#utilidades-de-soporte-utilstwofactorjs)
-      - [`loginAdmin` — `POST /api/admin/login`](#loginadmin--post-apiadminlogin)
-      - [`verify2fa` — `POST /api/admin/verify-2fa`](#verify2fa--post-apiadminverify-2fa)
-      - [`getProfileAdmin` — `GET /api/admin/profile`](#getprofileadmin--get-apiadminprofile)
     - [3.4 Generación de Reportes Analíticos](#34-generación-de-reportes-analíticos)
-      - [`getReports` — `GET /api/admin/reportes`](#getreports--get-apiadminreportes)
     - [3.5 Funciones complementarias de administración](#35-funciones-complementarias-de-administración)
     - [3.6 Guía de pruebas (backend)](#36-guía-de-pruebas-backend)
   - [4. Módulo Tutor](#4-módulo-tutor)
     - [4.1 Registro y Login](#41-registro-y-login)
-      - [Login — `POST /api/tutor/login` (pública)](#login--post-apitutorlogin-pública)
     - [4.2 Perfil](#42-perfil)
-      - [Obtener perfil — `GET /api/tutor/profile`](#obtener-perfil--get-apitutorprofile)
-      - [Actualizar perfil — `PATCH /api/tutor/profile`](#actualizar-perfil--patch-apitutorprofile)
     - [4.3 Horario de Atención (HU-010 / HU-011)](#43-horario-de-atención-hu-010--hu-011)
-      - [Obtener horario — `GET /api/tutor/schedule`](#obtener-horario--get-apitutorschedule)
-      - [Crear / actualizar horario (upsert) — `PUT /api/tutor/schedule`](#crear--actualizar-horario-upsert--put-apitutorschedule)
     - [4.4 Sesiones del Tutor](#44-sesiones-del-tutor)
-      - [Pendientes (HU-012) — `GET /api/tutor/sessions/pending`](#pendientes-hu-012--get-apitutorsessionspending)
-      - [Atender sesión (HU-013) — `PATCH /api/tutor/sessions/:id/attend`](#atender-sesión-hu-013--patch-apitutorsessionsidattend)
-      - [Cancelar sesión (HU-014) — `PATCH /api/tutor/sessions/:id/cancel` (sin body)](#cancelar-sesión-hu-014--patch-apitutorsessionsidcancel-sin-body)
-      - [Historial (HU-015) — `GET /api/tutor/sessions/history?page=&pageSize=`](#historial-hu-015--get-apitutorsessionshistorypagepagesize)
     - [4.5 Auth y errores (resumen tutor)](#45-auth-y-errores-resumen-tutor)
   - [5. Módulo Estudiante](#5-módulo-estudiante)
     - [5.1 Registro y Login](#51-registro-y-login)
-      - [Login — `POST /api/estudiante/login` (pública)](#login--post-apiestudiantelogin-pública)
     - [5.2 Perfil (HU-024)](#52-perfil-hu-024)
-      - [Actualizar perfil — `PUT /api/student/profile`](#actualizar-perfil--put-apistudentprofile)
     - [5.3 Catálogo y disponibilidad (HU-017 / HU-018 / HU-019)](#53-catálogo-y-disponibilidad-hu-017--hu-018--hu-019)
-      - [Catálogo — `GET /api/student/catalog`](#catálogo--get-apistudentcatalog)
-      - [Búsqueda avanzada — `GET /api/student/catalog/search`](#búsqueda-avanzada--get-apistudentcatalogsearch)
-      - [Disponibilidad por fecha — `GET /api/student/tutor/:idTutor/availability?date=YYYY-MM-DD`](#disponibilidad-por-fecha--get-apistudenttutoridtutoravailabilitydateyyyy-mm-dd)
     - [5.4 Sesiones del Estudiante (HU-020 a HU-023)](#54-sesiones-del-estudiante-hu-020-a-hu-023)
-      - [Crear sesión — `POST /api/student/sessions`](#crear-sesión--post-apistudentsessions)
-      - [Activas / historial](#activas--historial)
-      - [Cancelar sesión (HU-022) — `PATCH /api/student/sessions/:id/cancel`](#cancelar-sesión-hu-022--patch-apistudentsessionsidcancel)
     - [5.5 Auth y errores (resumen estudiante)](#55-auth-y-errores-resumen-estudiante)
   - [6. Arquitectura del cliente (frontend)](#6-arquitectura-del-cliente-frontend)
     - [6.1 Stack tecnológico y runtime](#61-stack-tecnológico-y-runtime)
@@ -74,25 +45,66 @@
     - [6.7 Consideraciones de calidad y despliegue](#67-consideraciones-de-calidad-y-despliegue)
   - [7. Docker y entorno de desarrollo](#7-docker-y-entorno-de-desarrollo)
     - [7.1 Arquitectura del entorno](#71-arquitectura-del-entorno)
-      - [Diagrama](#diagrama)
-      - [Archivos](#archivos)
-      - [Componentes](#componentes)
     - [7.2 Puesta en marcha](#72-puesta-en-marcha)
-      - [Prerrequisitos](#prerrequisitos)
-      - [Variables de entorno](#variables-de-entorno)
-      - [Arranque y verificación](#arranque-y-verificación)
     - [7.3 Referencia de comandos](#73-referencia-de-comandos)
-      - [Ciclo de vida](#ciclo-de-vida)
-      - [Inspección](#inspección)
     - [7.4 Troubleshooting](#74-troubleshooting)
-      - [Puerto ocupado (`EADDRINUSE :4000`)](#puerto-ocupado-eaddrinuse-4000)
-      - [`Cannot find module` tras `up`](#cannot-find-module-tras-up)
-      - [Next roto / `.next` corrupto](#next-roto--next-corrupto)
-      - [`EACCES` en `server/`](#eacces-en-server)
-      - [Frontend `fetch failed / Network error`](#frontend-fetch-failed--network-error)
-      - [`.env` sin efecto](#env-sin-efecto)
-      - [`npm install` lento en cada build](#npm-install-lento-en-cada-build)
   - [8. Referencias cruzadas](#8-referencias-cruzadas)
+- [PARTE II: EXTENSIONES Y ALCANCE TÉCNICO — FASE 2](#parte-ii-extensiones-y-alcance-técnico--fase-2)
+  - [9. Arquitectura General y Stack Tecnológico (Fase 2)](#9-arquitectura-general-y-stack-tecnológico-fase-2)
+    - [9.1 Modelo de Capas y MVC en Node.js 22 LTS](#91-modelo-de-capas-y-mvc-en-nodejs-22-lts)
+    - [9.2 Estructura de Directorios del Proyecto](#92-estructura-de-directorios-del-proyecto)
+    - [9.3 Matriz de Tecnologías y Dependencias](#93-matriz-de-tecnologías-y-dependencias)
+  - [10. Modelo Relacional de Base de Datos y Diagrama ER (Fase 2)](#10-modelo-relacional-de-base-de-datos-y-diagrama-er-fase-2)
+    - [10.1 Diagrama Entidad-Relación Completo](#101-diagrama-entidad-relación-completo)
+    - [10.2 Diccionario de Datos de las Nuevas Entidades](#102-diccionario-de-datos-de-las-nuevas-entidades)
+    - [10.3 Concurrencia y Bloqueos de Fila (FOR UPDATE)](#103-concurrencia-y-bloqueos-de-fila-for-update)
+  - [11. Módulo de Registro y Autenticación Unificada (Fase 2)](#11-módulo-de-registro-y-autenticación-unificada-fase-2)
+    - [11.1 Registro de Estudiantes con Fotografía y Carné PDF](#111-registro-de-estudiantes-con-fotografía-y-carné-pdf)
+    - [11.2 Registro de Tutores con Fotografía, CV PDF y Especialidades](#112-registro-de-tutores-con-fotografía-cv-pdf-y-especialidades)
+    - [11.3 Sistema de Token de Verificación (6 dígitos) y Login Unificado](#113-sistema-de-token-de-verificación-6-dígitos-y-login-unificado)
+    - [11.4 Reenvío de Token de Verificación](#114-reenvío-de-token-de-verificación)
+  - [12. Módulo Administrador (Fase 2)](#12-módulo-administrador-fase-2)
+    - [12.1 Aprobación y Rechazo con Visor Embebido de Documentos](#121-aprobación-y-rechazo-con-visor-embebido-de-documentos)
+    - [12.2 Generación de URLs Firmadas Temporales (Cloudinary SDK, 15 min)](#122-generación-de-urls-firmadas-temporales-cloudinary-sdk-15-min)
+    - [12.3 Proxy Seguro y Streaming de Documentos PDF](#123-proxy-seguro-y-streaming-de-documentos-pdf)
+    - [12.4 Gestión de Estudiantes Activos (Regla de Inmutabilidad de Correo)](#124-gestión-de-estudiantes-activos-regla-de-inmutabilidad-de-correo)
+    - [12.5 Gestión de Tutores Activos (Materias y Correo Bloqueado)](#125-gestión-de-tutores-activos-materias-y-correo-bloqueado)
+    - [12.6 Bajas Administrativas con Purga Relacional en Cascada](#126-bajas-administrativas-con-purga-relacional-en-cascada)
+    - [12.7 Moderación y Dictamen Formal de Denuncias](#127-moderación-y-dictamen-formal-de-denuncias)
+    - [12.8 Auditoría y Reportes de Calificaciones](#128-auditoría-y-reportes-de-calificaciones)
+    - [12.9 Motor Analítico Avanzado de Tutorías (6 Consultas Concurrentes)](#129-motor-analítico-avanzado-de-tutorías-6-consultas-concurrentes)
+  - [13. Módulo Tutor (Fase 2)](#13-módulo-tutor-fase-2)
+    - [13.1 Calificación de Estudiantes tras Sesión Atendida (rateStudent)](#131-calificación-de-estudiantes-tras-sesión-atendida-ratestudent)
+    - [13.2 Reporte de Faltas Graves del Estudiante (reportStudent)](#132-reporte-de-faltas-graves-del-estudiante-reportstudent)
+    - [13.3 Cierre Pedagógico y Seguimiento de Sesiones Atendidas](#133-cierre-pedagógico-y-seguimiento-de-sesiones-atendidas)
+  - [14. Módulo Estudiante (Fase 2)](#14-módulo-estudiante-fase-2)
+    - [14.1 Consulta Estructurada de Planes de Estudio](#141-consulta-estructurada-de-planes-de-estudio)
+    - [14.2 Generación Vectorial A4 y Descarga de Constancia Oficial en PDF (PDFKit)](#142-generación-vectorial-a4-y-descarga-de-constancia-oficial-en-pdf-pdfkit)
+    - [14.3 Calificación de la Atención del Tutor (rateTutor)](#143-calificación-de-la-atención-del-tutor-ratetutor)
+    - [14.4 Reporte de Conducta del Tutor (reportTutor)](#144-reporte-de-conducta-del-tutor-reporttutor)
+    - [14.5 Historial de Sesiones Enriquecido con Evaluaciones y Reportes](#145-historial-de-sesiones-enriquecido-con-evaluaciones-y-reportes)
+  - [15. Servicios Transaccionales y Almacenamiento en la Nube](#15-servicios-transaccionales-y-almacenamiento-en-la-nube)
+    - [15.1 Cloudinary SDK (Firmas Criptográficas SHA y CDN)](#151-cloudinary-sdk-firmas-criptográficas-sha-y-cdn)
+    - [15.2 Despacho Asíncrono de Correos (Nodemailer y Resend)](#152-despacho-asíncrono-de-correos-nodemailer-y-resend)
+  - [16. Aseguramiento de Calidad y Pruebas Automatizadas](#16-aseguramiento-de-calidad-y-pruebas-automatizadas)
+    - [16.1 Estrategia de Aislamiento y Mocks](#161-estrategia-de-aislamiento-y-mocks)
+    - [16.2 Inventario de Suites de Pruebas Unitarias](#162-inventario-de-suites-de-pruebas-unitarias)
+    - [16.3 Pruebas de Frontend y Pruebas End-to-End (Cypress)](#163-pruebas-de-frontend-y-pruebas-end-to-end-cypress)
+  - [17. Pipeline de Integración y Despliegue Continuo (CI/CD)](#17-pipeline-de-integración-y-despliegue-continuo-cicd)
+    - [17.1 Arquitectura del Flujo en GitHub Actions](#171-arquitectura-del-flujo-en-github-actions)
+    - [17.2 Etapas del Pipeline (.github/workflows/backend.yml)](#172-etapas-del-pipeline-githubworkflowsbackendyml)
+  - [18. Arquitectura y Guía de Despliegue en la Nube (AWS EC2 y Vercel)](#18-arquitectura-y-guía-de-despliegue-en-la-nube-aws-ec2-y-vercel)
+    - [18.1 Entornos de Despliegue y URLs de Producción](#181-entornos-de-despliegue-y-urls-de-producción)
+    - [18.2 Topología de Red y Servidores en AWS](#182-topología-de-red-y-servidores-en-aws)
+    - [18.3 Configuración de Nginx Reverse Proxy](#183-configuración-de-nginx-reverse-proxy)
+    - [18.4 Gestión de Procesos en Producción con PM2](#184-gestión-de-procesos-en-producción-con-pm2)
+    - [18.5 Despliegue del Frontend en Vercel (Edge Runtime)](#185-despliegue-del-frontend-en-vercel-edge-runtime)
+  - [19. Catálogo Consolidado de Endpoints REST (Fase 2)](#19-catálogo-consolidado-de-endpoints-rest-fase-2)
+  - [20. Decisiones Técnicas y Reglas de Negocio Justificadas (Fase 2)](#20-decisiones-técnicas-y-reglas-de-negocio-justificadas-fase-2)
+
+---
+
+# PARTE I: MANUAL TÉCNICO — FASE 1
 
 ---
 
@@ -1313,3 +1325,1201 @@ COPY . .
 | `docker-compose.yml`                                 | Orquestación local de backend y frontend con puertos y volúmenes.                                |
 | `server/Dockerfile`                                  | Imagen del backend Node.js para desarrollo local.                                                |
 | `client/Dockerfile`                                  | Imagen del frontend Next.js para desarrollo local.                                               |
+
+
+---
+
+# PARTE II: EXTENSIONES Y ALCANCE TÉCNICO — FASE 2
+
+---
+
+## 9. Arquitectura General y Stack Tecnológico (Fase 2)
+
+### 9.1 Modelo de Capas y MVC en Node.js 22 LTS
+
+Para dar respuesta a los nuevos requerimientos académicos, de auditoría y de evaluación continua incorporados en la Fase 2, el backend de EduConnect evoluciona manteniendo una arquitectura limpia en **Capas (Layered / MVC)**. Esta estructura desacopla estrictamente las responsabilidades entre la captura de peticiones HTTP, validación de contratos de entrada, lógica de negocio, persistencia relacional transaccional y comunicación con servicios periféricos en la nube.
+
+```
+                                  [ Cliente Web Next.js 14 / HTTP Clients ]
+                                                     |
+                                                     v
+                                  [ Capa de Enrutamiento (Express Router) ]
+                                                     |
+                                    +----------------+---------------+
+                                    |                                |
+                        [ Middlewares de Autenticación ]   [ Middlewares de Carga ]
+                         (verifyToken, isEstudiante,       (Multer / Base64 Parser)
+                           isTutor, isAdmin, 2FA)
+                                    |                                |
+                                    +----------------+---------------+
+                                                     |
+                                                     v
+                                  [ Capa de Controladores (Controllers) ]
+                                 (Validación de esquemas, respuestas JSON)
+                                                     |
+                        +----------------------------+----------------------------+
+                        |                                                         |
+                        v                                                         v
+             [ Capa de Servicios y Utils ]                          [ Capa de Acceso a Datos ]
+           (studyPlanPdf, twoFactor, bcrypt,                         - Dual Client PostgreSQL:
+            cloudinaryUpload, emailService)                           * postgres (sql tagged)
+                        |                                             * pg (Pool connection)
+                        +----------------------------+----------------------------+
+                                                     |
+                                                     v
+                                 [ Servicios en la Nube y Almacenamiento ]
+                                  - PostgreSQL Neon Cloud (Transaccional)
+                                  - Cloudinary Media Storage (PDFs y Fotos)
+                                  - SMTP / Resend API (Correos Transaccionales)
+```
+
+### 9.2 Estructura de Directorios del Proyecto
+
+La organización del repositorio refleja la separación modular entre servidor y cliente:
+
+```
+ProyectoFase2/
+├── client/                                    # Frontend Next.js 14 (App Router)
+│   ├── app/                                   # Rutas por rol (/admin, /student, /tutor, /auth)
+│   ├── components/                            # Componentes UI (modales, visores PDF, ratings)
+│   ├── lib/                                   # Contextos de autenticación y cliente API HTTP
+│   └── public/                                # Recursos estáticos
+├── server/                                    # Backend Node.js 22 LTS
+│   ├── assets/
+│   │   └── logo-educonnect.png                # Logotipo institucional para generación de PDFs
+│   ├── src/
+│   │   ├── app.js                             # Configuración central de Express y CORS
+│   │   ├── config/
+│   │   │   ├── db.js                          # Conexión dual: tagged template (postgres) y Pool (pg)
+│   │   │   └── cloudinary.js                  # Configuración del SDK oficial de Cloudinary
+│   │   ├── controllers/
+│   │   │   ├── admin.js                       # Aprobaciones, visores, moderación y analítica
+│   │   │   ├── auth.js                        # Login unificado y reenvío de token de verificación
+│   │   │   ├── estudiante.js                  # Perfil y consultas de estudiante
+│   │   │   ├── tutor.js                       # Perfil y gestión de tutor
+│   │   │   ├── registro.estudiante.js         # Registro con foto y carné PDF en Cloudinary
+│   │   │   ├── registro.tutor.js              # Registro con foto y CV PDF en Cloudinary
+│   │   │   ├── student-plan.controller.js     # Consulta de planes y descarga PDFKit
+│   │   │   ├── student-feedback.controller.js # Calificación de tutor y reporte de conducta
+│   │   │   └── student-helpers.js             # Normalizador de sesiones e historial enriquecido
+│   │   ├── middlewares/
+│   │   │   └── auth.js                        # verifyToken, isEstudiante, isTutor, isAdmin
+│   │   ├── routes/
+│   │   │   ├── admin.routes.js                # Rutas de administración protegidas
+│   │   │   ├── auth.routes.js                 # Rutas de autenticación y tokens
+│   │   │   ├── student.routes.js              # Rutas de estudiante autenticado
+│   │   │   ├── tutor.routes.js                # Rutas de tutor autenticado
+│   │   │   ├── registro.estudiante.routes.js  # Rutas públicas de registro estudiantil
+│   │   │   └── registro.tutor.routes.js       # Rutas públicas de registro de tutor
+│   │   ├── services/
+│   │   │   └── email.js                       # Despacho transaccional (Resend / Nodemailer)
+│   │   └── utils/
+│   │       ├── bcrypt.js                      # Criptografía unidireccional (salt rounds = 10)
+│   │       ├── cloudinaryUpload.js            # Upload de Base64/Data-URI y buffers
+│   │       ├── studyPlanPdf.js                # Generador vectorial PDFKit (formato A4)
+│   │       └── twoFactor.js                   # TOTP (otplib) y cifrado AES-256-GCM
+│   ├── test/                                  # Pruebas unitarias de registro y administración
+│   ├── test-student/                          # Pruebas unitarias y de integración de estudiante
+│   ├── Dockerfile                             # Imagen de contenedor para backend
+│   └── package.json                           # Manifiesto de dependencias y scripts de ejecución
+├── .github/
+│   └── workflows/
+│       └── backend.yml                        # Pipeline automatizado de CI/CD (Build, Test, Deploy)
+├── docker-compose.yml                         # Orquestación de contenedores para desarrollo local
+└── README.md
+```
+
+### 9.3 Matriz de Tecnologías y Dependencias
+
+| Componente | Tecnología | Versión | Justificación Técnica |
+|---|---|---|---|
+| **Runtime Backend** | Node.js | v22 LTS | Motor JavaScript asíncrono con soporte V8 optimizado y compatibilidad nativa Fetch. |
+| **Framework HTTP** | Express.js | ^4.18 / ^5.2 | Router minimalista de alto rendimiento con encadenamiento modular de middlewares. |
+| **Base de Datos** | PostgreSQL (Neon Cloud) | v15+ | Motor relacional con integridad referencial ACID, índices parciales y escalabilidad serverless. |
+| **Cliente de BD** | Dual (`postgres` + `pg`) | ^3.4 / ^8.11 | Permite `sql.begin()` para transacciones atómicas y `db.query` para consultas directas. |
+| **Almacenamiento de Medios** | Cloudinary SDK | ^2.11.0 | Subida segura de imágenes y documentos privados en PDF con generación de firmas SHA temporales. |
+| **Motor de PDF** | PDFKit | ^0.15.0 | Generador vectorial de documentos A4 en memoria sin dependencias externas del sistema operativo. |
+| **Autenticación** | JSON Web Tokens (`jsonwebtoken`) | ^9.0.2 | Autenticación stateless y segura mediante tokens firmados criptográficamente (duración 8h). |
+| **Cifrado de Contraseñas** | `bcryptjs` | ^2.4.3 | Función hash adaptativa resistente a ataques de fuerza bruta (costo 10). |
+| **Segundo Factor (2FA)** | `otplib` + `crypto` nativo | ^12.0.1 | Algoritmo TOTP estándar RFC 6238 con cifrado simétrico AES-256-GCM de secrets. |
+| **Correo Transaccional** | Nodemailer / Resend API | ^6.9 / ^3.2 | Despacho asíncrono y tolerante a fallos de plantillas HTML responsivas. |
+| **Testing Automatizado** | Jest & `node:test` | ^29.7 / v22 | Ejecución determinista de pruebas con aislamiento estricto mediante mocks de base de datos e I/O. |
+| **Frontend Web** | Next.js / React | v14 / v18 | Renderizado híbrido (SSR/CSR), enrutamiento por roles y cliente API modular. |
+
+---
+
+## 10. Modelo Relacional de Base de Datos y Diagrama ER (Fase 2)
+
+### 10.1 Diagrama Entidad-Relación Completo
+
+El modelo de datos relacional de la Fase 2 integra 14 tablas que garantizan integridad referencial estricta, control de unicidad por sesión y trazabilidad completa de planes de estudio, calificaciones y auditoría disciplinaria:
+
+```mermaid
+erDiagram
+    ADMINISTRADOR {
+        int id_administrador PK
+        string nombre_usuario UK
+        string password_hash
+        string two_factor_secret
+        boolean two_factor_enable
+    }
+
+    ESTUDIANTE {
+        int id_estudiante PK
+        string nombre
+        string apellido
+        string carnet UK
+        string correo UK
+        string password_hash
+        string foto_url
+        string carnet_pdf_url
+        string estado_aprobacion
+        string verification_token
+        boolean is_email_verified
+        datetime token_created_at
+        datetime fecha_registro
+    }
+
+    TUTOR {
+        int id_tutor PK
+        string nombre
+        string apellido
+        string carnet_id UK
+        string numero_identificacion_tutor UK
+        string correo UK
+        string password_hash
+        string foto_url
+        string cv_pdf_url
+        string direccion_tutoria
+        string universidad_graduacion
+        int anio_inicio_tutorias
+        string estado_aprobacion
+        string verification_token
+        boolean is_email_verified
+        datetime token_created_at
+    }
+
+    MATERIA {
+        int id_materia PK
+        string nombre UK
+    }
+
+    TUTOR_MATERIA {
+        int id_tutor FK
+        int id_materia FK
+    }
+
+    SESION {
+        int id_sesion PK
+        int id_estudiante FK
+        int id_tutor FK
+        int id_materia FK
+        date fecha_sesion
+        time hora_sesion
+        string estado
+        text resumen_sesion
+    }
+
+    SOLICITUD {
+        int id_solicitud PK
+        int id_estudiante FK
+        int id_tutor FK
+        string tipo_usuario
+        string estado
+        text motivo_rechazo
+        datetime fecha_procesado
+    }
+
+    STUDY_PLANS {
+        int id_plan PK
+        int id_sesion FK, UK
+        datetime created_at
+    }
+
+    IDENTIFIED_DIFFICULTIES {
+        int id_dificultad PK
+        int id_plan FK
+        text dificultad
+    }
+
+    RECOMMENDED_RESOURCES {
+        int id_recurso PK
+        int id_plan FK
+        string nombre
+        string tipo
+        text descripcion_uso
+        string url
+    }
+
+    TUTOR_RATINGS {
+        int id_rating PK
+        int id_sesion FK, UK
+        int id_estudiante FK
+        int id_tutor FK
+        int estrellas
+        text comentario
+        datetime fecha_calificacion
+    }
+
+    STUDENT_RATINGS {
+        int id_rating PK
+        int id_sesion FK, UK
+        int id_tutor FK
+        int id_estudiante FK
+        int estrellas
+        text comentario
+        datetime fecha_calificacion
+    }
+
+    TUTOR_REPORTS {
+        int id_reporte PK
+        int id_sesion FK, UK
+        int id_estudiante FK
+        int id_tutor FK
+        string categoria
+        text descripcion
+        string estado
+        text resolucion
+        datetime fecha_reporte
+    }
+
+    STUDENT_REPORTS {
+        int id_reporte PK
+        int id_sesion FK, UK
+        int id_tutor FK
+        int id_estudiante FK
+        string categoria
+        text descripcion
+        string estado
+        text resolucion
+        datetime fecha_reporte
+    }
+
+    ESTUDIANTE ||--o{ SESION : "solicita"
+    TUTOR ||--o{ SESION : "atiende"
+    MATERIA ||--o{ SESION : "tematica"
+    TUTOR ||--o{ TUTOR_MATERIA : "imparte"
+    MATERIA ||--o{ TUTOR_MATERIA : "es_impartida"
+    ESTUDIANTE ||--o{ SOLICITUD : "origina"
+    TUTOR ||--o{ SOLICITUD : "origina"
+    SESION ||--o| STUDY_PLANS : "genera"
+    STUDY_PLANS ||--o{ IDENTIFIED_DIFFICULTIES : "contiene"
+    STUDY_PLANS ||--o{ RECOMMENDED_RESOURCES : "recomienda"
+    SESION ||--o| TUTOR_RATINGS : "calificada_por_estudiante"
+    SESION ||--o| STUDENT_RATINGS : "calificada_por_tutor"
+    SESION ||--o| TUTOR_REPORTS : "denuncia_a_tutor"
+    SESION ||--o| STUDENT_REPORTS : "denuncia_a_estudiante"
+```
+
+### 10.2 Diccionario de Datos de las Nuevas Entidades
+
+#### Tabla: `study_plans`
+Almacena el encabezado del plan de estudio pedagógico asociado unívocamente a una sesión atendida.
+- `id_plan` (SERIAL, PRIMARY KEY): Identificador secuencial del plan de estudio.
+- `id_sesion` (INTEGER, UNIQUE, REFERENCES `sesion(id_sesion)` ON DELETE CASCADE): Clave foránea que restringe un único plan de estudio por sesión.
+- `created_at` (TIMESTAMP DEFAULT NOW()): Marca temporal de generación del plan.
+
+#### Tabla: `identified_difficulties`
+Almacena las debilidades académicas diagnosticadas durante la tutoría.
+- `id_dificultad` (SERIAL, PRIMARY KEY): Identificador de la dificultad.
+- `id_plan` (INTEGER, REFERENCES `study_plans(id_plan)` ON DELETE CASCADE): Clave foránea al plan contenedor.
+- `dificultad` (TEXT, NOT NULL): Descripción de la deficiencia detectada.
+
+#### Tabla: `recommended_resources`
+Catálogo de materiales y bibliografía recomendada al alumno para su refuerzo.
+- `id_recurso` (SERIAL, PRIMARY KEY): Identificador del recurso.
+- `id_plan` (INTEGER, REFERENCES `study_plans(id_plan)` ON DELETE CASCADE): Clave foránea al plan contenedor.
+- `nombre` (VARCHAR(255), NOT NULL): Nombre del libro, guía o herramienta digital.
+- `tipo` (VARCHAR(50), NOT NULL): Clasificación (`Libro`, `PDF`, `Video`, `Plataforma Web`, `Guía de Ejercicios`).
+- `descripcion_uso` (TEXT): Instrucciones pedagógicas de uso.
+- `url` (TEXT): Enlace de acceso directo al material.
+
+#### Tabla: `tutor_ratings`
+Calificación cualitativa y cuantitativa otorgada por el estudiante al tutor.
+- `id_rating` (SERIAL, PRIMARY KEY): Identificador de la calificación.
+- `id_sesion` (INTEGER, UNIQUE, REFERENCES `sesion(id_sesion)` ON DELETE CASCADE): Relación 1:1 con la sesión atendida.
+- `id_estudiante` (INTEGER, REFERENCES `estudiante(id_estudiante)`): Alumno emisor.
+- `id_tutor` (INTEGER, REFERENCES `tutor(id_tutor)`): Tutor evaluado.
+- `estrellas` (INTEGER NOT NULL CHECK (estrellas >= 0 AND estrellas <= 5)): Puntaje entero asignado.
+- `comentario` (TEXT NOT NULL DEFAULT ''): Reseña del alumno.
+- `fecha_calificacion` (TIMESTAMP DEFAULT NOW()): Momento de la emisión.
+
+#### Tabla: `student_ratings`
+Calificación otorgada por el tutor al estudiante tras finalizar la asesoría.
+- `id_rating` (SERIAL, PRIMARY KEY): Identificador de la evaluación.
+- `id_sesion` (INTEGER, UNIQUE, REFERENCES `sesion(id_sesion)` ON DELETE CASCADE): Relación 1:1 con la sesión.
+- `id_tutor` (INTEGER, REFERENCES `tutor(id_tutor)`): Tutor evaluador.
+- `id_estudiante` (INTEGER, REFERENCES `estudiante(id_estudiante)`): Alumno evaluado.
+- `estrellas` (INTEGER NOT NULL CHECK (estrellas >= 1 AND estrellas <= 5)): Puntaje de 1 a 5.
+- `comentario` (TEXT NOT NULL): Comentario pedagógico obligatorio.
+- `fecha_calificacion` (TIMESTAMP DEFAULT NOW()): Marca temporal.
+
+#### Tablas: `tutor_reports` y `student_reports`
+Módulo de auditoría disciplinaria y denuncias de conducta.
+- `id_reporte` (SERIAL, PRIMARY KEY): Identificador del incidente.
+- `id_sesion` (INTEGER, UNIQUE, REFERENCES `sesion(id_sesion)` ON DELETE CASCADE): Restringe un solo reporte por sesión.
+- `categoria` (VARCHAR(100) NOT NULL): Tipología de falta tipificada en el sistema.
+- `descripcion` (TEXT NOT NULL): Relato detallado de los hechos.
+- `estado` (VARCHAR(30) DEFAULT 'Pendiente'): Estado de moderación (`Pendiente`, `Resuelta`, `Desestimada`).
+- `resolucion` (TEXT): Dictamen formal redactado por el administrador.
+- `fecha_reporte` (TIMESTAMP DEFAULT NOW()): Fecha del reporte.
+
+### 10.3 Concurrencia y Bloqueos de Fila (FOR UPDATE)
+
+Para evitar condiciones de carrera (Race Conditions) cuando un estudiante o tutor intenta registrar calificaciones o reportes simultáneos, el sistema ejecuta transacciones atómicas con bloqueo de fila explícito en PostgreSQL:
+
+```sql
+BEGIN;
+
+-- Bloquea la fila de la sesión para evitar evaluaciones concurrentes duplicadas
+SELECT id_sesion, estado, id_estudiante, id_tutor 
+FROM sesion 
+WHERE id_sesion = $1 
+FOR UPDATE;
+
+-- Verifica que el estado sea estrictamente 'Atendida'
+-- Inserta la calificación con garantía de unicidad
+INSERT INTO tutor_ratings (id_sesion, id_estudiante, id_tutor, estrellas, comentario)
+VALUES ($1, $2, $3, $4, $5);
+
+COMMIT;
+```
+
+---
+
+## 11. Módulo de Registro y Autenticación Unificada (Fase 2)
+
+### 11.1 Registro de Estudiantes con Fotografía y Carné PDF
+
+#### Especificación del Endpoint
+- **Ruta:** `POST /api/student/register` (alias: `POST /api/auth/registro/estudiante`)
+- **Acceso:** Público.
+- **Controlador:** `server/src/controllers/registro.estudiante.js` -> `registerStudent`
+
+#### Reglas de Validación de Entrada:
+1. **Datos personales obligatorios:** `nombre`, `apellido`, `carnet`, `genero`, `direccion`, `telefono`, `fecha_nacimiento`, `correo`, `password`.
+2. **Fotografía de Perfil Obligatoria (`foto_url`):** Cadena en formato Data-URI (`data:image/...`). Se sube a Cloudinary en la carpeta `educonnect/estudiantes`.
+3. **Carné Universitario PDF Obligatorio (`carnet_pdf_url` o `carnet_pdf`):** Debe incluir obligatoriamente el prefijo `data:application/pdf;base64,`. Se almacena en Cloudinary como recurso seguro de tipo `raw`.
+4. **Validación Criptográfica de Contraseñas:** Se aplica expresión regular estricta:
+   ```javascript
+   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{8,}$/;
+   if (!passwordRegex.test(password)) {
+     return res.status(400).json({ message: 'La contraseña debe tener al menos 8 caracteres, incluyendo letras y números' });
+   }
+   ```
+5. **Transacción Atómica de Inserción:**
+   ```javascript
+   const { newStudent, newSolicitud } = await sql.begin(async (tx) => {
+     const [student] = await tx`
+       INSERT INTO estudiante (
+         nombre, apellido, carnet, genero, direccion, telefono,
+         fecha_nacimiento, foto_url, carnet_pdf_url, correo, password_hash,
+         verification_token, is_email_verified, token_created_at, estado_aprobacion
+       ) VALUES (
+         ${nombre}, ${apellido}, ${carnet}, ${genero}, ${direccion}, ${telefono},
+         ${fecha_nacimiento}, ${fotoFinal}, ${carnetPdfFinal}, ${correo}, ${hashedPassword},
+         ${verificationToken}, FALSE, NOW(), 'pendiente'
+       ) RETURNING id_estudiante, nombre, apellido, carnet, correo;
+     `;
+
+     const [solicitud] = await tx`
+       INSERT INTO solicitud (id_estudiante, estado, tipo_usuario)
+       VALUES (${student.id_estudiante}, 'pendiente', 'estudiante')
+       RETURNING *;
+     `;
+
+     return { newStudent: student, newSolicitud: solicitud };
+   });
+   ```
+6. **Token de Activación:** Se genera un número aleatorio de 6 dígitos (`100000` a `999999`) y se despacha asíncronamente al correo del estudiante.
+
+---
+
+### 11.2 Registro de Tutores con Fotografía, CV PDF y Especialidades
+
+#### Especificación del Endpoint
+- **Ruta:** `POST /api/tutor/registro` (alias: `POST /api/auth/registro/tutor`)
+- **Acceso:** Público.
+- **Controlador:** `server/src/controllers/registro.tutor.js` -> `registroTutor`
+
+#### Reglas de Validación:
+1. **Datos personales y profesionales:** `nombre`, `apellido`, `carnet_id`, `numero_identificacion_tutor`, `genero`, `direccion`, `telefono`, `fecha_nacimiento`, `correo`, `password`, `direccion_tutoria`, `universidad_graduacion`, `anio_inicio_tutorias`, `especialidad`.
+2. **Validación de Tamaño y Formato del Curriculum Vitae:**
+   ```javascript
+   const pdfRaw = cv_pdf_url || cv_pdf || '';
+   if (!/^data:application\/pdf;base64,/.test(pdfRaw)) {
+     return res.status(400).json({ message: 'El archivo de CV debe ser un PDF válido' });
+   }
+   const pdfSizeBytes = Math.round((pdfRaw.split(',')[1]?.length || 0) * 0.75);
+   if (pdfSizeBytes > 5 * 1024 * 1024) {
+     return res.status(400).json({ message: 'El CV en formato PDF no debe exceder los 5MB' });
+   }
+   ```
+3. **Normalización Relacional de Especialidades:** La lista de materias recibida en texto separado por comas se normaliza insertando cada asignatura en la tabla `materia` de forma idempotente (`ON CONFLICT (nombre) DO NOTHING`) y asociándola en la tabla pivote `tutor_materia`.
+
+---
+
+### 11.3 Sistema de Token de Verificación (6 dígitos) y Login Unificado
+
+#### Endpoints
+- `POST /api/auth/login` (Inicio de sesión unificado para Estudiantes y Tutores)
+- `POST /api/auth/resend-verification` (Reenvío de token de activación vencido o no recibido)
+
+#### Diagrama de Máquina de Estados de Autenticación:
+```
+   +--------------------------------------------------------------+
+   |                     Registro Inicial                         |
+   |   (Cuenta creada en estado 'pendiente' y token despachado)   |
+   +------------------------------+-------------------------------+
+                                  |
+                                  v
+   +--------------------------------------------------------------+
+   |          Aprobación Administrativa (Admin Módulo)            |
+   |              (estado_aprobacion -> 'aprobado')               |
+   +------------------------------+-------------------------------+
+                                  |
+                                  v
+   +--------------------------------------------------------------+
+   |                        Primer Login                          |
+   |        Payload: { correo, password, verification_token }     |
+   +------------------------------+-------------------------------+
+                                  |
+                 +----------------+----------------+
+                 |                                 |
+                 v (Válido y < 24 Horas)           v (Inválido o > 24 Horas)
+   +------------------------------+  +-------------------------------+
+   |   is_email_verified = TRUE   |  |        Error HTTP 400         |
+   |   Generación de JWT (8h)     |  | (requiresVerification/expired)|
+   +------------------------------+  +---------------+---------------+
+                 |                                   |
+                 |                                   v
+                 |                   +-------------------------------+
+                 |                   | POST /auth/resend-verification|
+                 |                   | (Emite nuevo token de 6 dígs) |
+                 |                   +-------------------------------+
+                 v
+   +--------------------------------------------------------------+
+   |                      Logins Posteriores                      |
+   |                  Payload: { correo, password }               |
+   |             -> Acceso Inmediato y Emisión de JWT             |
+   +--------------------------------------------------------------+
+```
+
+#### Reglas de Expiración y Desbloqueo:
+- El token tiene una ventana de validez de exactamente 24 horas (`86,400,000 milisegundos`).
+- Si `(Date.now() - token_created_at) > 86400000`, el sistema rechaza la solicitud indicando `tokenExpired`.
+- Si el usuario no ha sido aprobado por el administrador, se devuelve `403 Forbidden` con el mensaje: `Tu cuenta aún no ha sido aprobada por un administrador`.
+- Una vez verificado (`is_email_verified = TRUE`), el campo del token se vuelve opcional y se ignora en accesos futuros.
+
+---
+
+### 11.4 Reenvío de Token de Verificación
+
+- **Endpoint:** `POST /api/auth/resend-verification`
+- **Controlador:** `auth.controller.js` -> `resendVerificationToken`
+- **Payload:** `{ "correo": "usuario@universidad.edu.gt" }`
+- **Comportamiento:** Genera un nuevo código de 6 dígitos criptográficamente seguro, actualiza `verification_token` y `token_created_at = NOW()` en la tabla correspondiente (`estudiante` o `tutor`), y despacha un correo inmediato con la plantilla institucional formal.
+
+---
+
+## 12. Módulo Administrador (Fase 2)
+
+### 12.1 Aprobación y Rechazo con Visor Embebido de Documentos
+
+El administrador puede inspeccionar visualmente los documentos acreditantes antes de tomar una decisión de admisión:
+- **Aprobación de Estudiante:** `PUT /api/admin/students/:id/approve` -> Actualiza `estado_aprobacion = 'aprobado'` y despacha correo de bienvenida (`sendApprovalEmail`) con el token de activación.
+- **Rechazo de Estudiante:** `PUT /api/admin/students/:id/reject` -> Registra el motivo formal de rechazo en la solicitud y notifica al usuario vía email.
+- **Aprobación/Rechazo de Tutores:** Mismo mecanismo transaccional sobre la entidad `tutor`.
+
+---
+
+### 12.2 Generación de URLs Firmadas Temporales (Cloudinary SDK, 15 min)
+
+Para permitir la visualización directa del carné universitario y del CV sin exponer buckets de almacenamiento público:
+- **Endpoints:**
+  - `GET /api/admin/students/:id/documento`
+  - `GET /api/admin/tutors/:id/documento`
+- **Mecanismo Criptográfico:** Si el documento reside en Cloudinary en un bucket privado (`type: 'upload'`, `resource_type: 'raw'`), el servidor genera una URL temporal firmada con expiración estricta de 15 minutos (`900 segundos`):
+  ```javascript
+  const signedUrl = cloudinary.url(publicId, {
+    resource_type: 'raw',
+    type: 'upload',
+    sign_url: true,
+    expires_at: Math.floor(Date.now() / 1000) + 900
+  });
+  ```
+
+---
+
+### 12.3 Proxy Seguro y Streaming de Documentos PDF
+
+- **Endpoint:** `GET /api/admin/documento/stream`
+- **Parámetros:** `?id=<id>&tipo=<estudiante|tutor>` o `?url=<URL_ENCODED>`
+- **Justificación de Arquitectura:** Diversos navegadores y componentes de visualización PDF bloquean recursos externos debido a directivas de Same-Origin Policy (CORS) o la ausencia de la cabecera `Content-Disposition: inline`.
+- **Implementación:** El servidor Node.js descarga el archivo en un buffer de memoria y lo retransmite al navegador cliente con las cabeceras requeridas:
+  ```javascript
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', 'inline; filename="documento-verificacion.pdf"');
+  res.setHeader('Cache-Control', 'public, max-age=1800');
+  res.send(buffer);
+  ```
+
+---
+
+### 12.4 Gestión de Estudiantes Activos (Regla de Inmutabilidad de Correo)
+
+- **Listado de Aprobados:** `GET /api/admin/students/approved`
+- **Actualización de Perfil:** `PUT /api/admin/students/:id`
+- **Regla Estricta de Seguridad:** El correo electrónico institucional (`correo`) es inmutable. El controlador descarta cualquier intento de modificación de este campo en el payload, salvaguardando la identidad institucional y la integridad de las sesiones asociadas.
+
+---
+
+### 12.5 Gestión de Tutores Activos (Materias y Correo Bloqueado)
+
+- **Listado de Aprobados con Materias Agregadas:** `GET /api/admin/tutors/approved`
+  Utiliza subconsulta con `json_agg` para recuperar en una sola llamada eficiente todas las materias impartidas por cada tutor.
+- **Actualización de Tutor:** `PUT /api/admin/tutors/:id`
+  El correo electrónico institucional permanece inmutable. En el caso de las asignaturas impartidas, el backend ejecuta una transacción atómica que limpia las asignaciones previas en `tutor_materia` e inserta las nuevas materias seleccionadas por el administrador.
+
+---
+
+### 12.6 Bajas Administrativas con Purga Relacional en Cascada
+
+- **Baja de Estudiante:** `PUT /api/admin/students/:id/deactivate`
+- **Baja de Tutor:** `PUT /api/admin/tutors/:id/deactivate`
+- Para no violar restricciones de clave foránea ni dejar registros huérfanos, el sistema ejecuta una purga transaccional ordenada en cascada:
+  ```sql
+  DELETE FROM tutor_ratings WHERE id_estudiante = $1;
+  DELETE FROM student_ratings WHERE id_estudiante = $1;
+  DELETE FROM tutor_reports WHERE id_estudiante = $1;
+  DELETE FROM student_reports WHERE id_estudiante = $1;
+  DELETE FROM sesion WHERE id_estudiante = $1;
+  DELETE FROM solicitud WHERE id_estudiante = $1;
+  DELETE FROM estudiante WHERE id_estudiante = $1;
+  ```
+  Posteriormente, se dispara una notificación formal por correo electrónico (`sendDeactivationEmail`).
+
+---
+
+### 12.7 Moderación y Dictamen Formal de Denuncias
+
+- **Consulta:** `GET /api/admin/denuncias?tipo=tutor` o `?tipo=estudiante&estado=pendiente`
+- **Resolución:** `PATCH /api/admin/denuncias/:id/resolver`
+- **Payload:**
+  ```json
+  {
+    "estado": "resuelta",
+    "resolucion": "Se verificó la falta con la grabación y se procedió a suspender preventivamente al tutor."
+  }
+  ```
+- Estados admitidos: `pendiente`, `resuelta`, `desestimada`.
+
+---
+
+### 12.8 Auditoría y Reportes de Calificaciones
+
+- **Calificaciones de Tutores:** `GET /api/admin/ratings/tutors` -> Calcula el promedio de estrellas, desglose por puntuación y recopila reseñas cualitativas de estudiantes.
+- **Calificaciones de Estudiantes:** `GET /api/admin/ratings/students` -> Consolida el rendimiento de los alumnos según la retroalimentación de los tutores.
+
+---
+
+### 12.9 Motor Analítico Avanzado de Tutorías (6 Consultas Concurrentes)
+
+- **Endpoint:** `GET /api/admin/reportes`
+- **Optimización de Rendimiento:** Ejecuta 6 consultas relacionales concurrentes en PostgreSQL mediante `Promise.all`:
+  1. Conteo de sesiones agrupadas por estado (`Atendida`, `Pendiente`, `Cancelada por el tutor`, `Cancelada por el estudiante`).
+  2. Materias con mayor número de sesiones concluidas satisfactoriamente.
+  3. Ranking de tutores con mayor volumen de horas de asesoría impartidas.
+  4. Indicadores globales: total de sesiones, total de estudiantes únicos y tutores únicos.
+  5. **Top 5 materias con mayor tasa de cancelación:**
+     ```sql
+     SELECT m.nombre AS materia, COUNT(*)::integer AS total_canceladas
+     FROM sesion s 
+     JOIN materia m ON m.id_materia = s.id_materia
+     WHERE s.estado LIKE 'Cancelada%'
+     GROUP BY m.nombre 
+     ORDER BY total_canceladas DESC 
+     LIMIT 5;
+     ```
+  6. **Distribución de demanda por franjas horarias (Top 6 horas pico):**
+     ```sql
+     SELECT TO_CHAR(hora_sesion, 'HH24:00') AS franja_horaria, COUNT(*)::integer AS total_sesiones
+     FROM sesion 
+     GROUP BY TO_CHAR(hora_sesion, 'HH24:00')
+     ORDER BY total_sesiones DESC 
+     LIMIT 6;
+     ```
+
+---
+
+## 13. Módulo Tutor (Fase 2)
+
+### 13.1 Calificación de Estudiantes tras Sesión Atendida (rateStudent)
+
+- **Endpoint:** `POST /api/tutor/sessions/:id/rating`
+- **Controlador:** `rateStudent`
+- **Parámetros de Entrada:**
+  ```json
+  {
+    "estrellas": 4,
+    "comentario": "El estudiante asistió puntualmente y con los ejercicios previos resueltos."
+  }
+  ```
+- **Reglas de Negocio:**
+  - `estrellas`: Número entero obligatorio entre `1` y `5`.
+  - `comentario`: Obligatorio (no vacío), máximo 500 caracteres.
+  - Implementa comportamiento **UPSERT**: si el tutor reevalúa la sesión, se actualizan los valores existentes devolviendo código `200 OK`; si es la primera calificación, se crea con código `201 Created`.
+  - La sesión debe pertenecer a `req.user.id` (tutor autenticado) y estar en estado estricto `Atendida`.
+
+---
+
+### 13.2 Reporte de Faltas Graves del Estudiante (reportStudent)
+
+- **Endpoint:** `POST /api/tutor/sessions/:id/report`
+- **Controlador:** `reportStudent`
+- **Categorías de Falta Grave Validadas:** `Conducta inapropiada`, `Falsificacion de documentos`, `Agresion verbal o fisica`, `Plagio_Copia`, `Inasistencia_Injustificada`, `Incumplimiento_Acuerdos`, `Acoso_Bullying`, `Portacion Objetos Peligrosos`, `Uso Indebido de la Tecnologia`.
+- En caso de intento de reporte duplicado sobre la misma sesión, se intercepta la violación de clave única (código PostgreSQL `23505`) respondiendo `409 Conflict`.
+
+---
+
+### 13.3 Cierre Pedagógico y Seguimiento de Sesiones Atendidas
+
+Al culminar una asesoría, el tutor registra el resumen de la sesión e interactúa con el subsistema de planes de estudio para alimentar el diagnóstico de dificultades del estudiante y recomendar los recursos bibliográficos pertinentes.
+
+---
+
+## 14. Módulo Estudiante (Fase 2)
+
+### 14.1 Consulta Estructurada de Planes de Estudio
+
+- **Endpoint:** `GET /api/student/study-plans`
+- **Controlador:** `server/src/controllers/student-plan.controller.js` -> `getStudyPlans`
+- **Seguridad:** Requiere encabezado `Authorization: Bearer <TOKEN_ESTUDIANTE>`.
+- **Comportamiento:** Devuelve los planes generados para sesiones en estado estrictamente `Atendida` vinculadas al estudiante autenticado.
+
+#### Ejemplo de Estructura de Respuesta JSON:
+```json
+[
+  {
+    "id": 14,
+    "id_sesion": 105,
+    "fechaUltimaSesion": "2026-10-18",
+    "tutor": {
+      "nombre": "Elena Morales",
+      "especialidades": "Estructuras de Datos, Algoritmos Avanzados",
+      "numero_identificacion": "TUT-8831"
+    },
+    "identified_difficulties": [
+      {
+        "id": 101,
+        "dificultad": "Complejidad asintótica en árboles balanceados AVL y rotaciones dobles."
+      }
+    ],
+    "recommended_resources": [
+      {
+        "id": 201,
+        "nombre": "Introduction to Algorithms (CLRS) - Capítulo 13",
+        "tipo": "Libro",
+        "descripcion_uso": "Estudiar la demostración formal del costo de rebalanceo y resolver ejercicios 13.1-13.4.",
+        "url": "https://biblioteca.usac.edu.gt/clrs-cap13.pdf"
+      },
+      {
+        "id": 202,
+        "nombre": "Visualgo.net - Módulo de Árboles AVL",
+        "tipo": "Plataforma Web",
+        "descripcion_uso": "Simular interactivamente las inserciones y eliminaciones para visualizar rotaciones simples y dobles.",
+        "url": "https://visualgo.net/es/bst"
+      }
+    ]
+  }
+]
+```
+
+---
+
+### 14.2 Generación Vectorial A4 y Descarga de Constancia Oficial en PDF (PDFKit)
+
+- **Endpoint:** `GET /api/student/study-plans/:id/pdf`
+- **Controlador:** `downloadStudyPlanPdf`
+- **Motor de Render:** `server/src/utils/studyPlanPdf.js` mediante la librería **PDFKit**.
+- **Cabeceras HTTP de Respuesta:**
+  - `Content-Type: application/pdf`
+  - `Content-Disposition: attachment; filename="educonnect-plan-<id>.pdf"`
+
+#### Anatomía del Documento PDF Institucional Generado:
+1. **Encabezado Institucional Corporativo:**
+   - Logotipo oficial de EduConnect cargado desde `server/assets/logo-educonnect.png`.
+   - Razón institucional: `EduConnect - Plataforma de Gestión de Tutorías Académicas`.
+   - Fecha y hora exacta de emisión en formato ISO legible.
+   - Teléfono de contacto de soporte oficial extraído de `process.env.EDUCONNECT_CONTACT_PHONE`.
+2. **Tarjeta de Datos de la Tutoría:**
+   - Nombre completo del estudiante y carné universitario.
+   - Nombre completo del tutor y número de identificación profesional.
+   - Asignatura impartida y fecha en que fue atendida la sesión.
+3. **Sección de Diagnóstico Académico:**
+   - Listado numerado de dificultades y deficiencias conceptuales identificadas por el tutor.
+4. **Tabla de Recursos y Recomendaciones:**
+   - Columnas estructuradas: **Nombre del Recurso**, **Tipo de Material**, **Instrucciones Pedagógicas de Uso** y **Enlace / Referencia**.
+5. **Pie de Página Oficial y Metadatos:**
+   - Firma emulada del tutor y matrícula profesional.
+   - Numeración dinámica multi-página: `Página X de Y` mediante listeners de eventos `pageAdded` en PDFKit.
+
+---
+
+### 14.3 Calificación de la Atención del Tutor (rateTutor)
+
+- **Endpoint:** `POST /api/student/sessions/:id/rating`
+- **Controlador:** `server/src/controllers/student-feedback.controller.js` -> `rateTutor`
+- **Parámetros de Entrada (Body JSON):**
+  ```json
+  {
+    "estrellas": 5,
+    "comentario": "Excelente explicación de los teoremas de cálculo, resolvió todas las dudas con claridad."
+  }
+  ```
+- **Validaciones Técnicas:**
+  - `estrellas`: Número entero en el rango de `0` a `5`.
+  - `comentario`: Texto de hasta 500 caracteres (si se omite en la solicitud, se almacena como cadena vacía `""` para cumplir la restricción `NOT NULL`).
+  - La sesión debe existir, pertenecer al estudiante (`id_estudiante = req.user.id`) y estar en estado estricto `Atendida`.
+  - Se ejecuta bajo aislamiento transaccional para verificar que no exista calificación previa (`UNIQUE(id_sesion)`) con bloqueo de fila `FOR UPDATE`.
+
+---
+
+### 14.4 Reporte de Conducta del Tutor (reportTutor)
+
+- **Consulta de Categorías:** `GET /api/student/report-categories`
+  - `Etica y profesionalismo`
+  - `Negligencia academica`
+  - `Abuso o conducta inapropiada`
+  - `Falsificacion de informacion`
+  - `Otro`
+- **Envío de Denuncia:** `POST /api/student/sessions/:id/report`
+- **Validaciones:** Longitud de `descripcion` entre 10 y 2000 caracteres. Unicidad garantizada por `UNIQUE(id_sesion)` en `tutor_reports`.
+
+---
+
+### 14.5 Historial de Sesiones Enriquecido con Evaluaciones y Reportes
+
+En `src/controllers/student-helpers.js`, la función `getStudentSessionsByState` vincula mediante subconsultas relacionales los objetos `calificacion` y `reporte` (o `null`) a cada sesión atendida. De este modo, la interfaz del estudiante sabe de inmediato si la sesión ya fue calificada o denunciada sin necesidad de realizar peticiones HTTP redundantes.
+
+---
+
+## 15. Servicios Transaccionales y Almacenamiento en la Nube
+
+### 15.1 Cloudinary SDK (Firmas Criptográficas SHA y CDN)
+
+- **Configuración:** `server/src/config/cloudinary.js`
+- **Almacenamiento de Fotos:** Las imágenes de perfil de estudiantes y tutores se procesan con `resource_type: 'image'`, optimización automática de compresión y entrega a través de CDN global.
+- **Almacenamiento de Documentos Confidenciales:** Los carnés universitarios y currículums en PDF se almacenan con `resource_type: 'raw'` y acceso restringido para proteger los datos personales de la comunidad estudiantil.
+
+### 15.2 Despacho Asíncrono de Correos (Nodemailer y Resend)
+
+- **Ubicación:** `server/src/services/email.js`
+- **Plantillas HTML Transaccionales:**
+  - `sendVerificationEmail`: Envío de token de activación de 6 dígitos numéricos con diseño institucional formal en verde (`#1B5E20`) y tipografía destacada.
+  - `sendApprovalEmail`: Notificación de cuenta aprobada o rechazada con el motivo detallado.
+  - `sendDeactivationEmail`: Notificación de baja administrativa por incumplimiento de términos.
+  - `sendCancellationEmail`: Alerta de sesión cancelada por tutor o estudiante.
+
+---
+
+## 16. Aseguramiento de Calidad y Pruebas Automatizadas
+
+### 16.1 Estrategia de Aislamiento y Mocks
+
+Para garantizar que el conjunto de pruebas unitarias sea determinista, veloz y se ejecute sin dependencias de red en el pipeline de CI/CD:
+- **Mock de Base de Datos:** Intercepta `db.query` y tagged templates `sql` retornando datasets predefinidos en memoria mediante espías `jest.fn()`.
+- **Mock de Cloudinary:** Simula la subida de medios y retorna URLs sintéticas sin interactuar con los servidores externos.
+- **Mock de Servicios de Correo:** Captura el despacho de correos en memoria verificando destinatarios y tokens generados.
+
+### 16.2 Inventario de Suites de Pruebas Unitarias
+
+#### 1. Suite de Pruebas de Registro (13 Tests Jest)
+- **Archivo:** `server/test/register-student.test.js`
+- **Casos:** Registro exitoso de estudiante, validación de campos obligatorios, rechazo por omisión de foto, rechazo por omisión de carné PDF, validación de regex de contraseñas, detección de correos y carnés duplicados, y rollback transaccional ante excepciones de base de datos.
+
+#### 2. Suite de Pruebas del Módulo Estudiante (34 Tests Jest + 8 Tests node:test)
+- **Directorio:** `server/test-student/UnitTest/`
+- **Cobertura:** 84.15% en líneas globales y 100% de cobertura en `student-plan.controller.js`.
+- **Casos:** Consulta de planes activos, aislamiento de datos entre estudiantes autenticados, generación y descarga de constancias en PDFKit, validación de escala de 0 a 5 estrellas, unicidad de reportes y control de estados de sesión.
+
+#### 3. Suite de Pruebas del Módulo Administrador (42 Tests Jest)
+- **Archivo:** `server/test/UnitTest/admin/admin.unit.test.js`
+- **Resultados:** 42 casos ejecutados y aprobados al 100% en un tiempo promedio de 0.68 segundos.
+- **Casos:** Aprobación y rechazo de solicitudes, firma criptográfica de URLs de carnés y CVs, streaming proxy de documentos, inmutabilidad de correo en edición, purga en cascada de usuarios y consultas analíticas concurrentes.
+
+### 16.3 Pruebas de Frontend y Pruebas End-to-End (Cypress)
+
+- **Pruebas Unitarias de Interfaz:** React Testing Library y Jest validan renderizado de formularios, modales y visores.
+- **Pruebas End-to-End (E2E):** Implementadas con **Cypress** para verificar flujos completos de usuario:
+  - Registro con adjuntos de foto y PDF y validación de token.
+  - Flujo de solicitud y aprobación por el administrador.
+  - Agendamiento y atención de sesión con generación de constancia PDF.
+  - Evaluación bidireccional y auditoría administrativa de reportes.
+
+---
+
+## 17. Pipeline de Integración y Despliegue Continuo (CI/CD)
+
+### 17.1 Arquitectura del Flujo en GitHub Actions
+
+El repositorio cuenta con un pipeline de integración y despliegue continuo completamente automatizado, definido en `.github/workflows/backend.yml`:
+
+```mermaid
+flowchart TD
+    A[Push a rama main / workflow_dispatch] --> B[Job 1: Build]
+    subgraph Job 1: Build
+        B1[Checkout Código] --> B2[Setup Node.js 22 + Cache npm]
+        B2 --> B3[Instalar Dependencias: npm ci]
+        B3 --> B4[Construir Imagen Docker: cicd-educonnect]
+    end
+    B4 --> C[Job 2: Test]
+    subgraph Job 2: Test
+        C1[Checkout Código] --> C2[Setup Node.js 22 + Cache npm]
+        C2 --> C3[Instalar Dependencias: npm ci]
+        C3 --> C4[Ejecutar Pruebas: npm run test:unit]
+    end
+    C4 --> D[Job 3: Deploy]
+    subgraph Job 3: Deploy
+        D1[Checkout Código] --> D2[Setup Node.js 22 + Cache npm]
+        D2 --> D3[Instalar Solo Producción: npm ci --omit=dev]
+        D3 --> D4[Arranque en Background: npm start &]
+        D4 --> D5[Verificación de Liveness por 15 Segundos]
+        D5 --> D6{¿Server vivo tras 15s? exit code 124}
+        D6 -- Sí --> D7[Despliegue Simulado Exitoso]
+        D6 -- No --> D8[Fallo del Pipeline]
+    end
+```
+
+### 17.2 Etapas del Pipeline (.github/workflows/backend.yml)
+
+El archivo de configuración oficial del flujo CI/CD del backend contiene las siguientes especificaciones:
+
+```yaml
+name: Backend CI/CD
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "ProyectoFase2/server/**"
+  workflow_dispatch:
+
+defaults:
+  run:
+    working-directory: ProyectoFase2/server
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "Instalar dependencias"
+        run: npm ci
+
+      - name: "Build imagen Docker"
+        run: docker build -t cicd-educonnect .
+
+  test:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: "Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "Instalar dependencias (cached)"
+        run: npm ci
+
+      - name: "Ejecutar pruebas unitarias"
+        run: npm run test:unit
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: "Checkout código"
+        uses: actions/checkout@v4
+
+      - name: "Configurar Node.js 22 + cache npm"
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: ProyectoFase2/server/package-lock.json
+
+      - name: "Instalar solo dependencias de producción"
+        run: npm ci --omit=dev
+
+      - name: "Verificar que el server inicia y se mantiene vivo (15s)"
+        env:
+          PORT: 4000
+          NODE_ENV: test
+          OTP_ENCRYPTION_KEY: "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+          JWT_SECRET: "test-secret-for-ci-only-do-not-use-in-production"
+          DATABASE_URL: "postgresql://dummy:dummy@localhost:5432/dummy"
+        run: |
+          npm start &
+          SERVER_PID=$!
+          timeout 15s tail --pid=$SERVER_PID -f /dev/null
+          EXIT_CODE=$?
+          kill $SERVER_PID 2>/dev/null || true
+
+          if [ $EXIT_CODE -eq 124 ]; then
+            echo "Server se mantuvo vivo 15 segundos - deploy simulado OK"
+            exit 0
+          else
+            echo "Server crasheó o terminó prematuramente (exit code: $EXIT_CODE)"
+            exit 1
+          fi
+```
+
+---
+
+## 18. Arquitectura y Guía de Despliegue en la Nube (AWS EC2 y Vercel)
+
+### 18.1 Entornos de Despliegue y URLs de Producción
+
+Para garantizar alta disponibilidad, desacoplamiento de componentes y redundancia operativa en la Fase 2, el proyecto EduConnect cuenta con dos infraestructuras de despliegue en la nube plenamente operativas y verificadas:
+
+| Entorno / Plataforma | URL de Producción | Componentes Desplegados | Rol y Alcance Técnico |
+|---|---|---|---|
+| **AWS EC2 (Infraestructura Principal)** | [EduConnect - G8](http://107.21.86.168/login) | **Backend + Proyecto Completo (Full-Stack)** | Servidor en la nube en instancia AWS EC2 con IP pública fija `107.21.86.168`. Aloja la API RESTful de Node.js/Express (puerto 4000) y el build standalone de producción de Next.js (puerto 3000), orquestados con PM2 y unificados bajo Nginx como Reverse Proxy en el puerto 80. Sirvió para el despliegue del backend y también para el proyecto entero. |
+| **Vercel (Plataforma Serverless Edge)** | [https://educonnect-lovat-five.vercel.app/login](https://educonnect-lovat-five.vercel.app/login) | **Frontend (Next.js)** | Despliegue en la red CDN Edge global de Vercel con integración continua y distribución geográfica de bajo tiempo de respuesta. Sirvió para el despliegue del frontend, consumiendo los endpoints de la API centralizada. |
+
+#### Detalle de los Puntos de Acceso:
+1. **Frontend en Vercel:**  
+   - **URL Directa:** `https://educonnect-lovat-five.vercel.app/login`  
+   - **Función:** Sirvió para el despliegue del frontend. Permite a estudiantes, tutores y administradores interactuar con una interfaz Next.js optimizada con renderizado híbrido y CDN serverless de alta velocidad.
+2. **Backend y Proyecto Entero en AWS EC2:**  
+   - **URL Directa:** [EduConnect - G8](http://107.21.86.168/login) (`http://107.21.86.168/login`)  
+   - **Host / IP Pública:** `107.21.86.168`  
+   - **Función:** Sirvió para el despliegue del backend y también para el proyecto entero. Gestiona los endpoints de la API en `http://107.21.86.168/api/` y aloja la aplicación completa sirviendo la versión cliente en la raíz `http://107.21.86.168/` mediante proxy inverso Nginx.
+
+---
+
+### 18.2 Topología de Red y Servidores en AWS
+
+Para la puesta en producción en la infraestructura en la nube de **Amazon Web Services (AWS)** sobre una instancia **EC2 (Ubuntu 22.04 LTS o Amazon Linux 2023)** con IP pública fija `107.21.86.168`:
+
+```
+                          [ Clientes Web / Internet ]
+                                      |
+                                      v
+                           [ AWS IP: 107.21.86.168 ]
+                                      |
+                                      v
+                        [ Nginx Reverse Proxy (Puerto 80 HTTP) ]
+                          |                                |
+        /api/* -> Puerto 4000                              | /* -> Puerto 3000
+                          v                                v
+               [ PM2: Backend Node.js ]          [ PM2: Next.js Standalone ]
+                          |                                |
+                          +---------------+----------------+
+                                          |
+                                          v
+                            [ PostgreSQL Neon Cloud (SSL) ]
+                            [ Cloudinary Media Storage ]
+```
+
+---
+
+### 18.3 Configuración de Nginx Reverse Proxy
+
+Archivo de configuración del servidor web en `/etc/nginx/conf.d/educonnect.conf` en la instancia AWS EC2:
+
+```nginx
+server {
+    listen 80;
+    server_name 107.21.86.168;
+
+    # Archivos estáticos de Next.js
+    location /_next/static/ {
+        alias /var/www/educonnect/ProyectoFase2/client/.next/static/;
+        expires 365d;
+        access_log off;
+    }
+
+    # API Backend (Node.js Express en puerto 4000)
+    location /api/ {
+        proxy_pass http://127.0.0.1:4000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+    }
+
+    # Aplicación Web Frontend Completa (Next.js en puerto 3000)
+    location / {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+---
+
+### 18.4 Gestión de Procesos en Producción con PM2
+
+Para garantizar alta disponibilidad y autoreinicio ante excepciones o reinicios del servidor en AWS, se utiliza **PM2** configurado en `ecosystem.config.js`:
+
+```javascript
+module.exports = {
+  apps: [
+    {
+      name: 'educonnect-backend',
+      script: './server.js',
+      cwd: '/var/www/educonnect/ProyectoFase2/server',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: 4000
+      }
+    },
+    {
+      name: 'educonnect-frontend',
+      script: '.next/standalone/server.js',
+      cwd: '/var/www/educonnect/ProyectoFase2/client',
+      instances: 1,
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '500M',
+      env_production: {
+        NODE_ENV: 'production',
+        PORT: 3000
+      }
+    }
+  ]
+};
+```
+
+#### Comandos de Puesta en Marcha en AWS EC2:
+```bash
+# 1. Instalar dependencias en servidor
+sudo apt update && sudo apt install -y nginx git nodejs npm
+sudo npm install -g pm2
+
+# 2. Clonar repositorio
+git clone https://github.com/SebastianVelasquezValle/AYD1_2S_G8.git /var/www/educonnect
+cd /var/www/educonnect/ProyectoFase2/server
+npm ci --production
+
+# 3. Arrancar servicios con PM2
+pm2 start ecosystem.config.js --env production
+pm2 save
+pm2 startup
+
+# 4. Habilitar y recargar Nginx
+sudo systemctl enable nginx
+sudo systemctl restart nginx
+```
+
+---
+
+### 18.5 Despliegue del Frontend en Vercel (Edge Runtime)
+
+El frontend Next.js de la plataforma cuenta con un despliegue serverless complementario en **Vercel** (`https://educonnect-lovat-five.vercel.app/login`), sirviendo como acceso distribuido:
+
+1. **Configuración del Proyecto en Vercel:**
+   - **Root Directory:** `./ProyectoFase2/client`
+   - **Framework Preset:** `Next.js`
+   - **Build Command:** `npm run build`
+   - **Output Directory:** `.next`
+2. **Variables de Entorno en Vercel:**
+   - `NEXT_PUBLIC_API_URL`: Vinculada directamente al backend en AWS (`http://107.21.86.168/api`) para el consumo de autenticación unificada, gestión de planes de estudio, streaming de documentos y reportes analíticos.
+3. **Beneficios Operativos:**
+   - Entrega de recursos estáticos y páginas pre-renderizadas mediante CDN global con latencia mínima.
+   - Despliegue continuo activado por commits y previsualizaciones instantáneas en ramas de desarrollo.
+
+---
+
+## 19. Catálogo Consolidado de Endpoints REST (Fase 2)
+
+### Módulo de Registro y Autenticación (Públicos)
+| Método | Endpoint | Controlador | Middleware de Auth | Descripción |
+|---|---|---|---|---|
+| POST | `/api/student/register` | `registerStudent` | Ninguno (Público) | Registro de estudiante con foto y carné en PDF. |
+| POST | `/api/tutor/registro` | `registroTutor` | Ninguno (Público) | Registro de tutor con foto, CV en PDF y especialidades. |
+| POST | `/api/auth/login` | `loginUnified` | Ninguno (Público) | Login unificado con verificación por token de 6 dígitos. |
+| POST | `/api/auth/resend-verification` | `resendVerificationToken` | Ninguno (Público) | Reenvío de token de activación de cuenta. |
+
+### Módulo Estudiante (Requiere Token de Estudiante)
+| Método | Endpoint | Controlador | Middleware de Auth | Descripción |
+|---|---|---|---|---|
+| GET | `/api/student/study-plans` | `getStudyPlans` | `verifyToken`, `isEstudiante` | Consulta de planes de estudio de sesiones atendidas. |
+| GET | `/api/student/study-plans/:id/pdf` | `downloadStudyPlanPdf` | `verifyToken`, `isEstudiante` | Descarga de constancia oficial vectorial en PDF (PDFKit). |
+| POST | `/api/student/sessions/:id/rating` | `rateTutor` | `verifyToken`, `isEstudiante` | Calificación del tutor tras finalizar la sesión (0-5 estrellas). |
+| GET | `/api/student/report-categories` | `getReportCategories` | `verifyToken`, `isEstudiante` | Catálogo oficial de causales de denuncia. |
+| POST | `/api/student/sessions/:id/report` | `reportTutor` | `verifyToken`, `isEstudiante` | Denuncia formal contra tutor por falta disciplinaria. |
+| GET | `/api/student/sessions/history` | `getStudentSessionsByState` | `verifyToken`, `isEstudiante` | Historial de sesiones enriquecido con ratings y reportes. |
+
+### Módulo Tutor (Requiere Token de Tutor)
+| Método | Endpoint | Controlador | Middleware de Auth | Descripción |
+|---|---|---|---|---|
+| POST | `/api/tutor/sessions/:id/rating` | `rateStudent` | `verifyToken`, `isTutor` | Calificación y feedback al estudiante (1-5 estrellas, upsert). |
+| POST | `/api/tutor/sessions/:id/report` | `reportStudent` | `verifyToken`, `isTutor` | Reporte de falta grave cometida por el alumno (10 causales). |
+
+### Módulo Administrador (Requiere Token de Administrador)
+| Método | Endpoint | Controlador | Middleware de Auth | Descripción |
+|---|---|---|---|---|
+| GET | `/api/admin/students/pending` | `getPendingStudents` | `verifyToken`, `isAdmin` | Solicitudes de inscripción de estudiantes pendientes. |
+| PUT | `/api/admin/students/:id/approve` | `approveStudent` | `verifyToken`, `isAdmin` | Aprobación de estudiante y despacho de correo de alta. |
+| PUT | `/api/admin/students/:id/reject` | `rejectStudent` | `verifyToken`, `isAdmin` | Rechazo fundamentado de solicitud de estudiante. |
+| GET | `/api/admin/students/:id/documento` | `getStudentDocument` | `verifyToken`, `isAdmin` | URL firmada temporal de carné universitario en PDF. |
+| GET | `/api/admin/tutors/:id/documento` | `getTutorDocument` | `verifyToken`, `isAdmin` | URL firmada temporal de CV de tutor en PDF. |
+| GET | `/api/admin/documento/stream` | `streamDocumento` | `verifyToken`, `isAdmin` | Streaming proxy de documentos PDF para visor embebido. |
+| GET | `/api/admin/students/approved` | `getApprovedStudents` | `verifyToken`, `isAdmin` | Listado de estudiantes activos con paginación. |
+| PUT | `/api/admin/students/:id` | `updateStudentAdmin` | `verifyToken`, `isAdmin` | Actualización de perfil (correo estrictamente bloqueado). |
+| PUT | `/api/admin/students/:id/deactivate` | `deactivateStudent` | `verifyToken`, `isAdmin` | Baja administrativa con eliminación en cascada. |
+| GET | `/api/admin/tutors/approved` | `getApprovedTutors` | `verifyToken`, `isAdmin` | Listado de tutores activos con materias agregadas (`json_agg`). |
+| PUT | `/api/admin/tutors/:id` | `updateTutorAdmin` | `verifyToken`, `isAdmin` | Edición de tutor y sincronización de materias impartidas. |
+| PUT | `/api/admin/tutors/:id/deactivate` | `deactivateTutor` | `verifyToken`, `isAdmin` | Baja administrativa de tutor con purga referencial. |
+| GET | `/api/admin/denuncias` | `getDenuncias` | `verifyToken`, `isAdmin` | Consulta de denuncias filtradas por tipo y estado. |
+| PATCH | `/api/admin/denuncias/:id/resolver` | `resolverDenuncia` | `verifyToken`, `isAdmin` | Resolución o desestimación formal de queja con dictamen. |
+| GET | `/api/admin/ratings/tutors` | `getTutorRatings` | `verifyToken`, `isAdmin` | Auditoría de valoraciones y satisfacción de tutores. |
+| GET | `/api/admin/ratings/students` | `getStudentRatings` | `verifyToken`, `isAdmin` | Auditoría de evaluaciones a estudiantes impartidas por tutores. |
+| GET | `/api/admin/reportes` | `getReports` | `verifyToken`, `isAdmin` | Dashboard analítico consolidado (6 métricas concurrentes). |
+
+---
+
+## 20. Decisiones Técnicas y Reglas de Negocio Justificadas (Fase 2)
+
+1. **Persistencia Híbrida de Documentos en la Nube y Local:**
+   Para conciliar la alta disponibilidad de Cloudinary con entornos sin acceso a internet o pipelines de pruebas locales, se diseñó una estrategia de subida que almacena los documentos en Cloudinary mediante firmas seguras SHA y conserva respaldo local en el sistema de archivos del servidor.
+2. **Inmutabilidad Absoluta del Correo Institucional en Ediciones:**
+   El correo universitario actúa como identificador lógico institucional único. Permitir su mutabilidad en pantallas de administración representaría un riesgo severo de suplantación y rompería la integridad de la auditoría académica y de los tokens de autenticación previa.
+3. **Generación de PDFs en Servidor (PDFKit) vs. Client-Side Rendering:**
+   Se descartó generar constancias en el cliente con librerías como `html2pdf` o `canvas` debido a inconsistencias de fuentes tipográficas entre navegadores, márgenes erráticos y posibilidad de adulteración del DOM. Con PDFKit en Node.js, la constancia se construye vectorialmente con precisión milimétrica, logotipo institucional incrustado y foliado matemático uniforme.
+4. **Firmas Criptográficas de Corta Duración (15 minutos):**
+   Para salvaguardar la privacidad de datos personales contenidos en carnés universitarios y currículums vitae, los enlaces generados para el visor administrativo expiran rigurosamente a los 900 segundos. Transcurrido ese lapso, cualquier enlace compartido deja de ser accesible.
+5. **Evaluación Restringida a Sesiones en Estado Atendida:**
+   Ni el estudiante ni el tutor pueden calificar o reportar una asesoría que se encuentre en estado `Pendiente`, `Activa` o `Cancelada`. Únicamente el estado `Atendida` acredita la culminación pedagógica formal requerida para habilitar los formularios de feedback.
+6. **Bloqueo a Nivel de Fila (SELECT ... FOR UPDATE) para Concurrencia:**
+   En los módulos de feedback y resolución de denuncias, el uso de transacciones con bloqueo de fila previene condiciones de carrera cuando múltiples solicitudes simultáneas intentan actualizar la misma tupla relacional.
+7. **Estrategia Dual de Despliegue en la Nube (AWS EC2 + Vercel):**
+   La separación del frontend en Vercel (`https://educonnect-lovat-five.vercel.app/login`) permitió entregas ágiles y alta velocidad en el edge, mientras que la infraestructura en AWS EC2 (`http://107.21.86.168/login`) garantizó control absoluto sobre el backend, sockets, tareas en background y la opción de servir la aplicación completa full-stack.
