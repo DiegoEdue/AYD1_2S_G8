@@ -105,10 +105,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (7):** HU-038, HU-039, HU-040, HU-041, HU-047, HU-048, HU-050.
 - **Justificación:**
-  - Amplió el módulo administrativo del backend implementando los endpoints y rutas para la gestión de solicitudes con visor de documentos PDF (carnet de estudiante y CV de tutor), base de las HU-038 y HU-039.
-  - Colaboró en los endpoints de edición administrativa de estudiantes y tutores activos (HU-040 y HU-041).
-  - Aportó pruebas unitarias del módulo de administrador y la configuración del entorno de ejecución de pruebas (Jest), contribuyendo directamente al criterio de HU-047.
-  - Participó activamente en el aseguramiento de calidad de la fase: revisó e integró los Pull Requests de pruebas del equipo y apoyó la documentación de requerimientos y evidencias de pruebas (HU-048 y HU-050).
+    - Amplió el módulo administrativo del backend implementando los endpoints y rutas para la gestión de solicitudes con visor de documentos PDF (carnet de estudiante y CV de tutor), base de las HU-038 y HU-039.
+    - Colaboró en los endpoints de edición administrativa de estudiantes y tutores activos (HU-040 y HU-041).
+    - Aportó pruebas unitarias del módulo de administrador y la configuración del entorno de ejecución de pruebas (Jest), contribuyendo directamente al criterio de HU-047.
+    - Participó activamente en el aseguramiento de calidad de la fase: revisó e integró los Pull Requests de pruebas del equipo y apoyó la documentación de requerimientos y evidencias de pruebas (HU-048 y HU-050).
 
 ### **2. Angel Jose Cardenas Pocon (Rol: Backend / Frontend Developer)**
 
@@ -123,10 +123,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (11):** HU-038, HU-039, HU-040, HU-041, HU-042, HU-043, HU-044, HU-046, HU-047, HU-048, HU-050.
 - **Justificación:**
-  - Desarrolló la totalidad del panel administrativo de la Fase 2 en el frontend: solicitudes con visor PDF embebido, módulo de moderación de denuncias, edición de usuarios y reportes gráficos.
-  - Implementó el componente de visor PDF (HU-038 y HU-039) y la integración de la carga de archivos con el servicio de almacenamiento en la nube.
-  - Construyó y ejecutó la suite más amplia de pruebas End-to-End en Cypress (aceptación/rechazo de usuarios, moderación de denuncias, atención con plan de estudio, verificación 2FA, edición de perfil), con evidencias en video (HU-048).
-  - Elaboró la matriz y documentación de pruebas del sistema, además de apoyar en los endpoints administrativos del backend y en la documentación de manuales (HU-050).
+    - Desarrolló la totalidad del panel administrativo de la Fase 2 en el frontend: solicitudes con visor PDF embebido, módulo de moderación de denuncias, edición de usuarios y reportes gráficos.
+    - Implementó el componente de visor PDF (HU-038 y HU-039) y la integración de la carga de archivos con el servicio de almacenamiento en la nube.
+    - Construyó y ejecutó la suite más amplia de pruebas End-to-End en Cypress (aceptación/rechazo de usuarios, moderación de denuncias, atención con plan de estudio, verificación 2FA, edición de perfil), con evidencias en video (HU-048).
+    - Elaboró la matriz y documentación de pruebas del sistema, además de apoyar en los endpoints administrativos del backend y en la documentación de manuales (HU-050).
 
 ### **3. Sebastian Levi Velásquez Valle (Rol: Backend Developer)**
 
@@ -141,10 +141,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (11):** HU-028, HU-029, HU-030, HU-035, HU-036, HU-037, HU-046, HU-047, HU-049, HU-050, HU-051.
 - **Justificación:**
-  - Sostuvo el núcleo del módulo de tutorías en el backend: controladores y modelos de sesiones, calificaciones (ratings), reportes de conducta y horarios, sustentando las HU-035, HU-036 y HU-037.
-  - Implementó la carga segura de documentos en el registro de estudiantes y tutores (fotografía, carnet y CV en PDF), con integración al servicio de almacenamiento en la nube (HU-028 y HU-029).
-  - Fortaleció la seguridad del sistema manteniendo la lógica de autenticación, el segundo factor del administrador y el cifrado de contraseñas (HU-030).
-  - Asumió responsabilidades DevOps clave: Dockerfile, docker-compose y soporte al despliegue en servidores cloud (HU-049 y HU-051), además de pruebas unitarias del módulo de calificaciones y aportes sustanciales a manuales y diagramas (HU-050).
+    - Sostuvo el núcleo del módulo de tutorías en el backend: controladores y modelos de sesiones, calificaciones (ratings), reportes de conducta y horarios, sustentando las HU-035, HU-036 y HU-037.
+    - Implementó la carga segura de documentos en el registro de estudiantes y tutores (fotografía, carnet y CV en PDF), con integración al servicio de almacenamiento en la nube (HU-028 y HU-029).
+    - Fortaleció la seguridad del sistema manteniendo la lógica de autenticación, el segundo factor del administrador y el cifrado de contraseñas (HU-030).
+    - Asumió responsabilidades DevOps clave: Dockerfile, docker-compose y soporte al despliegue en servidores cloud (HU-049 y HU-051), además de pruebas unitarias del módulo de calificaciones y aportes sustanciales a manuales y diagramas (HU-050).
 
 ### **4. Luis Pablo Carlos Tapia (Rol: DevOps / Backend Developer)**
 
@@ -159,10 +159,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (10):** HU-031, HU-032, HU-033, HU-034, HU-035, HU-044, HU-045, HU-046, HU-047, HU-049.
 - **Justificación:**
-  - Desarrolló el subsistema de Plan de Estudio y retroalimentación del estudiante en el backend: consulta estructurada del plan, registro de dificultades y recursos recomendados, calificaciones y reportes de conducta (HU-031, HU-033, HU-034 y HU-035).
-  - Implementó el motor de generación del PDF de la constancia del plan de estudio en el backend, con el formato oficial de EduConnect (HU-032).
-  - Construyó los endpoints de los reportes de promedio de calificaciones de tutores y estudiantes, y colaboró en los nuevos reportes analíticos (HU-044, HU-045 y HU-046).
-  - Cumplió con su cuota de pruebas unitarias del módulo de estudiante (plan, PDF, feedback e historial de sesiones) y configuró la infraestructura de pruebas (HU-047), apoyando además la configuración del pipeline de CI/CD (HU-049).
+    - Desarrolló el subsistema de Plan de Estudio y retroalimentación del estudiante en el backend: consulta estructurada del plan, registro de dificultades y recursos recomendados, calificaciones y reportes de conducta (HU-031, HU-033, HU-034 y HU-035).
+    - Implementó el motor de generación del PDF de la constancia del plan de estudio en el backend, con el formato oficial de EduConnect (HU-032).
+    - Construyó los endpoints de los reportes de promedio de calificaciones de tutores y estudiantes, y colaboró en los nuevos reportes analíticos (HU-044, HU-045 y HU-046).
+    - Cumplió con su cuota de pruebas unitarias del módulo de estudiante (plan, PDF, feedback e historial de sesiones) y configuró la infraestructura de pruebas (HU-047), apoyando además la configuración del pipeline de CI/CD (HU-049).
 
 ### **5. Diego Eduardo Españas Vasquez (Rol: Product Owner / Frontend Developer)**
 
@@ -177,10 +177,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (15):** HU-028, HU-029, HU-030, HU-031, HU-032, HU-033, HU-034, HU-035, HU-036, HU-037, HU-045, HU-046, HU-047, HU-048, HU-050.
 - **Justificación:**
-  - Fue el desarrollador frontend con mayor carga de la fase: módulos completos de estudiante y tutor, incluyendo la vista del Plan de Estudio con sus recursos recomendados, la verificación de cuenta por token con ingreso OTP, el formulario dinámico de atención con plan estructurado y la generación de la constancia en PDF.
-  - Implementó los componentes interactivos de calificación por estrellas y de reportes de conducta en ambos extremos (estudiante y tutor), cubriendo HU-033, HU-034, HU-036 y HU-037.
-  - Construyó la suite principal de pruebas E2E con evidencias y las pruebas unitarias del frontend con Vitest (HU-047 y HU-048).
-  - Como Product Owner mantuvo el Product Backlog priorizado y trazable, y aportó de forma significativa a los manuales de usuario y a la documentación Scrumban (HU-050).
+    - Fue el desarrollador frontend con mayor carga de la fase: módulos completos de estudiante y tutor, incluyendo la vista del Plan de Estudio con sus recursos recomendados, la verificación de cuenta por token con ingreso OTP, el formulario dinámico de atención con plan estructurado y la generación de la constancia en PDF.
+    - Implementó los componentes interactivos de calificación por estrellas y de reportes de conducta en ambos extremos (estudiante y tutor), cubriendo HU-033, HU-034, HU-036 y HU-037.
+    - Construyó la suite principal de pruebas E2E con evidencias y las pruebas unitarias del frontend con Vitest (HU-047 y HU-048).
+    - Como Product Owner mantuvo el Product Backlog priorizado y trazable, y aportó de forma significativa a los manuales de usuario y a la documentación Scrumban (HU-050).
 
 ### **6. Hector Antonio Cardona Cos (Rol: Database Administrator / Backend)**
 
@@ -195,10 +195,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (20):** Soporte transversal de base de datos en HU-028 a HU-046, además de HU-050.
 - **Justificación:**
-  - Lideró la evolución completa del esquema de base de datos de la Fase 2: nuevas tablas para planes de estudio, dificultades identificadas, recursos recomendados, calificaciones cruzadas (tutor_ratings y student_reports / student_ratings), denuncias, tokens de verificación y referencias a documentos PDF.
-  - Mantuvo el script DDL, las consultas agregadas para los reportes (promedios de calificaciones) y los datos de prueba necesarios para el resto del equipo, con una participación sostenida y verificable a lo largo de toda la fase.
-  - Garantizó la consistencia relacional y la integridad de los datos entre los módulos nuevos y los existentes de la Fase 1, evitando regresiones en los reportes previos.
-  - Actualizó los diagramas de base de datos y su documentación técnica dentro de la HU-050.
+    - Lideró la evolución completa del esquema de base de datos de la Fase 2: nuevas tablas para planes de estudio, dificultades identificadas, recursos recomendados, calificaciones cruzadas (tutor_ratings y student_reports / student_ratings), denuncias, tokens de verificación y referencias a documentos PDF.
+    - Mantuvo el script DDL, las consultas agregadas para los reportes (promedios de calificaciones) y los datos de prueba necesarios para el resto del equipo, con una participación sostenida y verificable a lo largo de toda la fase.
+    - Garantizó la consistencia relacional y la integridad de los datos entre los módulos nuevos y los existentes de la Fase 1, evitando regresiones en los reportes previos.
+    - Actualizó los diagramas de base de datos y su documentación técnica dentro de la HU-050.
 
 ### **7. Yeison Omar Lopez Dueñas (Rol: Scrum Master / Backend Developer)**
 
@@ -213,10 +213,10 @@ La nota final de cada integrante se compone de cinco dimensiones con ponderació
 
 - **Historias a cargo (6):** HU-028, HU-029, HU-030, HU-047, HU-049, HU-051.
 - **Justificación:**
-  - Implementó el backend del registro y la autenticación con verificación de correo: generación de tokens, validación en el primer inicio de sesión y plantillas de correo institucional, núcleo de las HU-028, HU-029 y HU-030.
-  - Construyó el pipeline de CI/CD del backend en GitHub Actions con las etapas de Build, Test y Deploy sobre Docker y secretos seguros (HU-049), base del despliegue en la nube (HU-051).
-  - Aportó pruebas unitarias del flujo de registro y colaboró en las del módulo de retroalimentación (HU-047).
-  - Como Scrum Master facilitó todas las ceremonias del equipo (planning, daily, review y retrospectiva), mantuvo operativo el tablero Kanban con sus evidencias por sprint, gestionó las métricas Scrumban y elaboró la presente evaluación formal del equipo.
+    - Implementó el backend del registro y la autenticación con verificación de correo: generación de tokens, validación en el primer inicio de sesión y plantillas de correo institucional, núcleo de las HU-028, HU-029 y HU-030.
+    - Construyó el pipeline de CI/CD del backend en GitHub Actions con las etapas de Build, Test y Deploy sobre Docker y secretos seguros (HU-049), base del despliegue en la nube (HU-051).
+    - Aportó pruebas unitarias del flujo de registro y colaboró en las del módulo de retroalimentación (HU-047).
+    - Como Scrum Master facilitó todas las ceremonias del equipo (planning, daily, review y retrospectiva), mantuvo operativo el tablero Kanban con sus evidencias por sprint, gestionó las métricas Scrumban y elaboró la presente evaluación formal del equipo.
 
 ---
 
