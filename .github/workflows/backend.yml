@@ -82,8 +82,7 @@ jobs:
 
           # Espera 15 segundos; si el proceso muere antes, timeout falla
           # timeout retorna 124 si lo mató por tiempo = éxito (server vivo)
-          timeout 15s tail --pid=$SERVER_PID -f /dev/null || true
-          EXIT_CODE=$?
+          timeout 15s tail --pid=$SERVER_PID -f /dev/null || EXIT_CODE=$?
 
           # Limpieza: mata el server si sigue vivo
           kill $SERVER_PID 2>/dev/null || true
